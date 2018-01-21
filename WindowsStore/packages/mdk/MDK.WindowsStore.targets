@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <mdk-DeviceType Condition="'$(TargetPlatformIdentifier)' == 'UAP'">UAP</mdk-DeviceType>
+    <mdk-BinPath>$(MSBuildThisFileDirectory)\bin\$(Platform)\</mdk-BinPath>
+  </PropertyGroup>
+
+  <Target Name="mdk-win81-check" BeforeTargets="ResolveAssemblyReferences">
+      <Error 
+        Condition="'$(mdk-DeviceType)' != 'UAP'" 
+        Text="Target must be Windows 10 UWP. Note that this MDK NuGet package doesn't contain binaries for Windows 8.1 or Windows
+              Phone 8.1. For 8.1 please use the 'MDK.WindowsStore.win81' NuGet package." />
+  </Target>
+
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalLibraryDirectories>$(mdk-BinPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemGroup Label="MDK">
+    <PackagingOutputs Include="$(mdk-BinPath)\*.dll">
+      <OutputGroup>MdkBinaries</OutputGroup>
+      <ProjectName>$(ProjectName)</ProjectName>
+      <TargetPath>%(Filename)%(Extension)</TargetPath>
+      <Visible>True</Visible>
+    </PackagingOutputs>
+    <None Include="$(mdk-BinPath)\mdk.dll"> <!--visible in solution explorer-->
+    </None>
+    <!--
+    <Content Include="$(mdk-BinPath)\*.dll">
+      <Link>%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    -->
+  </ItemGroup>
+
+</Project>
