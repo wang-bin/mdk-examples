@@ -90,12 +90,9 @@ using namespace MDK_NS;
 - (void)createWindow {
     const int mask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable| NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
     self->w = [[CocoaWindow alloc] initWithContentRect:NSMakeRect(0,0, 960, 540) styleMask:mask backing:NSBackingStoreBuffered defer:NO];
-    [self->w setTitle:@"Cocoa Window. Set environment var 'GL_LAYER=1' to use CAOpenGLLayer"];
     [self->w makeMainWindow];
     [self->w makeKeyAndOrderFront:nil];
-
     [NSApp activateIgnoringOtherApps:YES];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resizeSurface) name:NSWindowDidResizeNotification object:nil];
 
     NSMenu *m = [[NSMenu alloc] initWithTitle:@"AMainMenu"];
     NSMenuItem *item = [m addItemWithTitle:@"Apple" action:nil keyEquivalent:@""];
@@ -142,6 +139,9 @@ using namespace MDK_NS;
     });
     [self createWindow];
 #endif
+    [self->w setTitle:@"MDK + Cocoa Window. Set environment var 'GL_LAYER=1' to use CAOpenGLLayer"];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(resizeSurface) name:NSWindowDidResizeNotification object:nil];
+
     // close instead of hide(default)
     NSButton *closeButton = [self->w standardWindowButton:NSWindowCloseButton];
     [closeButton setTarget:self];
