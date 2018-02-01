@@ -117,6 +117,11 @@ using namespace MDK_NS;
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
     player->setMedia([filename UTF8String]);
+    // stop previous playback
+    player->setState(State::Stopped);
+    // setState() is async, wait until it's really stopped
+    player->waitFor(State::Stopped);
+    player->setState(State::Playing);
     return YES;
 }
 

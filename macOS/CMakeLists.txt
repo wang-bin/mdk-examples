@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9) # libc++
 
-option(APP_BUNDLE "Build as bundle" OFF)
+option(APP_BUNDLE "Build as bundle" ON)
 
 if(APP_BUNDLE)
   set(APP_TYPE MACOSX_BUNDLE)
@@ -26,6 +26,7 @@ add_executable(${APP_NAME} ${APP_TYPE}
   ${RESOURCES}
 )
 
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${RPATH_FLAGS} -Wl,-rpath,@executable_path/../Frameworks")
 #target_compile_options(${APP_NAME} PRIVATE  -fobjc-arc) # arc: _objc_retainAutoreleasedReturnValue is not defined in osx10.6 objc runtime. Using new libobjc on osx10.6 will result in CoreFoundation error
 # lflag -fobjc-arc/-fobjc-link-runtime: opensource clang missing libarclite_macosx.a, need link to system libarclite_macosx.a
 target_link_libraries(${APP_NAME} "-framework Cocoa" "-framework QuartzCore" "-framework OpenGL" -F/usr/local/lib "-framework mdk") # AppKit or Cocoa. "-framework QuartzCore" for CAOpenGLLayer
