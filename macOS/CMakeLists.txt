@@ -18,18 +18,22 @@ set(RESOURCES_IN MainMenu.xib.in)
 foreach(xib_in ${RESOURCES_IN})
   get_filename_component(xib_in_name ${xib_in} NAME_WE)
   configure_file(${xib_in} ${CMAKE_CURRENT_BINARY_DIR}/${xib_in_name}.xib)
+  configure_file(${xib_in} ${CMAKE_CURRENT_SOURCE_DIR}/Player/Base.lproj/${xib_in_name}.xib) # used by xcode project
   list(APPEND RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/${xib_in_name}.xib)
 endforeach()
 
 add_executable(${APP_NAME} ${APP_TYPE}
-  main.mm AppDelegate.mm AppDelegate.h
+  Player/main.mm
+  Player/AppDelegate.mm
+  Player/AppDelegate.h
   ${RESOURCES}
 )
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${RPATH_FLAGS} -Wl,-rpath,@executable_path/../Frameworks")
-#target_compile_options(${APP_NAME} PRIVATE  -fobjc-arc) # arc: _objc_retainAutoreleasedReturnValue is not defined in osx10.6 objc runtime. Using new libobjc on osx10.6 will result in CoreFoundation error
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${RPATH_FLAGS} -Wl,-rpath,@executable_path/../Frameworks -Wl,-rpath,/usr/local/lib")
+# assume mdk.framework is in current dir
+target_compile_options(${APP_NAME} PRIVATE -F${CMAKE_CURRENT_SOURCE_DIR}) # -fobjc-arc) # arc: _objc_retainAutoreleasedReturnValue is not defined in osx10.6 objc runtime. Using new libobjc on osx10.6 will result in CoreFoundation error
 # lflag -fobjc-arc/-fobjc-link-runtime: opensource clang missing libarclite_macosx.a, need link to system libarclite_macosx.a
-target_link_libraries(${APP_NAME} "-framework Cocoa" "-framework QuartzCore" "-framework OpenGL" -F/usr/local/lib "-framework mdk") # AppKit or Cocoa. "-framework QuartzCore" for CAOpenGLLayer
+target_link_libraries(${APP_NAME} "-framework Cocoa" "-framework QuartzCore" "-framework OpenGL" -F${CMAKE_CURRENT_SOURCE_DIR} -F/usr/local/lib "-framework mdk") # AppKit or Cocoa. "-framework QuartzCore" for CAOpenGLLayer
 if(APP_BUNDLE)
   target_compile_definitions(${APP_NAME} PRIVATE APP_BUNDLE)
   set_target_properties(${APP_NAME} PROPERTIES

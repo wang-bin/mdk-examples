@@ -1,5 +1,5 @@
 //  Created by WangBin on 2017/3/12.
-//  Copyright © 2017 wangbin. All rights reserved.
+//  Copyright © 2017-2018 wangbin. All rights reserved.
 
 #import "AppDelegate.h"
 #include "mdk/Player.h"
@@ -124,8 +124,8 @@ using namespace MDK_NS;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     NSArray *args = [[NSProcessInfo processInfo] arguments];
-    const int argc = [args count];
-    for (int i = 0; i < argc; ++i) {
+    const auto argc = [args count];
+    for (auto i = 0; i < argc; ++i) {
         std::string v([[args objectAtIndex:i] UTF8String]);
         if (v == "-c:v")
             player->setVideoDecoders({[[args objectAtIndex:(i+1)] UTF8String]});
