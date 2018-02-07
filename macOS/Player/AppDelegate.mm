@@ -184,4 +184,19 @@ using namespace MDK_NS;
     delete player;
     player = nullptr;
 }
+
+- (IBAction)openDocument:(id)sender {
+    NSOpenPanel * panel = [NSOpenPanel openPanel];
+    [panel setAllowsMultipleSelection:NO];
+    [panel setCanChooseDirectories:NO];
+    [panel setCanChooseFiles:YES];
+    [panel setFloatingPanel:YES];
+    NSModalResponse ret = [panel runModal];
+    if (ret == NSModalResponseCancel)
+        return;
+    player->setState(State::Stopped);
+    player->waitFor(State::Stopped);
+    player->setMedia([[[[panel URLs] objectAtIndex:0] absoluteString] UTF8String]);
+    player->setState(State::Playing);
+}
 @end
