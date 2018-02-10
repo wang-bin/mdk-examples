@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -30,12 +30,12 @@
     <ProjectGuid>{0cc6e83f-8372-4aa2-bf33-8941e0b1c734}</ProjectGuid>
     <RootNamespace>CoreWindowMDK</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.10586.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion> <!--vs2015 supports sdk<15063, see Platform.xml-->
+    <WindowsTargetPlatformMinVersion>10.0.10240.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -97,16 +97,11 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-
   <Target Name="CopyCommonAssets" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <CommonAssets Include="..\Assets\*" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(CommonAssets)"
-      DestinationFolder="Assets"
-      SkipUnchangedFiles="true"
-    />
+    <Copy SourceFiles="@(CommonAssets)" DestinationFolder="Assets" SkipUnchangedFiles="true" />
   </Target>
   <ItemGroup>
     <Image Include="Assets\LockScreenLogo.scale-200.png" />
