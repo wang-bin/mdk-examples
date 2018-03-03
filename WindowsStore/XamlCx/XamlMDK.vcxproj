@@ -58,6 +58,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <PackageCertificateKeyFile>XamlMDK_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x64|arm</AppxBundlePlatforms>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Platform)'=='ARM'">
     <Link>
@@ -113,8 +116,6 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)OpenGLES.cpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)OpenGLES.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
     <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "app.g.h"
-#include "OpenGLES.h"
 #include "openglespage.xaml.h"
 
 namespace XamlMDK
@@ -14,6 +13,5 @@ namespace XamlMDK
 
     private:
         OpenGLESPage^ mPage;
-        OpenGLES mOpenGLES;
     };
 }

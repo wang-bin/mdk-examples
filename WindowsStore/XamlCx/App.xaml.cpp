@@ -12,15 +12,11 @@ void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEvent
 {
 #if _DEBUG
     if (IsDebuggerPresent())
-    {
         DebugSettings->EnableFrameRateCounter = true;
-    }
 #endif
 
     if (mPage == nullptr)
-    {
-        mPage = ref new OpenGLESPage(&mOpenGLES);
-    }
+        mPage = ref new OpenGLESPage();
 
     // Place the page in the current window and ensure that it is active.
     Windows::UI::Xaml::Window::Current->Content = mPage;
