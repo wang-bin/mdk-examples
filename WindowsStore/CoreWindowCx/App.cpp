@@ -5,7 +5,7 @@
 #include "app.h"
 #include "mdk/Player.h"
 
-#define FOREIGN_EGL
+//#define FOREIGN_EGL
 using namespace std;
 using namespace MDK_NS;
 
@@ -95,10 +95,10 @@ void App::RecreateRenderer()
 // This method is called after the window becomes active.
 void App::Run()
 {
+#ifdef FOREIGN_EGL
 	while (!mWindowClosed) {
 		if (mWindowVisible) {
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-#ifdef FOREIGN_EGL
 			mPlayer->renderVideo();
 			// The call to eglSwapBuffers might not be successful (e.g. due to Device Lost)
 			if (eglSwapBuffers(mEglDisplay, mEglSurface) != GL_TRUE) {
@@ -106,14 +106,14 @@ void App::Run()
 				InitializeEGL(CoreWindow::GetForCurrentThread());
 				RecreateRenderer();
 			}
-#endif // FOREIGN_EGL
 		} else {
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
 		}
 	}
-#ifdef FOREIGN_EGL
 	CleanupEGL();
 #else
+	CoreWindow::GetForCurrentThread()->Activate();
+	CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessUntilQuit);
 #endif //FOREIGN_EGL
 }
 
@@ -151,7 +151,7 @@ static PropertySet^ surfaceCreationProperties = ref new PropertySet();
 void App::InitializeEGL(CoreWindow^ window)
 {
 	OutputDebugStringW(GetEnvironmentStrings());
-	SetEnvironmentVariableA("GL_MAJOR", "3");
+//	SetEnvironmentVariableA("GL_MAJOR", "3");
 	// Create a PropertySet and initialize with the EGLNativeWindowType.
 	surfaceCreationProperties->Insert(ref new String(EGLNativeWindowTypeProperty), window);
 	// You can configure the surface to render at a lower resolution and be scaled up to
