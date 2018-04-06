@@ -8,11 +8,11 @@ QT       += core gui
 CONFIG += c++11
 CONFIG -= app_bundle
 TEMPLATE = app
-INCLUDEPATH += $$PWD/mdk-sdk/include
+INCLUDEPATH += $$PWD/../mdk-sdk/include
 macx {
   LIBS += -F/usr/local/lib -framework mdk
 } else {
-  LIBS += -L$$PWD/mdk-sdk/lib -lmdk
+  LIBS += -L$$PWD/../mdk-sdk/lib -lmdk
 }
 
 SOURCES += main.cpp\
