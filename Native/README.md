@@ -1,4 +1,5 @@
-# MDK Internally Created Window
+
+mininal player with internally created window and opengl context
 
 Platforms
 
