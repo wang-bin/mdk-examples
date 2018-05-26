@@ -63,11 +63,10 @@ int main(int argc, char** argv)
         player.reset(new Player());
         if (dec)
             player->setVideoDecoders({dec});
-    if (wait <= 0)
-        player->setRenderCallback(glfwPostEmptyEvent);
-    player->setMedia(urls[nb_urls > 1 ? i : 0]);
-    player->setState(State::Playing);
-    //player->setActiveTracks(MediaType::Audio, {});
+        if (wait <= 0)
+            player->setRenderCallback(glfwPostEmptyEvent);
+        player->setMedia(urls[nb_urls > 1 ? i : 0]);
+        player->prepare();
 #if 0
 // test different context profiles and versions
         if (i >= 2 && !share) {
@@ -104,6 +103,8 @@ int main(int argc, char** argv)
         glfwSetWindowPos(win[i], 60 + col * (w + left + right), 60 + row * (h + top + bottom));
         glfwShowWindow(win[i]);
     }
+    for (auto& player : players)
+        player->setState(State::Playing);
     while (true) {
         for (int i = 0; i < nb_win; ++i) {
             auto& w = win[i];
