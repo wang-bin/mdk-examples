@@ -4,6 +4,7 @@
  */
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <cstring>
 #include <vector>
 #include "mdk/Player.h"
 using namespace MDK_NS;
@@ -20,11 +21,14 @@ int main(int argc, char** argv)
     });
     if (!glfwInit())
         exit(EXIT_FAILURE);
-
+    auto monitor = glfwGetPrimaryMonitor();
+    auto mode = glfwGetVideoMode(monitor);
+    printf("primary screen size: %dx%d\n", mode->width, mode->height);
     Player player;
     int nb_win = 4;
     float wait = 0;
     bool share = false;
+    bool es = false;
     for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "-win") == 0) {
             nb_win = atoi(argv[++i]);
@@ -34,6 +38,8 @@ int main(int argc, char** argv)
             wait = 1.0f/atoi(argv[++i]);
         } else if (strcmp(argv[i], "-share") == 0) {
             share = true;
+        } else if (strcmp(argv[i], "-es") == 0) {
+            es = true;
         }
     }
     if (wait <= 0)
@@ -42,14 +48,22 @@ int main(int argc, char** argv)
     player.setState(State::Playing);
 
     const int dim = (int)ceil(sqrt(nb_win));
-    const int w = 640, h = 360;
+    const int w =  mode->width/dim, h =  mode->height/dim;
     std::vector<GLFWwindow*> win(nb_win);
     for (int i = 0;  i < nb_win;  i++) {
+#if 0
+// test different context profiles and versions
         if (i >= 2 && !share) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+        }
+#endif
+        if (es) {
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
         }
         player.setVideoSurfaceSize(w, h);
         win[i] = glfwCreateWindow(w, h, "MDK + GLFW multi-window", nullptr, share ? win[0] : nullptr);
