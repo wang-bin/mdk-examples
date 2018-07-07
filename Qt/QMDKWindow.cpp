@@ -5,6 +5,7 @@
 #include "QMDKWindow.h"
 #include <QCoreApplication>
 #include <QKeyEvent>
+#include <QOffscreenSurface>
 #include <QStringList>
 #include <QtDebug>
 #include "mdk/Player.h"
@@ -12,7 +13,7 @@
 using namespace MDK_NS;
 QMDKWindow::QMDKWindow(QWindow *parent)
     : QOpenGLWindow(NoPartialUpdate, parent)
-    , player_(new Player())
+    , player_(std::make_shared<Player>())
 {
     setLogHandler([](LogLevel level, const char* msg){
         if (level >= std::underlying_type<LogLevel>::type(LogLevel::Info)) {
@@ -27,10 +28,7 @@ QMDKWindow::QMDKWindow(QWindow *parent)
     });
 }
 
-QMDKWindow::~QMDKWindow()
-{
-    delete player_;
-}
+QMDKWindow::~QMDKWindow() = default;
 
 void QMDKWindow::setDecoders(const QStringList &dec)
 {
@@ -78,6 +76,15 @@ qint64 QMDKWindow::position() const
 
 void QMDKWindow::initializeGL()
 {
+    auto player = player_;
+    // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
+    auto ctx = context();
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [player, ctx]{
+        QOffscreenSurface s;
+        s.create();
+        ctx->makeCurrent(&s);
+        player->destroyRenderer();
+    });
 }
 
 void QMDKWindow::resizeGL(int w, int h)

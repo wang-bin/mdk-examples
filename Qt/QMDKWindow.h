@@ -6,6 +6,7 @@
 #define QMDKWINDOW_H
 
 #include <QOpenGLWindow>
+#include <memory>
 
 namespace mdk {
 class Player;
@@ -30,10 +31,9 @@ protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
-
     void keyPressEvent(QKeyEvent *) override;
 private:
-    mdk::Player *player_;
+    std::shared_ptr<mdk::Player> player_;
 };
 
 #endif // QMDKWINDOW_H
