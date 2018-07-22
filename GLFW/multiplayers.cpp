@@ -13,8 +13,12 @@ int main(int argc, char** argv)
 {
     printf("MDK + GLFW players\n");
     if (argc < 2) {
-        printf("usage: %s [-share] [-fps int_fps] [-win win_count] [-c:v decoder] [-urls] video_url\n", argv[0]);
-        printf("-win: windows count, applied if no -urls option, assume only 1 url\n"
+        printf("usage: %s [-es] [-share] [-fps int_fps] [-win win_count] [-c:v decoder] [-urls] video_urls\n"
+            "-es: use OpenGL ES2+ instead of OpenGL\n"
+            "-share: shared OpenGL/ES contexts\n"
+            "-c:v: video decoder. can be FFmpeg, VideoToolbox, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi)\n"
+        , argv[0]);
+        printf("-win: number of windows, applied if no -urls option, assume only 1 url\n"
             "-urls: the number of windows is url count\n");
         exit(EXIT_FAILURE);
     }

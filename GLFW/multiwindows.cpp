@@ -13,7 +13,12 @@ int main(int argc, char** argv)
 {
     printf("MDK + GLFW multi-window and multi-context\n");
     if (argc < 2) {
-        printf("usage: %s [-share] [-fps int_fps] [-win win_count] [-c:v decoder] video_url\n", argv[0]);
+        printf("usage: %s [-es] [-share] [-fps int_fps] [-win win_count] [-c:v decoder] video_url\n"
+            "-es: use OpenGL ES2+ instead of OpenGL\n"
+            "-share: shared OpenGL/ES contexts\n"
+            "-win: number of windows\n"
+            "-c:v: video decoder. can be FFmpeg, VideoToolbox, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi)\n"
+        , argv[0]);
         exit(EXIT_FAILURE);
     }
     glfwSetErrorCallback([](int error, const char* description) {
@@ -29,6 +34,7 @@ int main(int argc, char** argv)
     float wait = 0;
     bool share = false;
     bool es = false;
+    bool merge = false; // merge all windows into 1 frame
     for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "-win") == 0) {
             nb_win = atoi(argv[++i]);
@@ -40,6 +46,8 @@ int main(int argc, char** argv)
             share = true;
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
+        } else if (strcmp(argv[i], "-merge") == 0) {
+            merge = true;
         }
     }
     if (wait <= 0)
@@ -65,8 +73,9 @@ int main(int argc, char** argv)
             glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
         }
-        player.setVideoSurfaceSize(w, h);
         win[i] = glfwCreateWindow(w, h, "MDK + GLFW multi-window", nullptr, share ? win[0] : nullptr);
+        player.setVideoSurfaceSize(w, h, win[i]);
+        //if (!merge) player.setVideoSurfaceSize(w, h); // this works too. unlike renderVideo in a callback, no need to set vo opaque because every window is updated
         if (!win[i]) {
             glfwTerminate();
             exit(EXIT_FAILURE);
@@ -90,7 +99,8 @@ int main(int argc, char** argv)
     while (true) {
         for (auto w : win) {
             glfwMakeContextCurrent(w);
-            player.renderVideo();
+            player.renderVideo(w);
+            // player.renderVideo(); // this works too. unlike renderVideo in a callback, no need to set vo opaque because every window is updated
             glfwSwapBuffers(w);
             if (glfwWindowShouldClose(w))
                 goto end;
