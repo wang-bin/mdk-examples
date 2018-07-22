@@ -84,6 +84,7 @@ void QMDKWindow::initializeGL()
         s.create();
         ctx->makeCurrent(&s);
         player->destroyRenderer();
+        ctx->doneCurrent();
     });
 }
 

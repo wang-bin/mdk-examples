@@ -14,7 +14,6 @@ class Player;
 class QMDKWindow : public QOpenGLWindow
 {
     Q_OBJECT
-
 public:
     QMDKWindow(QWindow *parent = Q_NULLPTR);
     ~QMDKWindow();

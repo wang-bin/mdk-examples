@@ -1,1 +1,0 @@
-mininal player with window and opengl context provided by qt QOpenGLWindow

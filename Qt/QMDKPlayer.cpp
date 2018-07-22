@@ -1,0 +1,128 @@
+/*
+ * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
+ * MDK SDK with QOpenGLWindow example
+ */
+#include "QMDKPlayer.h"
+#include <QCoreApplication>
+#include <QStringList>
+#include <QtDebug>
+#include <QRegion>
+#include "mdk/Player.h"
+
+using namespace MDK_NS;
+QMDKPlayer::QMDKPlayer(QObject *parent)
+    : QObject(parent)
+    , player_(new Player())
+{
+    setLogHandler([](LogLevel level, const char* msg){
+        if (level >= std::underlying_type<LogLevel>::type(LogLevel::Info)) {
+            qDebug() << msg;
+        } else if (level >= std::underlying_type<LogLevel>::type(LogLevel::Warning)) {
+            qWarning() << msg;
+        }
+    });
+    player_->setRenderCallback([this]{
+        std::lock_guard<std::mutex> lock(vo_mutex_);
+        for (auto vo : vo_) {
+            if (vo->inherits("QWidget")) {
+                class QUpdateLaterEvent final : public QEvent {   
+                public:
+                    explicit QUpdateLaterEvent(const QRegion& paintRegion)
+                        : QEvent(UpdateLater), m_region(paintRegion)
+                    {} 
+                    ~QUpdateLaterEvent() {}
+                    inline const QRegion &region() const { return m_region; }
+                protected:
+                    QRegion m_region;
+                };
+                QCoreApplication::instance()->postEvent(vo, new QUpdateLaterEvent(QRegion(0, 0, vo->property("width").toInt(), vo->property("height").toInt())));
+                continue;
+            }
+            if (vo->inherits("QWindow")) {
+                QCoreApplication::instance()->postEvent(vo, new QEvent(QEvent::UpdateRequest));
+                continue;
+            }
+        }
+    });
+}
+
+QMDKPlayer::~QMDKPlayer()
+{
+    for (auto vo : vo_)
+        player_->destroyRenderer(vo);
+}
+
+void QMDKPlayer::setDecoders(const QStringList &dec)
+{
+    std::vector<std::string> v;
+    foreach (QString d, dec) {
+        v.push_back(d.toStdString());
+    }
+    player_->setVideoDecoders(v);
+}
+
+void QMDKPlayer::setMedia(const QString &url)
+{
+    player_->setMedia(url.toUtf8().constData());
+}
+
+void QMDKPlayer::play()
+{
+    player_->setState(State::Playing);
+}
+
+void QMDKPlayer::pause()
+{
+    player_->setState(State::Paused);
+}
+
+void QMDKPlayer::stop()
+{
+    player_->setState(State::Stopped);
+}
+
+bool QMDKPlayer::isPaused() const
+{
+    return player_->state() == State::Paused;
+}
+
+void QMDKPlayer::seek(qint64 ms)
+{
+    player_->seek(ms);
+}
+
+qint64 QMDKPlayer::position() const
+{
+    return player_->position();
+}
+
+void QMDKPlayer::addRenderer(QObject* vo, int w, int h)
+{
+    {
+        std::lock_guard<std::mutex> lock(vo_mutex_);
+        auto v = std::find(vo_.begin(), vo_.end(), vo);
+        if (v == vo_.end())
+            vo_.push_back(vo);
+    }
+    if (w <= 0)
+        w = vo->property("width").toInt();
+    if (h <= 0)
+        h = vo->property("height").toInt();
+    player_->setVideoSurfaceSize(w, h, vo); // call update cb
+}
+
+void QMDKPlayer::renderVideo(QObject* vo)
+{
+    player_->renderVideo(vo);
+}
+
+void QMDKPlayer::removeRenderer(QObject* vo) // can not be called in QObject::destroyed slot because mutex is already destroyed then
+{
+    {
+        std::lock_guard<std::mutex> lock(vo_mutex_);
+        auto it = std::remove(vo_.begin(), vo_.end(), vo);
+        if (it != vo_.end())
+            vo_.erase(it);
+    }
+    player_->destroyRenderer(vo);
+}
