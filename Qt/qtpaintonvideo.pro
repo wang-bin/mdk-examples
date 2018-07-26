@@ -9,7 +9,7 @@ CONFIG(debug, debug|release) {
 }
 LIBS += -L$$OUT_PWD -lqtmdk
 
-SOURCES += qtmultiwidgets.cpp
+SOURCES += qtpaintonvideo.cpp
 
 mac {
   RPATHDIR *= @executable_path/Frameworks @loader_path

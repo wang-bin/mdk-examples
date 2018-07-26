@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
         return 0;
     }
     QApplication a(argc, argv);
+    //a.setAttribute(Qt::AA_UseDesktopOpenGL);
     //a.setAttribute(Qt::AA_ShareOpenGLContexts);
     QMDKPlayer player;
     QMDKWidgetRenderer w[4];
