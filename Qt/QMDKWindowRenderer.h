@@ -19,10 +19,13 @@ class Q_MDK_API QMDKWindowRenderer : public QOpenGLWindow
     Q_OBJECT
 public:
     QMDKWindowRenderer(QWindow *parent = nullptr);
-    ~QMDKWindowRenderer();
+    ~QMDKWindowRenderer() override;
     void setSource(QMDKPlayer* player);
 
 protected:
+    virtual void beforeGL() {}
+    virtual void afterGL() {}
+
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;

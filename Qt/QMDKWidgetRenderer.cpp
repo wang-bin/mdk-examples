@@ -63,5 +63,7 @@ void QMDKWidgetRenderer::paintGL()
     auto p = player_;
     if (!p)
         return;
+    beforeGL();
     p->renderVideo(this);
+    afterGL();
 }

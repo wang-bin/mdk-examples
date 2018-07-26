@@ -15,13 +15,6 @@ QMDKWindow::QMDKWindow(QWindow *parent)
     : QOpenGLWindow(NoPartialUpdate, parent)
     , player_(std::make_shared<Player>())
 {
-    setLogHandler([](LogLevel level, const char* msg){
-        if (level >= std::underlying_type<LogLevel>::type(LogLevel::Info)) {
-            qDebug() << msg;
-        } else if (level >= std::underlying_type<LogLevel>::type(LogLevel::Warning)) {
-            qWarning() << msg;
-        }
-    });
     player_->setVideoDecoders({"VideoToolbox", "VAAPI", "D3D11", "DXVA2", "MMAL", "MediaCodec", "FFmpeg"});
     player_->setRenderCallback([this]{
         QCoreApplication::instance()->postEvent(this, new QEvent(QEvent::UpdateRequest));
