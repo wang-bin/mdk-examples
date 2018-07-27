@@ -2,7 +2,7 @@
  * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
  */
 #include "QMDKPlayer.h"
-#include "QMDKWidgetRenderer.h"
+#include "QMDKRenderer.h"
 #include <QApplication>
 #include <QFont>
 #include <QOpenGLPaintDevice>

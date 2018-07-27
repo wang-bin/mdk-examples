@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
  */
-#ifndef QMDKWindowRenderer_H
-#define QMDKWindowRenderer_H
+#ifndef QMDKRenderer_H
+#define QMDKRenderer_H
 
 #include <QOpenGLWindow>
 #include <memory>
@@ -16,7 +16,6 @@ class QMDKPlayer;
 #endif
 class Q_MDK_API QMDKWindowRenderer : public QOpenGLWindow
 {
-    Q_OBJECT
 public:
     QMDKWindowRenderer(QWindow *parent = nullptr);
     ~QMDKWindowRenderer() override;
@@ -32,4 +31,25 @@ protected:
 private:
     std::shared_ptr<QMDKPlayer> player_;
 };
-#endif // QMDKWindowRenderer_H
+
+#ifdef QT_GUI_LIB
+#include <QOpenGLWidget>
+class Q_MDK_API QMDKWidgetRenderer : public QOpenGLWidget
+{
+public:
+    QMDKWidgetRenderer(QWidget *parent = nullptr);
+    ~QMDKWidgetRenderer() override;
+    void setSource(QMDKPlayer* player);
+
+protected:
+    virtual void beforeGL() {}
+    virtual void afterGL() {}
+
+    void initializeGL() override;
+    void resizeGL(int w, int h) override;
+    void paintGL() override;
+private:
+    std::shared_ptr<QMDKPlayer> player_;
+};
+#endif // QT_GUI_LIB
+#endif // QMDKRenderer_H

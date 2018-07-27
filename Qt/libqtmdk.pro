@@ -16,10 +16,10 @@ macx {
   LIBS += -L$$PWD/../mdk-sdk/lib -lmdk
 }
 
-SOURCES += QMDKWidgetRenderer.cpp QMDKWindowRenderer.cpp \
+SOURCES += QMDKRenderer.cpp \
         QMDKPlayer.cpp
 
-HEADERS  += QMDKPlayer.h QMDKWidgetRenderer.h QMDKWindowRenderer.h
+HEADERS  += QMDKPlayer.h QMDKRenderer.h
 
 mac {
   RPATHDIR *= @executable_path/Frameworks

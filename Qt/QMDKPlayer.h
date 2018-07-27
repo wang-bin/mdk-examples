@@ -12,14 +12,11 @@
 namespace mdk {
 class Player;
 }
-class QMDKRenderer;
-
 #ifndef Q_MDK_API
 #define Q_MDK_API Q_DECL_IMPORT
 #endif
 class Q_MDK_API QMDKPlayer : public QObject
 {
-    Q_OBJECT
 public:
     QMDKPlayer(QObject *parent = nullptr);
     ~QMDKPlayer();
