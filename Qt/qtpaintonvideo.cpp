@@ -11,8 +11,7 @@
 class PaintVideoWidget : public QMDKWidgetRenderer {
 protected:
     void beforeGL() override {
-        dev_.reset(new QOpenGLPaintDevice(width(), height()));
-        painter_.begin(dev_.get());
+        painter_.begin(this);
         painter_.beginNativePainting();
     }
 
@@ -25,10 +24,8 @@ protected:
         painter_.setFont(ft);
         painter_.drawText(contentsRect(), "Qt Paint on MDK OpenGL Video");
         painter_.end();
-        dev_.reset();
     }
 private:
-    std::unique_ptr<QOpenGLPaintDevice> dev_;
     QPainter painter_;
 };
 
