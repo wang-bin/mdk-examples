@@ -51,7 +51,9 @@ int main(int argc, char** argv)
         }
     }
     if (wait <= 0)
-        player.setRenderCallback(glfwPostEmptyEvent);
+        player.setRenderCallback([](void*){
+            glfwPostEmptyEvent();
+        });
     player.setMedia(argv[argc-1]);
     player.setState(State::Playing);
 

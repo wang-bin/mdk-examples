@@ -68,7 +68,9 @@ int main(int argc, char** argv)
         if (dec)
             player->setVideoDecoders({dec});
         if (wait <= 0)
-            player->setRenderCallback(glfwPostEmptyEvent);
+            player->setRenderCallback([](void*){
+                glfwPostEmptyEvent();
+            });
         player->setMedia(urls[nb_urls > 1 ? i : 0]);
         player->prepare();
 #if 0

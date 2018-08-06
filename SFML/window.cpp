@@ -54,6 +54,6 @@ int main(int argc, char** argv)
         // Finally, display the rendered frame on screen
         window.display();
     }
-    player.destroyRenderer();
+    Player::foreignGLContextDestroyed();
     return EXIT_SUCCESS;
 }

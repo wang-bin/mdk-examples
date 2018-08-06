@@ -16,7 +16,7 @@ QMDKWindow::QMDKWindow(QWindow *parent)
     , player_(std::make_shared<Player>())
 {
     player_->setVideoDecoders({"VideoToolbox", "VAAPI", "D3D11", "DXVA2", "MMAL", "MediaCodec", "FFmpeg"});
-    player_->setRenderCallback([this]{
+    player_->setRenderCallback([this](void*){
         QCoreApplication::instance()->postEvent(this, new QEvent(QEvent::UpdateRequest));
     });
 }
@@ -76,7 +76,7 @@ void QMDKWindow::initializeGL()
         QOffscreenSurface s;
         s.create();
         ctx->makeCurrent(&s);
-        player->destroyRenderer();
+        Player::foreignGLContextDestroyed();
         ctx->doneCurrent();
     });
 }
