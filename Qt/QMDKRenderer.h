@@ -32,7 +32,7 @@ private:
     std::shared_ptr<QMDKPlayer> player_;
 };
 
-#ifdef QT_GUI_LIB
+#ifdef QT_WIDGETS_LIB
 #include <QOpenGLWidget>
 class Q_MDK_API QMDKWidgetRenderer : public QOpenGLWidget
 {
@@ -49,7 +49,7 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
 private:
-    std::shared_ptr<QMDKPlayer> player_;
+    QMDKPlayer* player_ = nullptr;
 };
 #endif // QT_GUI_LIB
 #endif // QMDKRenderer_H

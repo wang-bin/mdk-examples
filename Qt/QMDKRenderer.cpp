@@ -68,7 +68,7 @@ void QMDKWindowRenderer::paintGL()
     afterGL();
 }
 
-#ifdef QT_GUI_LIB
+#ifdef QT_WIDGETS_LIB
 QMDKWidgetRenderer::QMDKWidgetRenderer(QWidget *parent)
     : QOpenGLWidget(parent)
 {
@@ -82,16 +82,13 @@ void QMDKWidgetRenderer::setSource(QMDKPlayer* player)
     if (player_) {
         player_->removeRenderer(this);
     }
-    struct NoDeleter {
-        void operator()(QMDKPlayer*) {}
-    };
-    player_.reset(player, NoDeleter());
+    player_ = player;
     if (player) {
         // should skip rendering if player object is destroyed
         connect(player, &QObject::destroyed, [this](QObject* obj){
-            auto p = static_cast<QMDKPlayer*>(obj); // why qobject_cast is null?
-            if (player_.get() == p)
-                player_.reset();
+            auto p = reinterpret_cast<QMDKPlayer*>(obj); // why qobject_cast is null? destroying and sub class dtor is finished?
+            if (player_ == p)
+                player_ = nullptr;
         });
     }
 }
@@ -111,19 +108,17 @@ void QMDKWidgetRenderer::initializeGL()
 
 void QMDKWidgetRenderer::resizeGL(int w, int h)
 {
-    auto p = player_;
-    if (!p)
+    if (!player_) // TODO: not safe. lock? but if player qobject is destroying, player dtor is finished. use true shared_ptr?
         return;
-    p->addRenderer(this, w, h);
+    player_->addRenderer(this, w, h);
 }
 
 void QMDKWidgetRenderer::paintGL()
 {
-    auto p = player_;
-    if (!p)
+    if (!player_) // safe, if player is destroyed, no update callback
         return;
     beforeGL();
-    p->renderVideo(this);
+    player_->renderVideo(this);
     afterGL();
 }
-#endif // QT_GUI_LIB
+#endif // QT_WIDGETS_LIB
