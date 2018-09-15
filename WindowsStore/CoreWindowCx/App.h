@@ -28,7 +28,6 @@ namespace CoreWindowMDK
         // Window event handlers.
         void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
         void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args);
-		void OnSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args);
 
         void InitializeEGL(Windows::UI::Core::CoreWindow^ window);
         void CleanupEGL();

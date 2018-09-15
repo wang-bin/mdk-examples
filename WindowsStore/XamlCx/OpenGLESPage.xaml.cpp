@@ -20,7 +20,6 @@ OpenGLESPage::OpenGLESPage() :
 {
     InitializeComponent();
 
-	swapChainPanel->SizeChanged += ref new Windows::UI::Xaml::SizeChangedEventHandler(this, &OpenGLESPage::OnSizeChanged);
 	Windows::UI::Core::CoreWindow^ window = Windows::UI::Xaml::Window::Current->CoreWindow;
     window->VisibilityChanged += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Core::CoreWindow^, Windows::UI::Core::VisibilityChangedEventArgs^>(this, &OpenGLESPage::OnVisibilityChanged);
     this->Loaded += ref new Windows::UI::Xaml::RoutedEventHandler(this, &OpenGLESPage::OnPageLoaded);
@@ -35,16 +34,10 @@ void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::Rou
 {
     // The SwapChainPanel has been created and arranged in the page layout, so EGL can be initialized.
 	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(swapChainPanel));// reinterpret_cast<IInspectable*>(window));
-	mPlayer->setVideoSurfaceSize(swapChainPanel->Width, swapChainPanel->Height);
+	//mPlayer->setVideoSurfaceSize(swapChainPanel->Width, swapChainPanel->Height); // FIXME: why invalid size?
 	mPlayer->setVideoDecoders({ "D3D11", "FFmpeg" });
 	mPlayer->setMedia("rtmp://live.hkstv.hk.lxdns.com/live/hks");
 	mPlayer->setState(PlaybackState::Playing);
-}
-
-void OpenGLESPage::OnSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e)
-{
-	// swapChainPanel size is already in pixels
-	mPlayer->setVideoSurfaceSize(e->NewSize.Width, e->NewSize.Height);
 }
 
 void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args)

@@ -15,19 +15,10 @@ using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
-using namespace Windows::Graphics::Display;
 using namespace Microsoft::WRL;
 using namespace Platform;
 
 using namespace CoreWindowMDK;
-
-// Helper to convert a length in device-independent pixels (DIPs) to a length in physical pixels.
-inline float ConvertDipsToPixels(float dips)
-{
-	const float dpi = Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->LogicalDpi;
-	static const float dipsPerInch = 96.0f;
-	return floor(dips * dpi / dipsPerInch + 0.5f); // Round to nearest integer.
-}
 
 // Implementation of the IFrameworkViewSource interface, necessary to run our app.
 ref class SimpleApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
@@ -77,7 +68,6 @@ void App::SetWindow(CoreWindow^ window)
 {
 	window->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &App::OnVisibilityChanged);
 	window->Closed += ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
-	window->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &App::OnSizeChanged);
 	// The CoreWindow has been created, so EGL can be initialized.
 	InitializeEGL(window);
 }
@@ -141,17 +131,12 @@ void App::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 	mWindowClosed = true;
 }
 
-void App::OnSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
-{
-	// back buffer size: dpi=>pix
-	mPlayer->setVideoSurfaceSize(ConvertDipsToPixels(args->Size.Width), ConvertDipsToPixels(args->Size.Height));
-}
-
 static PropertySet^ surfaceCreationProperties = ref new PropertySet();
 void App::InitializeEGL(CoreWindow^ window)
 {
 	OutputDebugStringW(GetEnvironmentStrings());
 //	SetEnvironmentVariableA("GL_MAJOR", "3");
+	//SetEnvironmentVariableA("D3D11_EGL", "pbuf");
 	// Create a PropertySet and initialize with the EGLNativeWindowType.
 	surfaceCreationProperties->Insert(ref new String(EGLNativeWindowTypeProperty), window);
 	// You can configure the surface to render at a lower resolution and be scaled up to
@@ -205,7 +190,6 @@ void App::InitializeEGL(CoreWindow^ window)
 	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(surfaceCreationProperties));// reinterpret_cast<IInspectable*>(window));
 	//mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(window));
 #endif //FOREIGN_EGL
-	mPlayer->setVideoSurfaceSize(ConvertDipsToPixels(window->Bounds.Width), ConvertDipsToPixels(window->Bounds.Height));
 	mPlayer->setVideoDecoders({ "D3D11", "FFmpeg" });
 	mPlayer->setMedia("rtmp://live.hkstv.hk.lxdns.com/live/hks");
 	mPlayer->setState(PlaybackState::Playing);
