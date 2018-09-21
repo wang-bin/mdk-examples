@@ -12,7 +12,8 @@ namespace XamlMDK
     private:
 		void OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 		void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
-
+		void OnPanelSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e);
+		void OnModeSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e);
 		std::unique_ptr<MDK_NS::Player> mPlayer;
 	};
 }

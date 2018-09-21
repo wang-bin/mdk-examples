@@ -32,9 +32,7 @@ OpenGLESPage::~OpenGLESPage()
 
 void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-    // The SwapChainPanel has been created and arranged in the page layout, so EGL can be initialized.
-	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(swapChainPanel));// reinterpret_cast<IInspectable*>(window));
-	//mPlayer->setVideoSurfaceSize(swapChainPanel->Width, swapChainPanel->Height); // FIXME: why invalid size?
+	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(swapChainPanel_0));
 	mPlayer->setVideoDecoders({ "D3D11", "FFmpeg" });
 	mPlayer->setMedia("rtmp://live.hkstv.hk.lxdns.com/live/hks");
 	mPlayer->setState(PlaybackState::Playing);
@@ -46,4 +44,19 @@ void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Wi
         mPlayer->setState(State::Playing); //
     else
         mPlayer->setState(State::Paused);
+}
+
+void OpenGLESPage::OnPanelSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e)
+{
+	auto panel = safe_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(sender);
+	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(panel));
+}
+
+void OpenGLESPage::OnModeSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e)
+{
+	auto box = safe_cast<Windows::UI::Xaml::Controls::ComboBox^>(sender);
+	const auto vis = box->SelectedIndex == 0 ? Windows::UI::Xaml::Visibility::Collapsed : Windows::UI::Xaml::Visibility::Visible;
+	if (!swapChainPanel_1)
+		return;
+	swapChainPanel_1->Visibility = vis;
 }
