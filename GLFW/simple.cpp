@@ -12,38 +12,42 @@
 #if _WIN32
 #include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
+#elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+#define GLFW_EXPOSE_NATIVE_COCOA
+#elif defined(__linux__)
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
+#include <GLFW/glfw3native.h>
 
 using namespace MDK_NS;
 
-Player player;
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
     if (action != GLFW_PRESS)
         return;
+    auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
     switch (key) {
         case GLFW_KEY_SPACE:
-            player.setState(player.state() == State::Playing ? State::Paused : State::Playing);
+            p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
             break;  
         case GLFW_KEY_RIGHT:
-            player.seek(player.position()+10000);
+            p->seek(p->position()+10000);
             break;
         case GLFW_KEY_LEFT:
-            player.seek(player.position()-10000);
+            p->seek(p->position()-10000);
             break;
         case GLFW_KEY_F: {
-            if (glfwGetWindowMonitor(window)) {
-                glfwSetWindowMonitor(window, nullptr, 0, 0, 1920, 1080, 60);
-                glfwMaximizeWindow(window);
+            if (glfwGetWindowMonitor(win)) {
+                glfwSetWindowMonitor(win, nullptr, 0, 0, 1920, 1080, 60);
+                glfwMaximizeWindow(win);
             } else {
-                glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, 1920, 1080, 60);
+                glfwSetWindowMonitor(win, glfwGetPrimaryMonitor(), 0, 0, 1920, 1080, 60);
             }
             break;
         }
         case GLFW_KEY_Q:
-            glfwDestroyWindow(window);
+            glfwDestroyWindow(win);
             break;
         default:
             break;
@@ -58,7 +62,7 @@ int main(int argc, char** argv)
             "-c:v: video decoder. can be FFmpeg, VideoToolbox, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi)\n"
             "-ao: audio renderer. OpenAL, DSound, XAudio2, ALSA, AudioQueue\n"
             "-from: start from given seconds\n"
-            "-gfxthread: create gfx(rendering) context and thread by mdk instead of GLFW. -fps does not work"
+            "-gfxthread: create gfx(rendering) context and thread by mdk instead of GLFW. -fps does not work\n"
             // TODO: display env vars
         , argv[0]);
         exit(EXIT_FAILURE);
@@ -69,6 +73,7 @@ int main(int argc, char** argv)
     int url_now = 0;
     int from = 0;
     float wait = 0;
+    Player player;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-c:v") == 0) {
             player.setVideoDecoders({argv[++i]});
@@ -121,10 +126,12 @@ int main(int argc, char** argv)
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
+    glfwSetWindowUserPointer(win, &player);
     glfwSetKeyCallback(win, key_callback);
 
-    glfwSetWindowSizeCallback(win, [](GLFWwindow*, int w,int h){
-        player.setVideoSurfaceSize(w, h);
+    glfwSetWindowSizeCallback(win, [](GLFWwindow* win, int w,int h){
+        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        p->setVideoSurfaceSize(w, h);
     });
     glfwShowWindow(win);
 
@@ -137,21 +144,25 @@ int main(int argc, char** argv)
     });
     player.setState(State::Playing);
 
-#if _WIN32
     if (gfxthread) {
-        _putenv(std::string("GL_EGL=").append(std::to_string(es)).data()); // for getenv()
+#if defined(_WIN32)
+        _putenv(std::string("GL_EGL=").append(std::to_string(es)).data()); // for getenv(), can not use SetEnvironmentVariable. _putenv_s(name, value)
         auto hwnd = glfwGetWin32Window(win);
-        player.updateNativeWindow(hwnd);
-        player.showWindow();
-        std::clog << "exiting..." << std::endl;
-        exit(EXIT_SUCCESS);
-    }
+#elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+        putenv((char*)std::string("GL_EGL=").append(std::to_string(es)).data()); // for getenv()
+        auto hwnd = glfwGetCocoaWindow(win);
 #endif
+        player.updateNativeWindow(hwnd);
+        //player.showWindow(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
+        //exit(EXIT_SUCCESS);
+    }
 
     while (!glfwWindowShouldClose(win)) {
-        glfwMakeContextCurrent(win);
-        player.renderVideo();
-        glfwSwapBuffers(win);
+        if (!gfxthread) {
+            glfwMakeContextCurrent(win);
+            player.renderVideo();
+            glfwSwapBuffers(win);
+        }
         //glfwWaitEventsTimeout(0.04); // if player.setRenderCallback() is not called, render at 25fps
         if (wait > 0)
             glfwWaitEventsTimeout(wait);
