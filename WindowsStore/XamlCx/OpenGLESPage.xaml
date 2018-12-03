@@ -13,13 +13,16 @@
             <ComboBoxItem Content = "1 Player 1 Renderer" IsSelected="True"/>
             <ComboBoxItem Content = "1 Player Switchable Renderers"/>
         </ComboBox>
+        <Button Click="OnSelectFiles">
+            <TextBlock Text="Open Files" VerticalAlignment="Center" />
+        </Button>
         <VariableSizedWrapGrid Background="Gray" ItemWidth="720" ItemHeight="400" Orientation="Horizontal">
-            <SwapChainPanel x:Name="swapChainPanel_0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnPanelSelected">
-                <TextBlock Text="Surface 1&#13;Double click to render here" Foreground="Red" FontSize="20" HorizontalAlignment="Center"/>
-            </SwapChainPanel>
-            <SwapChainPanel x:Name="swapChainPanel_1" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnPanelSelected">
-                <TextBlock Text="Surface 2&#13;Double click to render here" Foreground="Blue" HorizontalAlignment="Center" FontSize="20"/>
-            </SwapChainPanel>
-        </VariableSizedWrapGrid>
+                <SwapChainPanel x:Name="swapChainPanel_0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnPanelSelected">
+                    <TextBlock Text="Surface 1&#13;Double click to render here" Foreground="Red" FontSize="20" HorizontalAlignment="Center"/>
+                </SwapChainPanel>
+                <SwapChainPanel x:Name="swapChainPanel_1" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnPanelSelected">
+                    <TextBlock Text="Surface 2&#13;Double click to render here" Foreground="Blue" HorizontalAlignment="Center" FontSize="20"/>
+                </SwapChainPanel>
+            </VariableSizedWrapGrid>
     </StackPanel>
 </Page>
