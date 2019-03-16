@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2019 WangBin <wbsecg1 at gmail.com>
  */
 #include "QMDKRenderer.h"
 #include "QMDKPlayer.h"
@@ -20,9 +20,6 @@ QMDKWindowRenderer::~QMDKWindowRenderer() = default;
 void QMDKWindowRenderer::setSource(QMDKPlayer* player)
 {
     player->addRenderer(this);
-    if (player_) {
-        player_->removeRenderer(this);
-    }
     struct NoDeleter {
         void operator()(QMDKPlayer*) {}
     };
@@ -79,9 +76,6 @@ QMDKWidgetRenderer::~QMDKWidgetRenderer() = default;
 void QMDKWidgetRenderer::setSource(QMDKPlayer* player)
 {
     player->addRenderer(this);
-    if (player_) {
-        player_->removeRenderer(this);
-    }
     player_ = player;
     if (player) {
         // should skip rendering if player object is destroyed

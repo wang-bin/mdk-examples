@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2019 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKPlayer.h"
@@ -42,11 +42,7 @@ QMDKPlayer::QMDKPlayer(QObject *parent)
     });
 }
 
-QMDKPlayer::~QMDKPlayer()
-{
-    for (auto vo : vo_)
-        player_->destroyRenderer(vo);
-}
+QMDKPlayer::~QMDKPlayer() = default;
 
 void QMDKPlayer::setDecoders(const QStringList &dec)
 {
@@ -94,9 +90,6 @@ qint64 QMDKPlayer::position() const
 
 void QMDKPlayer::addRenderer(QObject* vo, int w, int h)
 {
-    auto v = std::find(vo_.begin(), vo_.end(), vo);
-    if (v == vo_.end())
-        vo_.push_back(vo);
     if (w <= 0)
         w = vo->property("width").toInt();
     if (h <= 0)
@@ -107,12 +100,4 @@ void QMDKPlayer::addRenderer(QObject* vo, int w, int h)
 void QMDKPlayer::renderVideo(QObject* vo)
 {
     player_->renderVideo(vo);
-}
-
-void QMDKPlayer::removeRenderer(QObject* vo) // can not be called in QObject::destroyed slot because mutex is already destroyed then
-{
-    auto it = std::remove(vo_.begin(), vo_.end(), vo);
-    if (it != vo_.end())
-        vo_.erase(it);
-    player_->destroyRenderer(vo);
 }
