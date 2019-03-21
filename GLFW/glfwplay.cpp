@@ -3,7 +3,7 @@
  * Copyright (c) 2016-2019 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
-#include "mdk/Player.h"
+#include "mdk/cpp/Player.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -65,19 +65,21 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             }
             break;
         }
+        case GLFW_KEY_O:
+            static int angle = 0;
+            p->rotate(angle+=90);
+            break;
         case GLFW_KEY_Q:
-            glfwDestroyWindow(win);
-            glfwSetWindowShouldClose(win, 1); // required by x11
+            glfwSetWindowShouldClose(win, 1);
             break;
         default:
             break;
     }
 }
 
-int main(int argc, char** argv)
+void showHelp(const char* argv0)
 {
-    if (argc < 2) {
-        printf("usage: %s [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
+    printf("usage: %s [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
             "-es: use OpenGL ES2+ instead of OpenGL\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
@@ -89,6 +91,7 @@ int main(int argc, char** argv)
             "-gfxthread: create gfx(rendering) context and thread by mdk instead of GLFW. -fps does not work\n"
             "-buffer: buffer duration range in milliseconds, can be 'minMs', 'minMs+maxMs', e.g. -buffer 1000, or -buffer 1000+2000"
             "-buffer_drop: drop buffered data when buffered duration exceed max buffer duration. useful for playing realtime streams, e.g. -buffer 0+1000 -buffer_drop to ensure delay < 1s"
+            "-autoclose: close when stopped" // TODO: check image or video
             "Keys:\n"
             "space: pause/resume\n"
             "left/right: seek backward/forward (-/+10s)\n"
@@ -97,14 +100,17 @@ int main(int argc, char** argv)
             "F: fullscreen\n"
             "Q: quit\n"
             // TODO: display env vars
-        , argv[0]);
-        exit(EXIT_FAILURE);
-    }
+        , argv0);
+}
 
+int url_now = 0;
+std::vector<std::string> urls;
+int main(int argc, char** argv)
+{
+    bool help = argc < 2;
     bool es = false;
     bool gfxthread = false;
-    int url_idx = 0;
-    int url_now = 0;
+    bool autoclose = false;
     int from = 0;
     float wait = 0;
     int64_t buf_min = 4000;
@@ -137,17 +143,25 @@ int main(int argc, char** argv)
                 buf_max = strtoll(s, nullptr, 10);
         } else if (std::strcmp(argv[i], "-buffer_drop") == 0) {
             buf_drop = true;
+        } else if (std::strcmp(argv[i], "-autoclose") == 0) {
+            autoclose = true;
+        } else if (argv[i][0] == '-') {
+            printf("Unknow option: %s\n", argv[i]);
+            help = true;
         } else {
-            url_now = url_idx = i;
+            for (int j = i; j < argc; ++j)
+                urls.emplace_back(argv[j]);
             break;
         }
     }
+    if (help)
+        showHelp(argv[0]);
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
     player.currentMediaChanged([&]{
-        printf("currentMediaChanged %d/%d, now: %s\n", url_now-url_idx, argc-url_idx, player.url());fflush(stdout);
-        if (argc > url_now+1) {
-            player.setNextMedia(argv[++url_now]); // safe to use ref to player
+        std::printf("currentMediaChanged %d/%d, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
+        if (urls.size() > url_now+1) {
+            player.setNextMedia(urls[++url_now].data()); // safe to use ref to player
             // alternatively, you can create a custom event
         }
     });
@@ -157,7 +171,7 @@ int main(int argc, char** argv)
         fflush(stdout);
         return true;
     });
-    player.addListener([](const MediaEvent& e){
+    player.onEvent([](const MediaEvent& e){
         printf("MediaEvent: %s %s %" PRId64 "......\n", e.category.data(), e.detail.data(), e.error);
         return false;
     });
@@ -177,7 +191,7 @@ int main(int argc, char** argv)
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     }
     const int w = 640, h = 480;
-    GLFWwindow *win = glfwCreateWindow(w, h, "MDK + GLFW", nullptr, nullptr);
+    GLFWwindow *win = glfwCreateWindow(w, h, "MDK + GLFW. Drop videos here", nullptr, nullptr);
     if (!win) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -189,12 +203,31 @@ int main(int argc, char** argv)
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         p->setVideoSurfaceSize(w, h);
     });
+    glfwSetScrollCallback(win, [](GLFWwindow* win, double dx, double dy){
+        //std::printf("scroll: %.03f, %.04f\n", dx, dy);fflush(stdout);
+        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        static float s = 1.0f;
+        s += dy/5.0f;
+        p->scale(s, s);
+    });
+    glfwSetDropCallback(win, [](GLFWwindow* win, int count, const char** files){
+        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        p->setState(State::Stopped);
+        p->waitFor(State::Stopped);
+        urls.clear();
+        for (int i = 0; i < count; ++i)
+            urls.emplace_back(files[i]);
+        url_now = 0;
+        p->setMedia(nullptr); // 1st url may be the same as current url
+        p->setMedia(urls[url_now].data());
+        p->setState(State::Playing);
+    });
     glfwShowWindow(win);
 #if defined(GLFW_EXPOSE_NATIVE_X11)
     setNativeDisplay(glfwGetX11Display());
 #endif
-    player.onStateChanged([win](State s){
-        if (s == State::Stopped) {
+    player.onStateChanged([=](State s){
+        if (s == State::Stopped && autoclose) {
             glfwSetWindowShouldClose(win, 1);
             glfwPostEmptyEvent();
         }
@@ -202,7 +235,8 @@ int main(int argc, char** argv)
     player.setPreloadImmediately(false); // MUST set before setMedia() because setNextMedia() is called when media is changed
     player.setVideoSurfaceSize(w, h);
     //player.setPlaybackRate(2.0f);
-    player.setMedia(argv[url_now]);
+    if (!urls.empty())
+        player.setMedia(urls[url_now].data());
     if (urla) {
         player.setMedia(urla, MediaType::Audio);
     }
