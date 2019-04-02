@@ -152,7 +152,7 @@ int main(int argc, char** argv)
         putenv((char*)std::string("GL_EGL=").append(std::to_string(es)).data()); // for getenv()
         auto hwnd = glfwGetCocoaWindow(win);
 #endif
-        player.updateNativeWindow(hwnd);
+        player.updateNativeSurface(hwnd);
         //player.showWindow(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);
     }

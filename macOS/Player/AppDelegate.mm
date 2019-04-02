@@ -1,5 +1,4 @@
-//  Created by WangBin on 2017/3/12.
-//  Copyright © 2017-2018 wangbin. All rights reserved.
+//  Copyright © 2017-2019 wangbin. All rights reserved.
 
 #import "AppDelegate.h"
 #include "mdk/Player.h"
@@ -157,7 +156,7 @@ using namespace MDK_NS;
     if (layer != nil) {
         [view setLayer:layer];
     } else {
-        player->updateNativeWindow((__bridge void *)view);
+        player->updateNativeSurface((__bridge void *)view);
     }
     player->setVideoSurfaceSize(view.bounds.size.width, view.bounds.size.height);
     if (argc > 1) {

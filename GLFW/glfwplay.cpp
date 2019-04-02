@@ -267,8 +267,8 @@ int main(int argc, char** argv)
         auto hwnd = glfwGetX11Window(win);
         surface_type = MDK_NS::Player::SurfaceType::X11;
 #endif
-        player.updateNativeWindow((void*)hwnd, -1, -1, surface_type);
-        //player.showWindow(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
+        player.updateNativeSurface((void*)hwnd, -1, -1, surface_type);
+        //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);
     }
 

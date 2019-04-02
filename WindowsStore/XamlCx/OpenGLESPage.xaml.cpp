@@ -41,8 +41,8 @@ OpenGLESPage::~OpenGLESPage()
 void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
 
-	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(swapChainPanel_0));
-	mPlayer->setVideoDecoders({ "MFT:d3d=11", "D3D11", "FFmpeg" });
+	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(swapChainPanel_0));
+    mPlayer->setVideoDecoders({ "MFT:d3d=11", "D3D11", "FFmpeg" });
     mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
 }
 
@@ -57,7 +57,7 @@ void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Wi
 void OpenGLESPage::OnPanelSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e)
 {
 	auto panel = safe_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(sender);
-	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(panel));
+	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(panel));
 }
 
 void OpenGLESPage::OnModeSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e)

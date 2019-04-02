@@ -1,4 +1,6 @@
 # vs
+.vs
+.vscode/ipch
 packages
 Release
 Debug

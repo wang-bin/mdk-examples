@@ -187,8 +187,8 @@ void App::InitializeEGL(CoreWindow^ window)
 			throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
 	}
 #else
-	mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(surfaceCreationProperties));// reinterpret_cast<IInspectable*>(window));
-	//mPlayer->updateNativeWindow(reinterpret_cast<IInspectable*>(window));
+	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(surfaceCreationProperties));// reinterpret_cast<IInspectable*>(window));
+	//mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(window));
 #endif //FOREIGN_EGL
 	mPlayer->setVideoDecoders({ "D3D11", "FFmpeg" });
 	mPlayer->setMedia("rtmp://live.hkstv.hk.lxdns.com/live/hks");

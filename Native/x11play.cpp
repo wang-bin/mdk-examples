@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2017-2019 WangBin <wbsecg1 at gmail.com>
  */
 #include <cassert>
 extern "C" {
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     MDK_NS::Player player;
     if (cv)
         player.setVideoDecoders({cv});
-    player.updateNativeWindow((void*)win, -1, -1, MDK_NS::Player::SurfaceType::X11);
+    player.updateNativeSurface((void*)win, -1, -1, MDK_NS::Player::SurfaceType::X11);
     player.setVideoSurfaceSize(800, 450);
     player.setMedia(argv[argc-1]);
     player.setState(MDK_NS::State::Playing);
