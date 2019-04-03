@@ -10,12 +10,12 @@ macx {
   LIBS += -L$$PWD/../mdk-sdk/lib -lmdk
 }
 
-SOURCES += qmdkqmlplay.cpp\
-           mdkplayer.cpp
+SOURCES += $$PWD/qml/qmdkqmlplay.cpp\
+           $$PWD/qml/mdkplayer.cpp
 
-HEADERS  += mdkplayer.h
+HEADERS  += $$PWD/qml/mdkplayer.h
 
-RESOURCES += qmdkqmlplay.qrc
+RESOURCES += $$PWD/qml/qmdkqmlplay.qrc
 
 mac {
   RPATHDIR *= @executable_path/Frameworks
