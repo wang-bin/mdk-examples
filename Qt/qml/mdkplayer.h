@@ -4,7 +4,7 @@
 #include <QQuickFramebufferObject>
 #include <QOpenGLFramebufferObject>
 #include <QDebug>
-#include "Player.h"
+#include "mdk/Player.h"
 
 using namespace MDK_NS;
 
