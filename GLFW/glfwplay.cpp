@@ -3,7 +3,7 @@
  * Copyright (c) 2016-2019 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
-#include "mdk/cpp/Player.h"
+#include "mdk/Player.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -21,6 +21,13 @@
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
 #include <GLFW/glfw3native.h>
+#ifdef __has_include
+# if __has_include("stb_image_write.h")
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_STATIC
+#   include "stb_image_write.h"
+# endif
+#endif
 
 using namespace MDK_NS;
 
@@ -41,9 +48,33 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         return;
     auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
     switch (key) {
+        case GLFW_KEY_C: {
+            Player::SnapshotRequest req{};
+            p->snapshot(&req, [](Player::SnapshotRequest* ret){
+                static int i = 0;
+#ifdef INCLUDE_STB_IMAGE_WRITE_H
+                stbi_write_jpg(std::to_string(i++).append(".jpg").data(), ret->width, ret->height, 4, ret->data, 80);
+#endif
+            });
+        }
+            break;
+        case GLFW_KEY_D: {
+            static const char* decs[] = {"FFmpeg",
+#if defined(__APPLE__)
+                "VT", "VideoToolbox",
+#elif defined(_WIN32)
+                "MFT:d3d=11", "MFT:d3d=9", "MFT", "D3D11", "DXVA", "CUDA", "NVDEC"
+#elif defined(__linux__)
+                "VAAPI", "VDPAU", "CUDA", "NVDEC"
+#endif
+            };
+            static int d = 0;
+            p->setVideoDecoders({decs[++d%std::size(decs)]});
+        }
+            break;
         case GLFW_KEY_SPACE:
             p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
-            break;  
+            break;
         case GLFW_KEY_RIGHT:
             p->seek(p->position()+10000);
             break;
@@ -65,12 +96,16 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             }
             break;
         }
-        case GLFW_KEY_O:
+        case GLFW_KEY_O: {
             static int angle = 0;
             p->rotate(angle+=90);
+        }
             break;
         case GLFW_KEY_Q:
             glfwSetWindowShouldClose(win, 1);
+            break;
+        case GLFW_KEY_R:
+            p->record("mdk-record.mkv");                
             break;
         default:
             break;
@@ -207,17 +242,18 @@ int main(int argc, char** argv)
         //std::printf("scroll: %.03f, %.04f\n", dx, dy);fflush(stdout);
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         static float s = 1.0f;
-        s += dy/5.0f;
+        s += (float)dy/5.0f;
         p->scale(s, s);
     });
     glfwSetDropCallback(win, [](GLFWwindow* win, int count, const char** files){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        p->setNextMedia(nullptr);
         p->setState(State::Stopped);
-        p->waitFor(State::Stopped);
         urls.clear();
         for (int i = 0; i < count; ++i)
             urls.emplace_back(files[i]);
         url_now = 0;
+        p->waitFor(State::Stopped);
         p->setMedia(nullptr); // 1st url may be the same as current url
         p->setMedia(urls[url_now].data());
         p->setState(State::Playing);
@@ -251,8 +287,9 @@ int main(int argc, char** argv)
         player.setAudioDecoders({first, last});
     }
 
-    player.prepare(from*1000LL, [](int64_t t, bool*) {
+    player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
         std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
+        //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
     });
     player.setState(State::Playing);
 
