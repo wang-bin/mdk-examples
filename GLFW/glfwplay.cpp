@@ -59,7 +59,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         }
             break;
         case GLFW_KEY_D: {
-            static const char* decs[] = {"FFmpeg",
+            static const char* decs[] = {"FFmpeg", "NullTest",
 #if defined(__APPLE__)
                 "VT", "VideoToolbox",
 #elif defined(_WIN32)
@@ -126,6 +126,9 @@ void showHelp(const char* argv0)
             "-gfxthread: create gfx(rendering) context and thread by mdk instead of GLFW. -fps does not work\n"
             "-buffer: buffer duration range in milliseconds, can be 'minMs', 'minMs+maxMs', e.g. -buffer 1000, or -buffer 1000+2000"
             "-buffer_drop: drop buffered data when buffered duration exceed max buffer duration. useful for playing realtime streams, e.g. -buffer 0+1000 -buffer_drop to ensure delay < 1s"
+            "-loop-a: A-B loop A\n"
+            "-loop-b: A-B loop B. -1 means end of media\n"
+            "-loop: A-B loop repeat count\n"
             "-autoclose: close when stopped" // TODO: check image or video
             "Keys:\n"
             "space: pause/resume\n"
@@ -150,6 +153,9 @@ int main(int argc, char** argv)
     float wait = 0;
     int64_t buf_min = 4000;
     int64_t buf_max = 16000;
+    int loop = 0;
+    int64_t loop_a = 0;
+    int64_t loop_b = 0;
     bool buf_drop = false;
     const char* urla = nullptr;
     std::string ca, cv;
@@ -178,6 +184,12 @@ int main(int argc, char** argv)
                 buf_max = strtoll(s, nullptr, 10);
         } else if (std::strcmp(argv[i], "-buffer_drop") == 0) {
             buf_drop = true;
+        } else if (std::strcmp(argv[i], "-loop-a") == 0) {
+            loop_a = atoll(argv[++i]);
+        } else if (std::strcmp(argv[i], "-loop-b") == 0) {
+            loop_b = atoll(argv[++i]);
+        } else if (std::strcmp(argv[i], "-loop") == 0) {
+            loop = atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-autoclose") == 0) {
             autoclose = true;
         } else if (argv[i][0] == '-') {
@@ -193,6 +205,8 @@ int main(int argc, char** argv)
         showHelp(argv[0]);
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
+    if (loop > 0 && (loop_b < 0 || loop_b > loop_a) && loop_a > 0)
+        player.setLoop(loop, loop_a, loop_b);
     player.currentMediaChanged([&]{
         std::printf("currentMediaChanged %d/%d, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
         if (urls.size() > url_now+1) {
