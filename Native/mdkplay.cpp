@@ -1,9 +1,15 @@
+#include "mdk/Player.h"
 #include <cstring>
 #include <cstdio>
 #include <regex>
-#include <mdk/Player.h>
 #include <string_view>
 #include <unordered_map>
+#include <iostream>
+#if 0//def _WIN32
+#include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#endif
 
 using namespace MDK_NS;
 using namespace std;
@@ -72,8 +78,16 @@ int main(int argc, char *argv[])
         return false;
     });
 
+#if 0//def _WIN32
+    if (!glfwInit())
+        return -1;
+    GLFWwindow* win = glfwCreateWindow(w, h, "MDK + GLFW", nullptr, nullptr);
+    HWND hwnd = glfwGetWin32Window(win);
+    p.updateNativeSurface(hwnd);
+#else
     p.createSurface(nullptr, surface_type(surface)); // "x11", "wayland" ...s
     p.resizeSurface(w, h); 
+#endif 
     p.currentMediaChanged([&]{
         printf("currentMediaChanged %d/%d, now: %s\n", url_now-url_index, argc-url_index, p.url());fflush(stdout);
         if (argc > url_now+1)
@@ -89,6 +103,15 @@ int main(int argc, char *argv[])
             std::cout << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
         });
     p.setState(State::Playing);
+#if 0//def _WIN32
+    while (true) {
+        if (glfwWindowShouldClose(win))
+            break;
+        glfwWaitEvents();
+    }
+    glfwTerminate();
+    return 0;
+#endif
     p.showSurface(); // TODO: no internal event loop for a foreign hwnd
     return 0;
 }

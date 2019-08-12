@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <iostream>
 #include <cstdlib> // atoi
+#include <cstring>
 using namespace MDK_NS;
 #undef main
 
@@ -28,6 +29,8 @@ int main(int argc, char *argv[])
     SDL_Window *window = SDL_CreateWindow("MDK player with OpenGL Rendering", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                         800, 500, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_GL_CreateContext(window);
+    //setLogHandler(nullptr);
+    //setLogHandler(nullptr);
     int url_index = 1;
     int from = 0;
     const char* cv = nullptr;
@@ -65,12 +68,12 @@ int main(int argc, char *argv[])
     });
     player.onMediaStatusChanged([](MediaStatus s){
         //MediaStatus s = player.mediaStatus();
-        printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n", s, s&LoadingMedia, s&BufferingMedia, s&PreparedMedia, s&EndOfMedia);
+        printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Loading, s&MediaStatus::Buffering, s&MediaStatus::Prepared, s&MediaStatus::End);
         return true;
     });
+    //player.setPreloadImmediately(false); // MUST set before setMedia() because setNextMedia() is called when media is changed
     player.setMedia(argv[url_index]);
-    //player.setPreloadImmediately(false);
-    player.prepare(from*1000LL, [](int64_t t, bool*) {
+    player.prepare(from*int64_t(TimeScaleForInt), [](int64_t t, bool*) {
         std::cout << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
     });
     
@@ -81,15 +84,16 @@ int main(int argc, char *argv[])
     int w = 1920, h = 1080;
     player.setVideoSurfaceSize(1920, 1080); // ensure surface size is valid when rendering 1st frame (expose event may be too late)
     const Uint32 update_event = SDL_USEREVENT+1;//SDL_RegisterEvents(SDL_USEREVENT+1);
-    player.setRenderCallback([update_event](void*){
+    player.setRenderCallback([](void*){
         SDL_Event e;
         e.type = update_event;
         SDL_PushEvent(&e);
     });
-    player.addListener([](const MediaEvent& e){
+    player.onEvent([](const MediaEvent& e){
         std::cout << "event: " << e.category << ", detail: " <<e.detail << std::endl;
         return false;
     });
+    
     while (true) {
         SDL_Event event;
         SDL_WaitEvent(&event);
@@ -128,15 +132,23 @@ int main(int argc, char *argv[])
             } else if (event.key.keysym.sym == SDLK_p) {
                 player.setState(State::Playing);
             } else if (event.key.keysym.sym == SDLK_RIGHT) {
-                printf("seekForward from: %" PRId64 "ms\n", player.position());fflush(stdout);
-                player.seek(player.position()+10*1000,[](int64_t t){
+                printf("seekForward from: %" PRId64 "ms\n", player.position());
+                player.seek(player.position()+10*int(TimeScaleForInt),[](int64_t t){
                     printf("seek finished at: %" PRId64 "ms\n", t);
                 });
             } else if (event.key.keysym.sym == SDLK_LEFT) {
-                printf("seekBackward from: %" PRId64 "\n", player.position());fflush(stdout);
-                player.seek(player.position()-10*1000,[](int64_t t){
+                printf("seekBackward from: %" PRId64 "\n", player.position());
+                player.seek(player.position()-10*int(TimeScaleForInt),[](int64_t t){
                     printf("seek finished at: %" PRId64 "ms\n", t);
                 });
+            } else if (event.key.keysym.sym == SDLK_UP) {
+                const float v = player.playbackRate();
+                printf("speed up from: %f to %f++++\n\n", v, v+0.2f);
+                player.setPlaybackRate(v + 0.2f);
+            } else if (event.key.keysym.sym == SDLK_DOWN) {
+                const float v = player.playbackRate();
+                printf("speed down from: %f to %f----\n\n", v, v-0.2f);
+                player.setPlaybackRate(v - 0.2f);
             } else if (event.key.keysym.sym == SDLK_b) {
                 static int index = 1;
                 static const int nb_urls = argc - url_index;

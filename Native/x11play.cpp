@@ -2,6 +2,7 @@
  * Copyright (c) 2017-2019 WangBin <wbsecg1 at gmail.com>
  */
 #include <cassert>
+#include <cstring>
 extern "C" {
 #include<GL/glx.h>
 }
@@ -16,7 +17,7 @@ int main(int argc, char** argv)
         }
     }
 
-    Display *dpy = XOpenDisplay(nullptr);
+    Display *dpy = XOpenDisplay(nullptr);// XOpenDisplay(NULL);
     Window root = DefaultRootWindow(dpy);
     GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
     XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
@@ -41,11 +42,13 @@ int main(int argc, char** argv)
         if(xev.type == Expose) {
             XWindowAttributes gwa;
             XGetWindowAttributes(dpy, win, &gwa);
-            player.setVideoSurfaceSize(gwa.width, gwa.height);
+            player.setVideoSurfaceSize((int)gwa.width, (int)gwa.height);
         } else if(xev.type == KeyPress) {
             XDestroyWindow(dpy, win);
             XCloseDisplay(dpy);
             return 0;
+        } else if (xev.type == ConfigureNotify) {
+            player.setVideoSurfaceSize(xev.xconfigure.width, xev.xconfigure.height);
         }
     }
 }
