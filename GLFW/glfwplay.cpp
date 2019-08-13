@@ -145,6 +145,10 @@ int url_now = 0;
 std::vector<std::string> urls;
 int main(int argc, char** argv)
 {
+    /*setLogHandler([=](LogLevel level, const char* msg){                                                                                                                
+        static const char level_name[] = {'I', 'W'};
+        print_log_msg(level_name[level<LogLevel::Info], msg);
+    }); */
     bool help = argc < 2;
     bool es = false;
     bool gfxthread = false;
@@ -155,7 +159,7 @@ int main(int argc, char** argv)
     int64_t buf_max = 16000;
     int loop = 0;
     int64_t loop_a = 0;
-    int64_t loop_b = 0;
+    int64_t loop_b = -1;
     bool buf_drop = false;
     const char* urla = nullptr;
     std::string ca, cv;
@@ -205,7 +209,7 @@ int main(int argc, char** argv)
         showHelp(argv[0]);
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
-    if (loop > 0 && (loop_b < 0 || loop_b > loop_a) && loop_a > 0) // default value if one is set?
+    if (loop > 0 && (loop_b < 0 || loop_b > loop_a) && loop_a >= 0)
         player.setLoop(loop, loop_a, loop_b);
     player.currentMediaChanged([&]{
         std::printf("currentMediaChanged %d/%d, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
