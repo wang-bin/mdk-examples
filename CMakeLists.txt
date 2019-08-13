@@ -15,9 +15,15 @@ if(NOT WIN32 AND NOT CMAKE_CROSSCOMPILING AND EXISTS /usr/local/include)
   list(APPEND CMAKE_REQUIRED_INCLUDES /usr/local/include)
   list(APPEND CMAKE_REQUIRED_LIBRARIES -L/usr/local/lib)
 endif()
-
+include_directories(${EXTRA_INCLUDE})
+link_directories(${EXTRA_LIB_DIRS_FLAG})
+#list(APPEND CMAKE_REQUIRED_INCLUDES ${EXTRA_INCLUDE})
+#list(APPEND CMAKE_REQUIRED_LIBRARIES ${EXTRA_LIB_DIRS_FLAG})
 if(WIN32)
   set(APPTYPE WIN32) # /subsystem:windows
+endif()
+if(MSVC)# AND NOT CMAKE_CXX_SIMULATE_ID MATCHES MSVC) # link.exe, lld>=8.0
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -entry:mainCRTStartup")
 endif()
 
 include(CheckLibraryExists)

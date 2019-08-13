@@ -1,10 +1,10 @@
 
+add_executable(offscreen ${APPTYPE} offscreen.cpp)
+target_link_libraries(offscreen PRIVATE mdk)
+
 if(NOT IOS)
   add_executable(mdkplay ${APPTYPE} mdkplay.cpp)
   target_link_libraries(mdkplay PRIVATE mdk)
-  if(MSVC)# AND NOT CMAKE_CXX_SIMULATE_ID MATCHES MSVC) # link.exe, lld>=8.0
-    target_link_libraries(mdkplay PRIVATE -entry:mainCRTStartup)
-  endif()
 endif()
 
 find_package(X11)
