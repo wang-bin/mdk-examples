@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     });
     player.onMediaStatusChanged([](MediaStatus s){
         //MediaStatus s = player.mediaStatus();
-        printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n", s, s&LoadingMedia, s&BufferingMedia, s&PreparedMedia, s&EndOfMedia);
+        printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Loading, s& MediaStatus::Buffering, s& MediaStatus::Prepared, s& MediaStatus::End);
         return true;
     });
     if (!gfxthread && wait <= 0)

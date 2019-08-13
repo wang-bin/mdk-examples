@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     int w = 1920, h = 1080;
     player.setVideoSurfaceSize(1920, 1080); // ensure surface size is valid when rendering 1st frame (expose event may be too late)
     const Uint32 update_event = SDL_USEREVENT+1;//SDL_RegisterEvents(SDL_USEREVENT+1);
-    player.setRenderCallback([](void*){
+    player.setRenderCallback([=](void*){
         SDL_Event e;
         e.type = update_event;
         SDL_PushEvent(&e);
