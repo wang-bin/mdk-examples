@@ -1,10 +1,8 @@
-
-add_executable(offscreen ${APPTYPE} offscreen.cpp)
-target_link_libraries(offscreen PRIVATE mdk)
-
 if(NOT IOS)
   add_executable(mdkplay ${APPTYPE} mdkplay.cpp)
   target_link_libraries(mdkplay PRIVATE mdk)
+  add_executable(offscreen ${APPTYPE} offscreen.cpp)
+  target_link_libraries(offscreen PRIVATE mdk)
 endif()
 
 find_package(X11)
