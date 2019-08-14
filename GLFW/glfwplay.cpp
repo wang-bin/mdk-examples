@@ -96,6 +96,9 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             }
             break;
         }
+        case GLFW_KEY_L:
+            p->setLoop(0);
+            break;
         case GLFW_KEY_O: {
             static int angle = 0;
             p->rotate(angle+=90);
@@ -135,8 +138,17 @@ void showHelp(const char* argv0)
             "left/right: seek backward/forward (-/+10s)\n"
             "right: seek forward (+10s)\n"
             "up/down: speed +/-0.1\n"
+            "C: capture video frame"
+#ifdef INCLUDE_STB_IMAGE_WRITE_H
+            " and save as N.jpg"
+#endif
+            "\n"
+            "D: switch video decoder\n"
             "F: fullscreen\n"
+            "L: stop looping\n"
+            "O: change orientation\n"
             "Q: quit\n"
+            "R: record video as 'mdk-record.mkv', press again to stop recording\n"
             // TODO: display env vars
         , argv0);
 }
