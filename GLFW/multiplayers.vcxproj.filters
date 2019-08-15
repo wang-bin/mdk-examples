@@ -21,6 +21,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="$(mdk-BinPath)\mdk.dll" />
   </ItemGroup>
 </Project>

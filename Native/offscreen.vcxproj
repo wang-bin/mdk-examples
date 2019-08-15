@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{FA616FFE-C164-4061-B8C0-BF32370FC75B}</ProjectGuid>
+    <ProjectGuid>{D801D50D-86F0-470C-AB36-2C407E96F657}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>multiwindows</RootNamespace>
+    <RootNamespace>offscreen</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -162,21 +162,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="multiwindows.cpp" />
+    <ClCompile Include="offscreen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\glfw.3.3.0.1\build\native\glfw.targets" Condition="Exists('..\packages\glfw.3.3.0.1\build\native\glfw.targets')" />
     <Import Project="..\packages\mdk.0.3.1\build\native\MDK.targets" Condition="Exists('..\packages\mdk.0.3.1\build\native\MDK.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>这台计算机上缺少此项目引用的 NuGet 程序包。使用“NuGet 程序包还原”可下载这些程序包。有关更多信息，请参见 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的文件是 {0}。</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\glfw.3.3.0.1\build\native\glfw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glfw.3.3.0.1\build\native\glfw.targets'))" />
     <Error Condition="!Exists('..\packages\mdk.0.3.1\build\native\MDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\mdk.0.3.1\build\native\MDK.targets'))" />
   </Target>
 </Project>
