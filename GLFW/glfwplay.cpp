@@ -110,6 +110,9 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_R:
             p->record("mdk-record.mkv");                
             break;
+        case GLFW_KEY_S:
+            p->setState(State::Stopped);                
+            break;
         default:
             break;
     }
@@ -221,10 +224,8 @@ int main(int argc, char** argv)
         showHelp(argv[0]);
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
-    if (loop > 0 && (loop_b < 0 || loop_b > loop_a) && loop_a >= 0)
-        player.setLoop(loop, loop_a, loop_b);
     player.currentMediaChanged([&]{
-        std::printf("currentMediaChanged %d/%d, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
+        std::printf("currentMediaChanged %d/%zu, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
         if (urls.size() > url_now+1) {
             player.setNextMedia(urls[++url_now].data()); // safe to use ref to player
             // alternatively, you can create a custom event
@@ -238,6 +239,10 @@ int main(int argc, char** argv)
     });
     player.onEvent([](const MediaEvent& e){
         printf("MediaEvent: %s %s %" PRId64 "......\n", e.category.data(), e.detail.data(), e.error);
+        return false;
+    });
+    player.onLoop([](int count){
+        printf("++++++++++++++onLoop: %d......\n", count);
         return false;
     });
     if (!gfxthread && wait <= 0)
@@ -317,6 +322,10 @@ int main(int argc, char** argv)
         player.setAudioDecoders({first, last});
     }
 
+    if ((loop_b < 0 || loop_b > loop_a) && loop_a >= 0) {// TODO: works before setMedia(..., Audio)
+        player.setLoop(loop);
+        player.setRange(loop_a, loop_b);
+    }
     player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
         std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
         //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
