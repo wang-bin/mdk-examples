@@ -326,11 +326,13 @@ int main(int argc, char** argv)
         player.setLoop(loop);
         player.setRange(loop_a, loop_b);
     }
-    player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
-        std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
-        //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
-    });
-    player.setState(State::Playing);
+    if (player.url()) {
+        player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
+            std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
+            //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
+        });
+        player.setState(State::Playing);
+    }
 
     if (gfxthread) {
         auto surface_type = MDK_NS::Player::SurfaceType::Auto;
@@ -347,7 +349,6 @@ int main(int argc, char** argv)
         //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);
     }
-
     while (!glfwWindowShouldClose(win)) {
         if (!gfxthread) {
             glfwMakeContextCurrent(win);
