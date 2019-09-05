@@ -22,4 +22,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(mdk-IncPath)\mdk\global.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="$(mdk-IncPath)\mdk\MediaInfo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="$(mdk-IncPath)\mdk\Player.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
