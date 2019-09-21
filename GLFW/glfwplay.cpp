@@ -260,6 +260,10 @@ int main(int argc, char** argv)
         glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     }
+    if (gfxthread) { // we create gl context ourself, glfw should provide a clean window.
+        // default is GLFW_OPENGL_API + GLFW_NATIVE_CONTEXT_API which may affect our context(macOS)
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    }
     const int w = 640, h = 480;
     GLFWwindow *win = glfwCreateWindow(w, h, "MDK + GLFW. Drop videos here", nullptr, nullptr);
     if (!win) {
@@ -336,7 +340,7 @@ int main(int argc, char** argv)
 
     if (gfxthread) {
         auto surface_type = MDK_NS::Player::SurfaceType::Auto;
-        putenv((char*)std::string("GL_EGL=").append(std::to_string(es)).data()); // for getenv()
+        putenv((char*)std::string("GL_EGL=").append(std::to_string(es)).data()); // for getenv() // FIXME: asan crash in getenv
 #if defined(_WIN32)
         auto hwnd = glfwGetWin32Window(win);
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
