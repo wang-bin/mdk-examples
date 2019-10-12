@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+//#define _CRT_SECURE_NO_WARNINGS
 #include "mdk/Player.h"
 #include <cstring>
 #include <cstdio>
@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
     //if (from > 0)
         p.prepare(from*int64_t(TimeScaleForInt), [&p](int64_t t, bool*) {
             std::cout << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
+            return true;
         });
     p.setState(State::Playing);
 #if 0//def _WIN32

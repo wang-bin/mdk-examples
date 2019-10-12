@@ -211,7 +211,7 @@ int main(int argc, char** argv)
             loop = atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-autoclose") == 0) {
             autoclose = true;
-        } else if (argv[i][0] == '-') {
+        } else if (argv[i][0] == '-') { // TODO: treat as SetGlobalOption
             printf("Unknow option: %s\n", argv[i]);
             help = true;
         } else {
@@ -334,6 +334,7 @@ int main(int argc, char** argv)
         player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
+            return true;
         });
         player.setState(State::Playing);
     }
