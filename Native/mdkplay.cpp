@@ -102,7 +102,11 @@ int main(int argc, char *argv[])
     //if (from > 0)
         p.prepare(from*int64_t(TimeScaleForInt), [&p](int64_t t, bool*) {
             std::cout << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
+#if defined(MDK_VERSION_CHECK)
+# if MDK_VERSION_CHECK(0, 5, 0)
             return true;
+# endif
+#endif
         });
     p.setState(State::Playing);
 #if 0//def _WIN32
