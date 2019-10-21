@@ -28,6 +28,7 @@
 #   include "stb_image_write.h"
 # endif
 #endif
+#include "prettylog.h"
 
 using namespace MDK_NS;
 
@@ -161,10 +162,10 @@ int url_now = 0;
 std::vector<std::string> urls;
 int main(int argc, char** argv)
 {
-    /*setLogHandler([=](LogLevel level, const char* msg){                                                                                                                
+    setLogHandler([=](LogLevel level, const char* msg){                                                                                                                
         static const char level_name[] = {'I', 'W'};
         print_log_msg(level_name[level<LogLevel::Info], msg);
-    }); */
+    });
     bool help = argc < 2;
     bool es = false;
     bool gfxthread = false;
