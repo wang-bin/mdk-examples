@@ -127,23 +127,24 @@ void showHelp(const char* argv0)
             "decoder properties(not supported by all): glva=0/1, hwdec_format=..., copy_frame=0/1/-1, hwdevice=...\n"
             "-c:a: audio decoder names separated by ','. can be FFmpeg, MediaCodec. Properties: hwaccel=avcodec_codec_name_suffix(for example at,fixed)\n"
             "-ao: audio renderer. OpenAL, DSound, XAudio2, ALSA, AudioQueue\n"
-            "-url:a: individual audio track url."
+            "-url:a: individual audio track url.\n"
             "-from: start from given seconds\n"
+            "-pause: pause at the 1st frame\n"
             "-gfxthread: create gfx(rendering) context and thread by mdk instead of GLFW. -fps does not work\n"
-            "-buffer: buffer duration range in milliseconds, can be 'minMs', 'minMs+maxMs', e.g. -buffer 1000, or -buffer 1000+2000"
-            "-buffer_drop: drop buffered data when buffered duration exceed max buffer duration. useful for playing realtime streams, e.g. -buffer 0+1000 -buffer_drop to ensure delay < 1s"
+            "-buffer: buffer duration range in milliseconds, can be 'minMs', 'minMs+maxMs', e.g. -buffer 1000, or -buffer 1000+2000\n"
+            "-buffer_drop: drop buffered data when buffered duration exceed max buffer duration. useful for playing realtime streams, e.g. -buffer 0+1000 -buffer_drop to ensure delay < 1s\n"
             "-loop-a: A-B loop A\n"
             "-loop-b: A-B loop B. -1 means end of media\n"
             "-loop: A-B loop repeat count\n"
-            "-autoclose: close when stopped" // TODO: check image or video
+            "-autoclose: close when stopped\n" // TODO: check image or video
             "Keys:\n"
             "space: pause/resume\n"
             "left/right: seek backward/forward (-/+10s)\n"
             "right: seek forward (+10s)\n"
             "up/down: speed +/-0.1\n"
-            "C: capture video frame"
+            "C: capture video frame\n"
 #ifdef INCLUDE_STB_IMAGE_WRITE_H
-            " and save as N.jpg"
+            " and save as N.jpg\n"
 #endif
             "\n"
             "D: switch video decoder\n"
@@ -176,6 +177,7 @@ int main(int argc, char** argv)
     int64_t loop_a = 0;
     int64_t loop_b = -1;
     bool buf_drop = false;
+    bool pause = false;
     const char* urla = nullptr;
     std::string ca, cv;
     Player player;
@@ -188,6 +190,8 @@ int main(int argc, char** argv)
             es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
             from = std::atoi(argv[++i]);
+        } else if (std::strcmp(argv[i], "-pause") == 0) {
+            pause = true;
         } else if (std::strcmp(argv[i], "-ao") == 0) {
             player.setAudioBackends({argv[++i]});
         } else if (std::strcmp(argv[i], "-fps") == 0) {
@@ -247,7 +251,7 @@ int main(int argc, char** argv)
     });
     if (!gfxthread && wait <= 0)
         player.setRenderCallback([](void*){
-            glfwPostEmptyEvent();
+            glfwPostEmptyEvent(); // FIXME: some events are lost on macOS. glfw bug?
         });
 
     glfwSetErrorCallback([](int error, const char* description) {
@@ -340,7 +344,8 @@ int main(int argc, char** argv)
 # endif
 #endif
         });
-        player.setState(State::Playing);
+        if (!pause)
+            player.setState(State::Playing);
     }
 
     if (gfxthread) {
@@ -362,7 +367,8 @@ int main(int argc, char** argv)
         if (!gfxthread) {
             glfwMakeContextCurrent(win);
             player.renderVideo();
-            glfwSwapBuffers(win);
+            glfwSwapBuffers(win); // FIXME: old render buffer is displayed if render again after stopping by user. glfw bug?
+            
         }
         //glfwWaitEventsTimeout(0.04); // if player.setRenderCallback() is not called, render at 25fps
         if (wait > 0)
