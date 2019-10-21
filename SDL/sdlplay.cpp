@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     SDL_Window *window = SDL_CreateWindow("MDK player with OpenGL Rendering", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                         800, 500, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_GL_CreateContext(window);
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
     //setLogHandler(nullptr);
     //setLogHandler(nullptr);
     int url_index = 1;
@@ -161,6 +162,13 @@ int main(int argc, char *argv[])
                     player.switchBitrate(argv[(index++)%nb_urls + url_index]);
             }
             break;
+        case SDL_DROPFILE:
+            player.setNextMedia(nullptr);
+            player.setState(State::Stopped);
+            player.waitFor(State::Stopped);
+            player.setMedia(nullptr); // 1st url may be the same as current url
+            player.setMedia(event.drop.file);
+            player.setState(State::Playing);
         case update_event:
             player.renderVideo();
             SDL_GL_SwapWindow(window);
