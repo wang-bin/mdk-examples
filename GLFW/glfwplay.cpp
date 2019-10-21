@@ -44,7 +44,7 @@ void setNativeDisplay(void* disp)
 
 static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
-    if (action != GLFW_PRESS)
+    if (action != GLFW_PRESS && action != GLFW_REPEAT)
         return;
     auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
     switch (key) {
