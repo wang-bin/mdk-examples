@@ -32,6 +32,9 @@
 
 using namespace MDK_NS;
 
+int64_t gSeekStep = 10000LL;
+SeekFlag gSeekFlag = SeekFlag::Default;
+
 static void* sNativeDisp = nullptr;
 extern "C" MDK_EXPORT void* GetCurrentNativeDisplay() // required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
 {
@@ -52,8 +55,8 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_C: {
             Player::SnapshotRequest req{};
             p->snapshot(&req, [](Player::SnapshotRequest* ret){
-                static int i = 0;
 #ifdef INCLUDE_STB_IMAGE_WRITE_H
+                static int i = 0;
                 stbi_write_jpg(std::to_string(i++).append(".jpg").data(), ret->width, ret->height, 4, ret->data, 80);
 #endif
             });
@@ -77,10 +80,10 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
         case GLFW_KEY_RIGHT:
-            p->seek(p->position()+10000);
+            p->seek(p->position()+gSeekStep, gSeekFlag);
             break;
         case GLFW_KEY_LEFT:
-            p->seek(p->position()-10000);
+            p->seek(p->position()-gSeekStep, gSeekFlag);
             break;
         case GLFW_KEY_UP:
             p->setPlaybackRate(p->playbackRate() + 0.1f);
@@ -137,6 +140,8 @@ void showHelp(const char* argv0)
             "-loop-a: A-B loop A\n"
             "-loop-b: A-B loop B. -1 means end of media\n"
             "-loop: A-B loop repeat count\n"
+            "-seek_any: seek to any frame instead of key frame\n"
+            "-seek_step: step length(in ms) of seeking forward/backward\n"
             "-autoclose: close when stopped\n" // TODO: check image or video
             "Keys:\n"
             "space: pause/resume\n"
@@ -214,6 +219,10 @@ int main(int argc, char** argv)
             loop_b = atoll(argv[++i]);
         } else if (std::strcmp(argv[i], "-loop") == 0) {
             loop = atoi(argv[++i]);
+        } else if (std::strcmp(argv[i], "-seek_any") == 0) {
+            gSeekFlag = SeekFlag::FromStart;
+        } else if (std::strcmp(argv[i], "-seek_step") == 0) {
+            gSeekStep = atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-autoclose") == 0) {
             autoclose = true;
         } else if (argv[i][0] == '-') { // TODO: treat as SetGlobalOption
