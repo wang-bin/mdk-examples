@@ -32,6 +32,12 @@
 
 using namespace MDK_NS;
 
+#if defined(MDK_VERSION_CHECK)
+# if MDK_VERSION_CHECK(0, 5, 0)
+#   define MDK_0_5_0
+# endif
+#endif
+
 int64_t gSeekStep = 10000LL;
 SeekFlag gSeekFlag = SeekFlag::Default;
 
@@ -54,10 +60,16 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
     switch (key) {
         case GLFW_KEY_C: {
             Player::SnapshotRequest req{};
-            p->snapshot(&req, [](Player::SnapshotRequest* ret){
-#ifdef INCLUDE_STB_IMAGE_WRITE_H
+            p->snapshot(&req,
+#if defined(MDK_0_5_0)
+        [](Player::SnapshotRequest* ret, double frameTime){
+            return std::to_string(frameTime).append(".jpg");
+#else
+        [](Player::SnapshotRequest* ret){
+# ifdef INCLUDE_STB_IMAGE_WRITE_H
                 static int i = 0;
                 stbi_write_jpg(std::to_string(i++).append(".jpg").data(), ret->width, ret->height, 4, ret->data, 80);
+# endif
 #endif
             });
         }
@@ -348,10 +360,8 @@ int main(int argc, char** argv)
         player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
-#if defined(MDK_VERSION_CHECK)
-# if MDK_VERSION_CHECK(0, 5, 0)
+#if defined(MDK_0_5_0)
             return true;
-# endif
 #endif
         });
         if (!pause)
