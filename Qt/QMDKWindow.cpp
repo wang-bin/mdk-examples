@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2019 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKWindow.h"
@@ -17,7 +17,7 @@ QMDKWindow::QMDKWindow(QWindow *parent)
 {
     player_->setVideoDecoders({"VideoToolbox", "VAAPI", "D3D11", "DXVA2", "MMAL", "MediaCodec", "FFmpeg"});
     player_->setRenderCallback([this](void*){
-        QCoreApplication::instance()->postEvent(this, new QEvent(QEvent::UpdateRequest));
+        QCoreApplication::instance()->postEvent(this, new QEvent(QEvent::UpdateRequest), INT_MAX);
     });
 }
 
