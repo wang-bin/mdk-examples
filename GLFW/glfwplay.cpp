@@ -3,6 +3,7 @@
  * Copyright (c) 2016-2019 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
+#include "prettylog.h"
 #include "mdk/Player.h"
 #include <cstdio>
 #include <cstdlib>
@@ -28,7 +29,6 @@
 #   include "stb_image_write.h"
 # endif
 #endif
-#include "prettylog.h"
 
 using namespace MDK_NS;
 
