@@ -3,8 +3,23 @@
  * Copyright (c) 2016-2019 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
-#include "prettylog.h"
+#ifndef _CRT_SECURE_NO_WARNINGS
+# define _CRT_SECURE_NO_WARNINGS
+#endif
+#ifdef _WIN32
+#include <d3d11.h>
+#endif
 #include "mdk/Player.h"
+
+#if defined(MDK_VERSION_CHECK)
+# if MDK_VERSION_CHECK(0, 5, 0)
+#   define MDK_0_5_0
+# endif
+#endif
+
+#ifdef MDK_0_5_0
+#include "mdk/RenderAPI.h"
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -29,14 +44,9 @@
 #   include "stb_image_write.h"
 # endif
 #endif
+#include "prettylog.h"
 
 using namespace MDK_NS;
-
-#if defined(MDK_VERSION_CHECK)
-# if MDK_VERSION_CHECK(0, 5, 0)
-#   define MDK_0_5_0
-# endif
-#endif
 
 int64_t gSeekStep = 10000LL;
 SeekFlag gSeekFlag = SeekFlag::Default;
@@ -63,6 +73,10 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->snapshot(&req,
 #if defined(MDK_0_5_0)
         [](Player::SnapshotRequest* ret, double frameTime){
+# ifdef INCLUDE_STB_IMAGE_WRITE_H
+                static int i = 0;
+                stbi_write_jpg(std::to_string(frameTime).append(".jpg").data(), ret->width, ret->height, 4, ret->data, 80);
+# endif
             return std::to_string(frameTime).append(".jpg");
 #else
         [](Player::SnapshotRequest* ret){
@@ -92,7 +106,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
         case GLFW_KEY_RIGHT:
-            p->seek(p->position()+gSeekStep, gSeekFlag);
+            p->seek(p->position()+gSeekStep, gSeekFlag); // Default if GLFW_REPEAT
             break;
         case GLFW_KEY_LEFT:
             p->seek(p->position()-gSeekStep, gSeekFlag);
@@ -136,7 +150,8 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 
 void showHelp(const char* argv0)
 {
-    printf("usage: %s [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
+    printf("usage: %s [-d3d11] [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
+            "-d3d11: d3d11 renderer, MUST use with -gfxthread (experimental)\n"
             "-es: use OpenGL ES2+ instead of OpenGL\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
@@ -184,6 +199,7 @@ int main(int argc, char** argv)
         print_log_msg(level_name[level<LogLevel::Info], msg);
     });
     bool help = argc < 2;
+    bool d3d11 = false;
     bool es = false;
     bool gfxthread = false;
     bool autoclose = false;
@@ -204,6 +220,8 @@ int main(int argc, char** argv)
             cv = argv[++i];
         } else if (strcmp(argv[i], "-c:a") == 0) {
             ca = argv[++i];
+        } else if (strcmp(argv[i], "-d3d11") == 0) {
+            d3d11 = true;
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
@@ -248,6 +266,14 @@ int main(int argc, char** argv)
     }
     if (help)
         showHelp(argv[0]);
+#ifdef MDK_0_5_0
+    if (d3d11) {
+#ifdef _WIN32
+        D3D11RenderAPI ra;
+        player.setRenderAPI(&ra);
+#endif
+    }
+#endif
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
     player.currentMediaChanged([&]{
@@ -333,7 +359,7 @@ int main(int argc, char** argv)
             glfwPostEmptyEvent();
         }
     });
-    player.setPreloadImmediately(false); // MUST set before setMedia() because setNextMedia() is called when media is changed
+    player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
     player.setVideoSurfaceSize(w, h);
     //player.setPlaybackRate(2.0f);
     if (!urls.empty())
