@@ -191,7 +191,7 @@ void App::InitializeEGL(CoreWindow^ window)
 	//mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(window));
 #endif //FOREIGN_EGL
 	mPlayer->setVideoDecoders({ "D3D11", "FFmpeg" });
-	mPlayer->setMedia("rtmp://live.hkstv.hk.lxdns.com/live/hks");
+	mPlayer->setMedia("rtmp://ns8.indexforce.com/home/mystream");
 	mPlayer->setState(PlaybackState::Playing);
 }
 

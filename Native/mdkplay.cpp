@@ -1,4 +1,6 @@
-//#define _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_WARNINGS
+# define _CRT_SECURE_NO_WARNINGS // c++17 vc
+#endif
 #include "mdk/Player.h"
 #include <cstring>
 #include <cstdio>
