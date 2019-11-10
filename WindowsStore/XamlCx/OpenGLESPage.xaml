@@ -16,6 +16,7 @@
         <Button Click="OnSelectFiles">
             <TextBlock Text="Open Files" VerticalAlignment="Center" />
         </Button>
+        <Slider x:Name="progress"  Minimum="0"  Maximum="100" ValueChanged="progress_ValueChanged"/>
         <VariableSizedWrapGrid Background="Gray" ItemWidth="720" ItemHeight="400" Orientation="Horizontal">
                 <SwapChainPanel x:Name="swapChainPanel_0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnPanelSelected">
                     <TextBlock Text="Surface 1&#13;Double click to render here" Foreground="Red" FontSize="20" HorizontalAlignment="Center"/>

@@ -15,7 +15,10 @@ namespace XamlMDK
 		void OnPanelSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e);
         void OnModeSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e);
         void OnSelectFiles(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e);
+        void OnTick(Object^ sender, Object^ e);
+        void progress_ValueChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e);
+
         std::unique_ptr<MDK_NS::Player> mPlayer;
         Windows::Storage::StorageFile^ mFile;
-	};
+    };
 }

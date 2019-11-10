@@ -31,6 +31,14 @@ OpenGLESPage::OpenGLESPage() :
 	Windows::UI::Core::CoreWindow^ window = Windows::UI::Xaml::Window::Current->CoreWindow;
     window->VisibilityChanged += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Core::CoreWindow^, Windows::UI::Core::VisibilityChangedEventArgs^>(this, &OpenGLESPage::OnVisibilityChanged);
     this->Loaded += ref new Windows::UI::Xaml::RoutedEventHandler(this, &OpenGLESPage::OnPageLoaded);
+
+    auto timer = ref new Windows::UI::Xaml::DispatcherTimer();
+    Windows::Foundation::TimeSpan ts;
+    ts.Duration = 1000;
+    timer->Interval = ts;
+    timer->Start();
+    auto registrationtoken = timer->Tick += ref new Windows::Foundation::EventHandler<Object^>(this, &OpenGLESPage::OnTick);
+
 }
 
 OpenGLESPage::~OpenGLESPage()
@@ -40,10 +48,17 @@ OpenGLESPage::~OpenGLESPage()
 
 void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-
+  SetEnvironmentVariableA("D3D11_GL", "eglpbuf"); 
 	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(swapChainPanel_0));
-    mPlayer->setVideoDecoders({ "MFT:d3d=11", "D3D11", "FFmpeg" });
+	mPlayer->setVideoDecoders({ "MFT:d3d=11", "D3D11", "FFmpeg" });
     mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
+    
+    mPlayer->onMediaStatusChanged([=](auto s) {
+      if (s & MediaStatus::Loaded) {
+        //progress->Maximum = mPlayer->mediaInfo().duration / 1000; // ui thread
+        return true;
+      }
+      });
 }
 
 void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args)
@@ -89,8 +104,21 @@ void OpenGLESPage::OnSelectFiles(Platform::Object^ sender, Windows::UI::Xaml::Ro
       auto url = std::string("winrt:IStorageFile@").append(std::to_string((long long)ptr));
       mPlayer->setState(State::Stopped);
       mPlayer->waitFor(State::Stopped);
+      progress->IntermediateValue = 0;
+      progress->Maximum = 0;
       mPlayer->setMedia(url.data());
       mPlayer->setState(PlaybackState::Playing);
     }
   });
+}
+
+void OpenGLESPage::OnTick(Object^ sender, Object^ e)
+{
+  progress->IntermediateValue = mPlayer->position() / 1000; // IntermediateValue will not trigger ValueChanged
+  progress->Maximum = mPlayer->mediaInfo().duration / 1000;
+}
+
+void XamlMDK::OpenGLESPage::progress_ValueChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e)
+{
+  mPlayer->seek(int64_t(e->NewValue*1000.0));
 }
