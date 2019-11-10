@@ -1,3 +1,61 @@
+media player examples based on mdk sdk. runs on all platforms. sdk download: https://mdk-sdk.sourceforge.io
+
+About mdk-sdk: https://github.com/wang-bin/mdk-sdk
+
+## GLFW
+
+glfw examples
+
+### glfwplay
+- has the most features
+- use glfw context as foreign context mode
+- use glfw window to create render loop and gl/d3d11 context internally
+
+### multiplayers
+1 player per window
+
+### multiwindows
+many windows as render targets sharing the same player
+
+### simple
+minimal glfw example
+
+## macOS
+- use `CAOpenGLLayer` as foreign context
+- use NSView to create render loop and gl context internally
+
+## Native
+
+### mdkplay
+create platform dependent surface/window internally, also create render loop and gl context
+
+### offscreen
+gl offscreen rendering guide
+
+### x11play
+Use user provided platform dependent surface/window
+
+## Qt
+Integrate with QOpenGLWindow and QOpenGLWidget. Use gl context provided by Qt
+
+## SDL
+Use gl context provided by SDL
+
+## SFML
+Use gl context provided by SFML
+
+## WindowsStore
+Currently only use ANGLE OpenGLES2/3
+
+### CoreWindowCx
+- use `Windows::UI::Core::CoreWindow` as platform dependent surface to create render loop and gl context internally
+- use App provided gl context
+
+### XamlCx
+- Use `Windows::UI::Xaml::Controls::SwapChainPanel` as platform dependent surface to create render loop and gl context internally
+- Switch between 2 render targets
+
+
 ## Raspberry Pi
 
 mdk is designed to work in both firmware environment and vc4 environment
