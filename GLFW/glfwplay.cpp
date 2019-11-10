@@ -423,6 +423,7 @@ int main(int argc, char** argv)
             glfwWaitEvents();
     }
     Player::foreignGLContextDestroyed();
+    setLogHandler(nullptr);
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
