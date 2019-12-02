@@ -5,6 +5,7 @@ packages
 Release
 Debug
 Generated Files
+AppPackages
 
 # Prerequisites
 *.d
