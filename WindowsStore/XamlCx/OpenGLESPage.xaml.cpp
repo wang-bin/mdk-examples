@@ -26,6 +26,8 @@ static struct init {
 OpenGLESPage::OpenGLESPage() :
     mPlayer(make_unique<Player>())
 {
+    MDK_NS::D3D11RenderAPI ra;
+    mPlayer->setRenderAPI(&ra);
     InitializeComponent();
 
 	Windows::UI::Core::CoreWindow^ window = Windows::UI::Xaml::Window::Current->CoreWindow;
@@ -50,7 +52,7 @@ void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::Rou
 {
   SetEnvironmentVariableA("D3D11_GL", "eglpbuf"); 
 	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(swapChainPanel_0));
-	mPlayer->setVideoDecoders({ "MFT:d3d=11", "D3D11", "FFmpeg" });
+	mPlayer->setVideoDecoders({ "D3D11", "FFmpeg" });
     mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
     
     mPlayer->onMediaStatusChanged([=](auto s) {

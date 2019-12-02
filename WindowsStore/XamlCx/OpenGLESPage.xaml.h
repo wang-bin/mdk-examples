@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "OpenGLESPage.g.h"
+#include <d3d11.h>
 #include "mdk/Player.h"
 
 namespace XamlMDK
