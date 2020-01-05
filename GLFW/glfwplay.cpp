@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2016-2019 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -37,13 +37,6 @@
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
 #include <GLFW/glfw3native.h>
-#ifdef __has_include
-# if __has_include("stb_image_write.h")
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_STATIC
-#   include "stb_image_write.h"
-# endif
-#endif
 #include "prettylog.h"
 
 using namespace MDK_NS;
@@ -73,17 +66,9 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->snapshot(&req,
 #if defined(MDK_0_5_0)
         [](Player::SnapshotRequest* ret, double frameTime){
-# ifdef INCLUDE_STB_IMAGE_WRITE_H
-                static int i = 0;
-                stbi_write_jpg(std::to_string(frameTime).append(".jpg").data(), ret->width, ret->height, 4, ret->data, 80);
-# endif
             return std::to_string(frameTime).append(".jpg");
 #else
         [](Player::SnapshotRequest* ret){
-# ifdef INCLUDE_STB_IMAGE_WRITE_H
-                static int i = 0;
-                stbi_write_jpg(std::to_string(i++).append(".jpg").data(), ret->width, ret->height, 4, ret->data, 80);
-# endif
 #endif
             });
         }
@@ -138,10 +123,10 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             glfwSetWindowShouldClose(win, 1);
             break;
         case GLFW_KEY_R:
-            p->record("mdk-record.mkv");                
+            p->record("mdk-record.mkv");
             break;
         case GLFW_KEY_S:
-            p->setState(State::Stopped);                
+            p->setState(State::Stopped);
             break;
         default:
             break;
@@ -194,7 +179,7 @@ int url_now = 0;
 std::vector<std::string> urls;
 int main(int argc, char** argv)
 {
-    setLogHandler([=](LogLevel level, const char* msg){                                                                                                                
+    setLogHandler([=](LogLevel level, const char* msg){
         static const char level_name[] = {'I', 'W'};
         print_log_msg(level_name[level<LogLevel::Info], msg);
     });
@@ -414,7 +399,7 @@ int main(int argc, char** argv)
             glfwMakeContextCurrent(win);
             player.renderVideo();
             glfwSwapBuffers(win); // FIXME: old render buffer is displayed if render again after stopping by user. glfw bug?
-            
+
         }
         //glfwWaitEventsTimeout(0.04); // if player.setRenderCallback() is not called, render at 25fps
         if (wait > 0)
