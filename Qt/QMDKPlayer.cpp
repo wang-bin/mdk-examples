@@ -95,6 +95,9 @@ void QMDKPlayer::addRenderer(QObject* vo, int w, int h)
     if (h <= 0)
         h = vo->property("height").toInt();
     player_->setVideoSurfaceSize(w, h, vo); // call update cb
+    connect(vo, &QObject::destroyed, this, [this](QObject* obj){
+        player_->setVideoSurfaceSize(-1, -1, obj); // remove vo
+    }, Qt::DirectConnection);
 }
 
 void QMDKPlayer::renderVideo(QObject* vo)
