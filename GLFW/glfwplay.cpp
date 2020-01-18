@@ -111,9 +111,6 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             }
             break;
         }
-        case GLFW_KEY_L:
-            p->setLoop(0);
-            break;
         case GLFW_KEY_O: {
             static int angle = 0;
             p->rotate(angle+=90);
@@ -149,8 +146,8 @@ void showHelp(const char* argv0)
             "-gfxthread: create gfx(rendering) context and thread by mdk instead of GLFW. -fps does not work\n"
             "-buffer: buffer duration range in milliseconds, can be 'minMs', 'minMs+maxMs', e.g. -buffer 1000, or -buffer 1000+2000\n"
             "-buffer_drop: drop buffered data when buffered duration exceed max buffer duration. useful for playing realtime streams, e.g. -buffer 0+1000 -buffer_drop to ensure delay < 1s\n"
-            "-loop-a: A-B loop A\n"
-            "-loop-b: A-B loop B. -1 means end of media\n"
+            "-loop-a: A-B loop A. if not set but -loop-b is set, then A is 0\n"
+            "-loop-b: A-B loop B. -1 means end of media. if not set but -loop-a is set, then B is -1\n"
             "-loop: A-B loop repeat count\n"
             "-seek_any: seek to any frame instead of key frame\n"
             "-seek_step: step length(in ms) of seeking forward/backward\n"
@@ -192,9 +189,9 @@ int main(int argc, char** argv)
     float wait = 0;
     int64_t buf_min = 4000;
     int64_t buf_max = 16000;
-    int loop = 0;
-    int64_t loop_a = 0;
-    int64_t loop_b = -1;
+    int loop = -2;
+    int64_t loop_a = -1;
+    int64_t loop_b = 0;
     bool buf_drop = false;
     bool pause = false;
     const char* urla = nullptr;
@@ -270,7 +267,7 @@ int main(int argc, char** argv)
     });
     player.onMediaStatusChanged([](MediaStatus s){
         //MediaStatus s = player.mediaStatus();
-        printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Loading, s&MediaStatus::Buffering, s&MediaStatus::Prepared, s&MediaStatus::End);
+        printf("************Media status: %#x, invalid: %#x, loading: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Invalid, s&MediaStatus::Loading, s&MediaStatus::Buffering, s&MediaStatus::Seeking, s&MediaStatus::Prepared, s&MediaStatus::End);
         fflush(stdout);
         return true;
     });
@@ -363,10 +360,16 @@ int main(int argc, char** argv)
         player.setAudioDecoders({first, last});
     }
 
-    if ((loop_b < 0 || loop_b > loop_a) && loop_a >= 0) {// TODO: works before setMedia(..., Audio)
+    if (loop >= -1)
         player.setLoop(loop);
-        player.setRange(loop_a, loop_b);
+    if (loop_a >= 0 || loop_b != 0) {
+        if (loop_a < 0)
+            loop_a = 0;
+        if (loop_b == 0)
+            loop_b = -1;
+        player.setRange(loop_a, loop_b);// TODO: works before setMedia(..., Audio)
     }
+
     if (player.url()) {
         player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
