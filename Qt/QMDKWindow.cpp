@@ -67,12 +67,31 @@ qint64 QMDKWindow::position() const
     return player_->position();
 }
 
+void QMDKWindow::capture(QObject *vo)
+{
+    Player::SnapshotRequest sr{};
+    player_->snapshot(&sr,
+                      [=](Player::SnapshotRequest *r, double) {
+                          if (!r) {
+                              qDebug() << "capture failed";
+                          } else {
+                              auto img = QImage(r->data, r->width, r->height,
+                                                QImage::Format_RGBA8888)
+                                             .copy();
+                              qDebug() << "captured:" << img;
+                          }
+                          // To save it to a local file, return a file path instead.
+                          return "";
+                      },
+                      vo);
+}
+
 void QMDKWindow::initializeGL()
 {
     auto player = player_;
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
     auto ctx = context();
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [player, ctx]{
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [player, ctx] {
         QOffscreenSurface s;
         s.create();
         ctx->makeCurrent(&s);
@@ -109,6 +128,11 @@ void QMDKWindow::keyPressEvent(QKeyEvent *e)
         break;
     case Qt::Key_Q:
         qApp->quit();
+        break;
+    case Qt::Key_C:
+        if (QKeySequence(e->modifiers() | e->key()) == QKeySequence::Copy) {
+            capture(shareContext());
+        }
         break;
     default:
         break;

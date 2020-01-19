@@ -24,6 +24,7 @@ public:
     bool isPaused() const;
     void seek(qint64 ms);
     qint64 position() const;
+    void capture(QObject* vo);
 
 protected:
     void initializeGL() override;
