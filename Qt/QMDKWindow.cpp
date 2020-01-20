@@ -3,12 +3,13 @@
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKWindow.h"
+#include "mdk/Player.h"
 #include <QCoreApplication>
+#include <QDebug>
+#include <QDir>
 #include <QKeyEvent>
 #include <QOffscreenSurface>
 #include <QStringList>
-#include <QtDebug>
-#include "mdk/Player.h"
 
 using namespace MDK_NS;
 QMDKWindow::QMDKWindow(QWindow *parent)
@@ -67,12 +68,36 @@ qint64 QMDKWindow::position() const
     return player_->position();
 }
 
+void QMDKWindow::snapshot() {
+    Player::SnapshotRequest sr{};
+    player_->snapshot(&sr, [](Player::SnapshotRequest *_sr, double frameTime) {
+        const QString path = QDir::toNativeSeparators(
+            QString("%1/%2.png")
+                .arg(QCoreApplication::applicationDirPath())
+                .arg(frameTime));
+        return path.toStdString();
+        // Here's how to convert SnapshotRequest to QImage and save it to disk.
+        /*if (_sr) {
+            const QImage img = QImage(_sr->data, _sr->width, _sr->height,
+                                      QImage::Format_RGBA8888);
+            if (img.save(path)) {
+                qDebug() << "Snapshot saved:" << path;
+            } else {
+                qDebug() << "Failed to save:" << path;
+            }
+        } else {
+            qDebug() << "Snapshot failed.";
+        }
+        return "";*/
+    });
+}
+
 void QMDKWindow::initializeGL()
 {
     auto player = player_;
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
     auto ctx = context();
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [player, ctx]{
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [player, ctx] {
         QOffscreenSurface s;
         s.create();
         ctx->makeCurrent(&s);
@@ -109,6 +134,11 @@ void QMDKWindow::keyPressEvent(QKeyEvent *e)
         break;
     case Qt::Key_Q:
         qApp->quit();
+        break;
+    case Qt::Key_C:
+        if (QKeySequence(e->modifiers() | e->key()) == QKeySequence::Copy) {
+            snapshot();
+        }
         break;
     default:
         break;
