@@ -1,9 +1,12 @@
 /*
- * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + SFML example
  */
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include "mdk/Player.h"
 using namespace MDK_NS;
 
@@ -13,7 +16,7 @@ int main(int argc, char** argv)
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
     // Create the main window
-    sf::Window window(sf::VideoMode(640, 480), "MDK + SFML window with OpenGL", sf::Style::Default, contextSettings);
+    sf::RenderWindow window(sf::VideoMode(640, 480), "MDK + SFML RenderTexture", sf::Style::Default, contextSettings);
     // Make it the active window for OpenGL calls
     window.setActive();
 
@@ -28,7 +31,13 @@ int main(int argc, char** argv)
     player.setVideoSurfaceSize(window.getSize().x, window.getSize().y);
     //player.setRenderCallback();
     player.setState(State::Playing);
+    //player.setAspectRatio(IgnoreAspectRatio);
+    //player.setBackgroundColor(0, 0, 0, 1);
 
+    sf::RenderTexture texture;
+    if (!texture.create(500, 500)) // or use video size, see ../Native/offscreen.cpp
+        return -1;
+    player.setVideoSurfaceSize(texture.getSize().x, texture.getSize().y);
     // Start the game loop
     while (window.isOpen()) {
         // Process events
@@ -46,11 +55,14 @@ int main(int argc, char** argv)
                 else if (event.key.code == sf::Keyboard::Left)
                     player.seek(player.position()-10000);
             }
-            // Resize event: adjust the viewport
-            if (event.type == sf::Event::Resized)
-                player.setVideoSurfaceSize(event.size.width, event.size.height);
         }
-        player.renderVideo();
+        texture.setActive(true);
+        texture.clear(sf::Color::Red);
+        player.renderVideo(); // render to current context (texture)
+        texture.display();
+        window.clear();
+        sf::Sprite sprite(texture.getTexture());
+        window.draw(sprite);
         // Finally, display the rendered frame on screen
         window.display();
     }
