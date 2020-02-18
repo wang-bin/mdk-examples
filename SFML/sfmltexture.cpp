@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     //player.setRenderCallback();
     player.setState(State::Playing);
     //player.setAspectRatio(IgnoreAspectRatio);
-    //player.setBackgroundColor(0, 0, 0, 1);
+    player.setBackgroundColor(0, 0, 0, -1); // an invalid background can skip glClearColor(), thus we can draw on the scene already has background painted
 
     sf::RenderTexture texture;
     if (!texture.create(500, 500)) // or use video size, see ../Native/offscreen.cpp
