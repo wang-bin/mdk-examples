@@ -1,6 +1,8 @@
 TEMPLATE = subdirs
 CONFIG -= ordered
-SUBDIRS = libqtmdk qtmultiwidgets qtpaintonvideo qmdkplay qmdkqmlplay
+SUBDIRS = libqtmdk qtmultiwidgets qtpaintonvideo qmdkplay
+qtHaveModule(quick): SUBDIRS += qmdkqmlplay
+
 libqtmdk.file = libqtmdk.pro
 
 qtmultiwidgets.file = qtmultiwidgets.pro

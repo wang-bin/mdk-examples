@@ -21,6 +21,7 @@ macx {
 } else {
   LIBS += -L$$PWD/../mdk-sdk/lib/$$MDK_ARCH -lmdk
 }
+linux: LIBS += -Wl,-rpath-link,$$PWD/../mdk-sdk/lib/$$MDK_ARCH # for libc++ symbols
 
 SOURCES += qmdkplay.cpp\
         QMDKWindow.cpp

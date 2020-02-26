@@ -25,10 +25,11 @@ static|contains(CONFIG, staticlib) {
 macx|ios {
   MDK_ARCH=
   QMAKE_CXXFLAGS += -F$$PWD/../mdk-sdk/lib
-  LIBS += -F/usr/local/lib -framework mdk
+  LIBS += -F$$PWD/../mdk-sdk/lib -F/usr/local/lib -framework mdk
 } else {
   LIBS += -L$$PWD/../mdk-sdk/lib/$$MDK_ARCH -lmdk
 }
+linux: LIBS += -Wl,-rpath-link,$$PWD/../mdk-sdk/lib/$$MDK_ARCH # for libc++ symbols
 
 SOURCES += QMDKRenderer.cpp \
         QMDKPlayer.cpp
