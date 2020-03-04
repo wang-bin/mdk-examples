@@ -10,6 +10,7 @@
 #include <QKeyEvent>
 #include <QOffscreenSurface>
 #include <QStringList>
+#include <QScreen>
 
 using namespace MDK_NS;
 QMDKWindow::QMDKWindow(QWindow *parent)
@@ -108,7 +109,9 @@ void QMDKWindow::initializeGL()
 
 void QMDKWindow::resizeGL(int w, int h)
 {
-    player_->setVideoSurfaceSize(w, h);
+    auto s = screen();
+    qDebug("resizeGL>>>>>dpr: %f, logical dpi: (%f,%f), phy dpi: (%f,%f)", s->devicePixelRatio(), s->logicalDotsPerInchX(), s->logicalDotsPerInchY(), s->physicalDotsPerInchX(), s->physicalDotsPerInchY());
+    player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio());
 }
 
 void QMDKWindow::paintGL()
