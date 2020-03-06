@@ -39,6 +39,7 @@
 #include <GLFW/glfw3native.h>
 #include "prettylog.h"
 
+
 using namespace MDK_NS;
 
 int64_t gSeekStep = 10000LL;
@@ -197,6 +198,7 @@ int main(int argc, char** argv)
     const char* urla = nullptr;
     std::string ca, cv;
     Player player;
+    //player.setAspectRatio(-1.0);
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-c:v") == 0) {
             cv = argv[++i];
@@ -289,6 +291,7 @@ int main(int argc, char** argv)
     });
     if (!glfwInit())
         exit(EXIT_FAILURE);
+    //glfwWindowHint(GLFW_SCALE_TO_MONITOR, 1);
     if (es && !gfxthread) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
@@ -306,8 +309,10 @@ int main(int argc, char** argv)
     }
     glfwSetWindowUserPointer(win, &player);
     glfwSetKeyCallback(win, key_callback);
-
-    glfwSetWindowSizeCallback(win, [](GLFWwindow* win, int w,int h){
+    glfwSetWindowContentScaleCallback(win, [](GLFWwindow* win, float xscale, float yscale){
+        printf("************window scale changed: %fx%f***********\n", xscale, yscale);
+    });
+    glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         p->setVideoSurfaceSize(w, h);
     });
@@ -342,7 +347,12 @@ int main(int argc, char** argv)
         }
     });
     player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
-    player.setVideoSurfaceSize(w, h);
+    float xscale = 1.0f, yscale = 1.0f;
+    glfwGetWindowContentScale(win, &xscale, &yscale);
+    int fw = 0, fh = 0;
+    glfwGetFramebufferSize(win, &fw, &fh);
+    printf("************fb size %dx%d, requested size: %dx%d, scale= %fx%f***********\n", fw, fh, w, h, xscale, yscale);
+    player.setVideoSurfaceSize(fw, fh);
     //player.setPlaybackRate(2.0f);
     if (!urls.empty())
         player.setMedia(urls[url_now].data());
@@ -410,7 +420,7 @@ int main(int argc, char** argv)
         else
             glfwWaitEvents();
     }
-    Player::foreignGLContextDestroyed();
+    //player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources
     setLogHandler(nullptr);
     glfwTerminate();
     exit(EXIT_SUCCESS);
