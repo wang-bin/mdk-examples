@@ -39,7 +39,6 @@
 #include <GLFW/glfw3native.h>
 #include "prettylog.h"
 
-
 using namespace MDK_NS;
 
 int64_t gSeekStep = 10000LL;
@@ -173,6 +172,28 @@ void showHelp(const char* argv0)
         , argv0);
 }
 
+
+void parse_options(const char* opts, function<void(const char* opts, const char*)> cb)
+{
+    if (!opts || !opts[0])
+        return;
+    while (opts[0] == ':')
+        opts++;
+    auto options = string(opts);
+    char* p = &options[0];
+    while (true) {
+        char* v = strchr(p, '=');
+        *v++ = 0;
+        char* pp = strchr(v, ':');
+        if (pp)
+            *pp = 0;
+        cb(p, v);
+        if (!pp)
+            break;
+        p = pp + 1;
+    }
+}
+
 int url_now = 0;
 std::vector<std::string> urls;
 int main(int argc, char** argv)
@@ -182,7 +203,6 @@ int main(int argc, char** argv)
         print_log_msg(level_name[level<LogLevel::Info], msg);
     });
     bool help = argc < 2;
-    bool d3d11 = false;
     bool es = false;
     bool gfxthread = false;
     bool autoclose = false;
@@ -198,14 +218,30 @@ int main(int argc, char** argv)
     const char* urla = nullptr;
     std::string ca, cv;
     Player player;
+#ifdef _WIN32
+    D3D11RenderAPI d3d11ra;
+#endif
+    RenderAPI *ra = nullptr;
     //player.setAspectRatio(-1.0);
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-c:v") == 0) {
             cv = argv[++i];
         } else if (strcmp(argv[i], "-c:a") == 0) {
             ca = argv[++i];
-        } else if (strcmp(argv[i], "-d3d11") == 0) {
-            d3d11 = true;
+        } else if (strstr(argv[i], "-d3d11") == argv[i]) {
+#ifdef _WIN32
+            ra = &d3d11ra;
+            parse_options(argv[i] + sizeof("-d3d11") - 1, [&d3d11ra](const char* name, const char* value){
+                if (strcmp(name, "debug") == 0)
+                    d3d11ra.debug = std::atoi(value);
+                else if (strcmp(name, "buffers") == 0)
+                    d3d11ra.buffers = std::atoi(value);
+                else if (strcmp(name, "adapter") == 0)
+                    d3d11ra.adapter = std::atoi(value);
+                else if (strcmp(name, "feature_level") == 0)
+                    d3d11ra.feature_level = std::atof(value);
+            });
+#endif
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
@@ -251,13 +287,10 @@ int main(int argc, char** argv)
     if (help)
         showHelp(argv[0]);
 #ifdef MDK_0_5_0
-    if (d3d11) {
-#ifdef _WIN32
-        D3D11RenderAPI ra;
-        player.setRenderAPI(&ra);
+    if (ra)
+        player.setRenderAPI(ra);
 #endif
-    }
-#endif
+//player.setProperty("continue_at_end", "0");
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
     player.currentMediaChanged([&]{
