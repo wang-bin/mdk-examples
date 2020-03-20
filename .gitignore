@@ -1,3 +1,6 @@
+Makefile.*
+.qmake.stash
+*.user
 # vs
 .vs
 .vscode/ipch

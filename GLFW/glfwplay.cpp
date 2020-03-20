@@ -11,13 +11,11 @@
 #endif
 #include "mdk/Player.h"
 
-#if defined(MDK_VERSION_CHECK)
-# if MDK_VERSION_CHECK(0, 5, 0)
-#   define MDK_0_5_0
-# endif
+#ifndef MDK_VERSION_CHECK
+#define MDK_VERSION_CHECK(...) 0
 #endif
 
-#ifdef MDK_0_5_0
+#if MDK_VERSION_CHECK(0, 5, 0)
 #include "mdk/RenderAPI.h"
 #endif
 #include <cstdio>
@@ -64,7 +62,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_C: {
             Player::SnapshotRequest req{};
             p->snapshot(&req,
-#if defined(MDK_0_5_0)
+#if MDK_VERSION_CHECK(0, 5, 0)
         [](Player::SnapshotRequest* ret, double frameTime){
             return std::to_string(frameTime).append(".jpg");
 #else
@@ -231,6 +229,7 @@ int main(int argc, char** argv)
         } else if (strstr(argv[i], "-d3d11") == argv[i]) {
 #ifdef _WIN32
             ra = &d3d11ra;
+# if MDK_VERSION_CHECK(0, 8, 1)
             parse_options(argv[i] + sizeof("-d3d11") - 1, [&d3d11ra](const char* name, const char* value){
                 if (strcmp(name, "debug") == 0)
                     d3d11ra.debug = std::atoi(value);
@@ -241,6 +240,7 @@ int main(int argc, char** argv)
                 else if (strcmp(name, "feature_level") == 0)
                     d3d11ra.feature_level = std::atof(value);
             });
+# endif
 #endif
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
     }
     if (help)
         showHelp(argv[0]);
-#ifdef MDK_0_5_0
+#if MDK_VERSION_CHECK(0, 5, 0)
     if (ra)
         player.setRenderAPI(ra);
 #endif
@@ -417,7 +417,7 @@ int main(int argc, char** argv)
         player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
-#if defined(MDK_0_5_0)
+#if MDK_VERSION_CHECK(0, 5, 0)
             return true;
 #endif
         });
