@@ -109,6 +109,12 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             }
             break;
         }
+        case GLFW_KEY_M: {
+            static bool value = true;
+            p->setMute(value);
+            value = !value;
+        }
+            break;
         case GLFW_KEY_O: {
             static int angle = 0;
             p->rotate(angle+=90);
@@ -131,7 +137,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 void showHelp(const char* argv0)
 {
     printf("usage: %s [-d3d11] [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
-            "-d3d11: d3d11 renderer, MUST use with -gfxthread (experimental)\n"
+            "-d3d11: d3d11 renderer, MUST use with -gfxthread. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
             "-es: use OpenGL ES2+ instead of OpenGL\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
@@ -275,9 +281,14 @@ int main(int argc, char** argv)
             gSeekStep = atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-autoclose") == 0) {
             autoclose = true;
-        } else if (argv[i][0] == '-') { // TODO: treat as SetGlobalOption
-            printf("Unknow option: %s\n", argv[i]);
+        } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
             help = true;
+            break;
+        } else if (argv[i][0] == '-' && (argv[i+1][0] == '-' || i == argc - 2)) {
+            printf("Unknow option: %s\n", argv[i]);
+        } else if (argv[i][0] == '-') {
+            SetGlobalOption(argv[i]+1, argv[i+1]);
+            ++i;
         } else {
             for (int j = i; j < argc; ++j)
                 urls.emplace_back(argv[j]);
