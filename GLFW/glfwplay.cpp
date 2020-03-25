@@ -353,9 +353,11 @@ int main(int argc, char** argv)
     }
     glfwSetWindowUserPointer(win, &player);
     glfwSetKeyCallback(win, key_callback);
+#if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
     glfwSetWindowContentScaleCallback(win, [](GLFWwindow* win, float xscale, float yscale){
         printf("************window scale changed: %fx%f***********\n", xscale, yscale);
     });
+#endif
     glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         p->setVideoSurfaceSize(w, h);
@@ -392,7 +394,9 @@ int main(int argc, char** argv)
     });
     player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
     float xscale = 1.0f, yscale = 1.0f;
+#if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
     glfwGetWindowContentScale(win, &xscale, &yscale);
+#endif
     int fw = 0, fh = 0;
     glfwGetFramebufferSize(win, &fw, &fh);
     printf("************fb size %dx%d, requested size: %dx%d, scale= %fx%f***********\n", fw, fh, w, h, xscale, yscale);
