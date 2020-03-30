@@ -25,7 +25,6 @@
 #include <regex>
 #include <GLFW/glfw3.h>
 #if _WIN32
-#define putenv _putenv // putenv_s(name, value).  for getenv(), can not use SetEnvironmentVariable
 #include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
@@ -206,6 +205,7 @@ int main(int argc, char** argv)
         static const char level_name[] = {'I', 'W'};
         print_log_msg(level_name[level<LogLevel::Info], msg);
     });
+{
     bool help = argc < 2;
     bool es = false;
     bool gfxthread = false;
@@ -225,6 +225,12 @@ int main(int argc, char** argv)
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra;
 #endif
+#if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI))
+    MetalRenderAPI mtlra;
+#endif
+#if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
+    GLRenderAPI glra;
+#endif
     RenderAPI *ra = nullptr;
     //player.setAspectRatio(-1.0);
     for (int i = 1; i < argc; ++i) {
@@ -233,9 +239,10 @@ int main(int argc, char** argv)
         } else if (strcmp(argv[i], "-c:a") == 0) {
             ca = argv[++i];
         } else if (strstr(argv[i], "-d3d11") == argv[i]) {
+            gfxthread = true;
 #ifdef _WIN32
             ra = &d3d11ra;
-# if MDK_VERSION_CHECK(0, 8, 1)
+# if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
             parse_options(argv[i] + sizeof("-d3d11") - 1, [&d3d11ra](const char* name, const char* value){
                 if (strcmp(name, "debug") == 0)
                     d3d11ra.debug = std::atoi(value);
@@ -247,6 +254,37 @@ int main(int argc, char** argv)
                     d3d11ra.feature_level = std::atof(value);
             });
 # endif
+#endif
+        } else if (strstr(argv[i], "-gl") == argv[i]) {
+            gfxthread = true;
+#if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
+            ra = &glra;
+            parse_options(argv[i] + sizeof("-gl") - 1, [&glra](const char* name, const char* value){
+                if (strcmp(name, "debug") == 0)
+                    glra.debug = std::atoi(value);
+                else if (strcmp(name, "egl") == 0)
+                    glra.egl = std::atoi(value);
+                else if (strcmp(name, "opengl") == 0)
+                    glra.opengl = std::atoi(value);
+                else if (strcmp(name, "opengles") == 0)
+                    glra.opengles = std::atoi(value);
+                else if (strcmp(name, "profile") == 0) {
+                    if (strstr(value, "core"))
+                        glra.profile = GLRenderAPI::Profile::Core;
+                    else if (strstr(value, "compat"))
+                        glra.profile = GLRenderAPI::Profile::Compatibility;
+                    else
+                        glra.profile = GLRenderAPI::Profile::No;
+                }
+                else if (strcmp(name, "version") == 0)
+                    glra.version = std::atof(value);
+            });
+#endif // MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
+
+        } else if (strstr(argv[i], "-metal") == argv[i]) {
+            gfxthread = true;
+#if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI))
+            ra = &mtlra;
 #endif
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
@@ -279,6 +317,8 @@ int main(int argc, char** argv)
             gSeekFlag = SeekFlag::FromStart;
         } else if (std::strcmp(argv[i], "-seek_step") == 0) {
             gSeekStep = atoi(argv[++i]);
+        } else if (std::strcmp(argv[i], "-plugins") == 0) {
+            SetGlobalOption("plugins", argv[++i]);
         } else if (std::strcmp(argv[i], "-autoclose") == 0) {
             autoclose = true;
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
@@ -442,7 +482,6 @@ int main(int argc, char** argv)
 
     if (gfxthread) {
         auto surface_type = MDK_NS::Player::SurfaceType::Auto;
-        putenv((char*)std::string("GL_EGL=").append(std::to_string(es)).data()); // for getenv() // FIXME: asan crash in getenv
 #if defined(_WIN32)
         auto hwnd = glfwGetWin32Window(win);
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
@@ -468,6 +507,7 @@ int main(int argc, char** argv)
         else
             glfwWaitEvents();
     }
+}
     //player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources
     setLogHandler(nullptr);
     glfwTerminate();
