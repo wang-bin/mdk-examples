@@ -233,10 +233,10 @@ int main(int argc, char** argv)
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra;
 #endif
-#if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI))
+#if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI))
     MetalRenderAPI mtlra;
 #endif
-#if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
+#if MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI)
     GLRenderAPI glra;
 #endif
     RenderAPI *ra = nullptr;
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 #endif
         } else if (strstr(argv[i], "-gl") == argv[i]) {
             gfxthread = true;
-#if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
+#if MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI)
             ra = &glra;
             parse_options(argv[i] + sizeof("-gl") - 1, [&glra](const char* name, const char* value){
                 if (strcmp(name, "debug") == 0)
@@ -291,7 +291,7 @@ int main(int argc, char** argv)
 
         } else if (strstr(argv[i], "-metal") == argv[i]) {
             gfxthread = true;
-#if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI))
+#if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI))
             ra = &mtlra;
 #endif
         } else if (strcmp(argv[i], "-es") == 0) {
