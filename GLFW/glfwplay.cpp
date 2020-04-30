@@ -36,6 +36,13 @@
 #include <GLFW/glfw3native.h>
 #include "prettylog.h"
 
+#ifdef _Pragma
+# if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
+_Pragma("weak glfwSetWindowContentScaleCallback")
+_Pragma("weak glfwGetWindowContentScale")
+# endif
+#endif
+
 using namespace MDK_NS;
 
 int64_t gSeekStep = 10000LL;
@@ -212,6 +219,7 @@ int main(int argc, char** argv)
     bool autoclose = false;
     int from = 0;
     float wait = 0;
+    float speed = 1.0f;
     int64_t buf_min = 4000;
     int64_t buf_max = 16000;
     int loop = -2;
@@ -313,6 +321,8 @@ int main(int argc, char** argv)
             loop_b = atoll(argv[++i]);
         } else if (std::strcmp(argv[i], "-loop") == 0) {
             loop = atoi(argv[++i]);
+        } else if (std::strcmp(argv[i], "-speed") == 0) {
+            speed = atof(argv[++i]);
         } else if (std::strcmp(argv[i], "-seek_any") == 0) {
             gSeekFlag = SeekFlag::FromStart;
         } else if (std::strcmp(argv[i], "-seek_step") == 0) {
@@ -341,7 +351,10 @@ int main(int argc, char** argv)
     if (ra)
         player.setRenderAPI(ra);
 #endif
+    if (speed != 1.0f)
+        player.setPlaybackRate(speed);
 //player.setProperty("continue_at_end", "0");
+    //player.setProperty("video.avfilter", "format=pix_fmts=yuv420p10be");
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
     player.currentMediaChanged([&]{
@@ -394,9 +407,10 @@ int main(int argc, char** argv)
     glfwSetWindowUserPointer(win, &player);
     glfwSetKeyCallback(win, key_callback);
 #if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
-    glfwSetWindowContentScaleCallback(win, [](GLFWwindow* win, float xscale, float yscale){
-        printf("************window scale changed: %fx%f***********\n", xscale, yscale);
-    });
+    if (glfwSetWindowContentScaleCallback)
+        glfwSetWindowContentScaleCallback(win, [](GLFWwindow* win, float xscale, float yscale){
+            printf("************window scale changed: %fx%f***********\n", xscale, yscale);
+        });
 #endif
     glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
@@ -435,7 +449,8 @@ int main(int argc, char** argv)
     player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
     float xscale = 1.0f, yscale = 1.0f;
 #if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
-    glfwGetWindowContentScale(win, &xscale, &yscale);
+    if (glfwGetWindowContentScale)
+        glfwGetWindowContentScale(win, &xscale, &yscale);
 #endif
     int fw = 0, fh = 0;
     glfwGetFramebufferSize(win, &fw, &fh);
