@@ -208,10 +208,12 @@ int url_now = 0;
 std::vector<std::string> urls;
 int main(int argc, char** argv)
 {
-    setLogHandler([=](LogLevel level, const char* msg){
+    FILE* log_file = stdout;
+    setLogHandler([&log_file](LogLevel level, const char* msg){
         static const char level_name[] = {'I', 'W'};
-        print_log_msg(level_name[level<LogLevel::Info], msg);
+        print_log_msg(level_name[level<LogLevel::Info], msg, log_file);
     });
+    SetGlobalOption("MDK_KEY", "0B7B1FB276D89477B7C3FB55B5628E16C71BE63D88989CD1B481E9E746ADA4998797FD4C5DD7EBF6E4710F71354A51BB813A4AB7F15E7DB4802B2EE1B52F6405F484E04D76D89C77483C04AA4A9D71E9C71BEE5AE4FEEBA1D8E090AAC1B0A0CE550AD3E5388B90729D67606737CE7D94889F449C05A309BAEF82629592956305");
 {
     bool help = argc < 2;
     bool es = false;
@@ -334,10 +336,13 @@ int main(int argc, char** argv)
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
             help = true;
             break;
+        } else if (std::strcmp(argv[i], "-logfile") == 0) {
+            log_file = fopen(argv[++i], "w");
         } else if (argv[i][0] == '-' && (argv[i+1][0] == '-' || i == argc - 2)) {
             printf("Unknow option: %s\n", argv[i]);
         } else if (argv[i][0] == '-') {
             SetGlobalOption(argv[i]+1, argv[i+1]);
+            player.setProperty(argv[i]+1, argv[i+1]);
             ++i;
         } else {
             for (int j = i; j < argc; ++j)
@@ -345,6 +350,8 @@ int main(int argc, char** argv)
             break;
         }
     }
+    //auto libavformat = dlopen("libavformat.58.dylib", RTLD_LOCAL);
+    //SetGlobalOption("avformat", libavformat);
     if (help)
         showHelp(argv[0]);
 #if MDK_VERSION_CHECK(0, 5, 0)
