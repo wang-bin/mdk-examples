@@ -1,0 +1,3 @@
+[submodule "Apple/HelloTriangle"]
+	path = Apple/HelloTriangle
+	url = https://github.com/wang-bin/HelloTriangle.git
