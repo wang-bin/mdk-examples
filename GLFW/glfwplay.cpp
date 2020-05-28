@@ -210,6 +210,12 @@ std::vector<std::string> urls;
 int main(int argc, char** argv)
 {
     FILE* log_file = stdout;
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "-logfile") == 0) {
+            log_file = fopen(argv[++i], "w");
+            break;
+        }
+    }
     setLogHandler([&log_file](LogLevel level, const char* msg){
         static const char level_name[] = {'I', 'W'};
         print_log_msg(level_name[level<LogLevel::Info], msg, log_file);
@@ -339,8 +345,6 @@ int main(int argc, char** argv)
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
             help = true;
             break;
-        } else if (std::strcmp(argv[i], "-logfile") == 0) {
-            log_file = fopen(argv[++i], "w");
         } else if (argv[i][0] == '-' && (argv[i+1][0] == '-' || i == argc - 2)) {
             printf("Unknow option: %s\n", argv[i]);
         } else if (argv[i][0] == '-') {
