@@ -143,8 +143,10 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 void showHelp(const char* argv0)
 {
     printf("usage: %s [-d3d11] [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
-            "-d3d11: d3d11 renderer, MUST use with -gfxthread. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
-            "-es: use OpenGL ES2+ instead of OpenGL\n"
+            "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
+            "-gl: use gl renderer. context is created by mdk instead of glfw\n"
+            "-d3d11: metal renderer. support additiona options: -d3d11:device_index=0 \n"
+            "-logfile: save log to a given file\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
             "decoder properties(not supported by all): glva=0/1, hwdec_format=..., copy_frame=0/1/-1, hwdevice=...\n"
@@ -153,7 +155,6 @@ void showHelp(const char* argv0)
             "-url:a: individual audio track url.\n"
             "-from: start from given seconds\n"
             "-pause: pause at the 1st frame\n"
-            "-gfxthread: create gfx(rendering) context and thread by mdk instead of GLFW. -fps does not work\n"
             "-buffer: buffer duration range in milliseconds, can be 'minMs', 'minMs+maxMs', e.g. -buffer 1000, or -buffer 1000+2000\n"
             "-buffer_drop: drop buffered data when buffered duration exceed max buffer duration. useful for playing realtime streams, e.g. -buffer 0+1000 -buffer_drop to ensure delay < 1s\n"
             "-loop-a: A-B loop A. if not set but -loop-b is set, then A is 0\n"
@@ -213,7 +214,7 @@ int main(int argc, char** argv)
         static const char level_name[] = {'I', 'W'};
         print_log_msg(level_name[level<LogLevel::Info], msg, log_file);
     });
-    SetGlobalOption("MDK_KEY", "0B7B1FB276D89477B7C3FB55B5628E16C71BE63D88989CD1B481E9E746ADA4998797FD4C5DD7EBF6E4710F71354A51BB813A4AB7F15E7DB4802B2EE1B52F6405F484E04D76D89C77483C04AA4A9D71E9C71BEE5AE4FEEBA1D8E090AAC1B0A0CE550AD3E5388B90729D67606737CE7D94889F449C05A309BAEF82629592956305");
+    SetGlobalOption("MDK_KEY", "46BEA5D0C6D0C773BDBED9C336547750D5AD5D2102C130003B0AB4D6B51A8E99172B156D04933211A5AD3F6133E33E82CA912AEBA1F05602C3AFCAD311EE6A07B9415A2FC6D0CE734241263CC9AB88AF95AD55466EA74770576BCD01419E94424BCD1BEC314907D7664337DF33944DA93F4023FD7EC661A9FADFB91155342607");
 {
     bool help = argc < 2;
     bool es = false;
@@ -295,6 +296,10 @@ int main(int argc, char** argv)
             gfxthread = true;
 #if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI))
             ra = &mtlra;
+            parse_options(argv[i] + sizeof("-metal") - 1, [&mtlra](const char* name, const char* value){
+                if (strcmp(name, "device_index") == 0)
+                    mtlra.device_index = std::atoi(value);
+            });
 #endif
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
@@ -306,8 +311,6 @@ int main(int argc, char** argv)
             player.setAudioBackends({argv[++i]});
         } else if (std::strcmp(argv[i], "-fps") == 0) {
             wait = 1.0f/atoi(argv[++i]);
-        } else if (std::strcmp(argv[i], "-gfxthread") == 0) {
-            gfxthread = true;
         } else if (std::strcmp(argv[i], "-url:a") == 0) {
             urla = argv[++i];
         } else if (std::strcmp(argv[i], "-buffer") == 0) {
