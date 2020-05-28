@@ -4,9 +4,11 @@
  */
 #pragma once
 #include <QtQuick/QQuickItem>
-#include "mdk/Player.h"
+#include "mdk/global.h"
+namespace MDK_NS {
+class Player;
+}
 using namespace MDK_NS;
-
 class VideoTextureNode;
 
 class VideoTextureItem : public QQuickItem
@@ -17,6 +19,7 @@ class VideoTextureItem : public QQuickItem
 
 public:
     VideoTextureItem();
+    ~VideoTextureItem() override;
 
     QString source() { return m_source; }
     void setSource(const QString & s);

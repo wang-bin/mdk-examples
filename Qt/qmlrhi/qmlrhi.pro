@@ -7,7 +7,7 @@ HEADERS += VideoTextureItem.h
 SOURCES += VideoTextureItem.cpp main.cpp
 RESOURCES += mdktextureitem.qrc
 
-LIBS += -framework Metal
+macos|ios: LIBS += -framework Metal
 macos: LIBS += -framework AppKit
 
 target.path = $$[QT_INSTALL_EXAMPLES]/quick/scenegraph/mdktextureitem

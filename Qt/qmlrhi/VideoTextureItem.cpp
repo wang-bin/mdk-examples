@@ -10,12 +10,16 @@
 #if (__APPLE__+0)
 #include <Metal/Metal.h>
 #endif
-
+#if (_WIN32+0)
+#include <d3d11.h>
+#include <wrl/client.h>
+using namespace Microsoft::WRL; //ComPtr
+#endif
 #if QT_CONFIG(opengl)
 #include <QOpenGLFunctions>
 #include <QOpenGLFramebufferObject>
 #endif
-
+#include "mdk/Player.h"
 #include "mdk/RenderAPI.h"
 using namespace std;
 
@@ -45,7 +49,10 @@ private:
 #if QT_CONFIG(opengl)
     unique_ptr<QOpenGLFramebufferObject> fbo_gl;
 #endif
-
+#if (_WIN32+0)
+    ComPtr<ID3D11Texture2D> m_texture_d3d11;
+    ComPtr<ID3D11RenderTargetView> m_rtv;
+#endif
     std::shared_ptr<Player> m_player;
 };
 
@@ -58,6 +65,8 @@ VideoTextureItem::VideoTextureItem()
         QMetaObject::invokeMethod(this, "update"); // FIXME: crash on quit
     });
 }
+
+VideoTextureItem::~VideoTextureItem() = default;
 
 // The beauty of using a true QSGNode: no need for complicated cleanup
 // arrangements, unlike in other examples like metalunderqml, because the
@@ -178,6 +187,31 @@ void VideoTextureNode::sync()
         setTexture(wrapper);
         qDebug() << "Got QSGTexture wrapper" << wrapper << "for an OpenGL texture '" << tex << "' of size" << m_size;
         m_player->scale(1.0f, -1.0f); // flip y
+#endif
+    }
+        break;
+    case QSGRendererInterface::Direct3D11Rhi: {
+#if (_WIN32)
+        auto dev = (ID3D11Device*)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
+        D3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, m_size.width(), m_size.height(), 1, 1
+                                                          , D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_RENDER_TARGET
+                                                          , D3D11_USAGE_DEFAULT, 0, 1, 0, 0);
+        if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
+
+        }
+        QSGTexture *wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
+                                                                      m_texture_d3d11.GetAddressOf(),
+                                                                      0,
+                                                                      m_size);
+        setTexture(wrapper);
+        qDebug() << "Got QSGTexture wrapper" << wrapper << "for an D3D11 texture of size" << m_size;
+        D3D11RenderAPI ra;
+        ComPtr<ID3D11DeviceContext> ctx;
+        dev->GetImmediateContext(&ctx);
+        ra.context = ctx.Get();
+        dev->CreateRenderTargetView(m_texture_d3d11.Get(), nullptr, &m_rtv);
+        ra.rtv = m_rtv.Get();
+        m_player->setRenderAPI(&ra);
 #endif
     }
         break;
