@@ -142,6 +142,7 @@ VideoTextureNode::VideoTextureNode(VideoTextureItem *item)
 
 VideoTextureNode::~VideoTextureNode()
 {
+    delete texture();
     // release gfx resources
 #if QT_CONFIG(opengl)
     fbo_gl.reset();
