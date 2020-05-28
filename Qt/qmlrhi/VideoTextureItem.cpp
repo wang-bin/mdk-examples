@@ -53,7 +53,7 @@ private:
     ComPtr<ID3D11Texture2D> m_texture_d3d11;
     ComPtr<ID3D11RenderTargetView> m_rtv;
 #endif
-    std::shared_ptr<Player> m_player;
+    std::weak_ptr<Player> m_player;
 };
 
 VideoTextureItem::VideoTextureItem()
@@ -62,7 +62,7 @@ VideoTextureItem::VideoTextureItem()
     m_player = make_shared<Player>();
     //m_player->setVideoDecoders({"VT", "FFmpeg"});
     m_player->setRenderCallback([=](void *){
-        QMetaObject::invokeMethod(this, "update"); // FIXME: crash on quit
+        QMetaObject::invokeMethod(this, "update");
     });
 }
 
@@ -172,6 +172,10 @@ void VideoTextureNode::sync()
         return;
 
     delete texture();
+
+    auto player = m_player.lock();
+    if (!player)
+        return;
     QSGRendererInterface *rif = m_window->rendererInterface();
     switch (rif->graphicsApi()) {
     case QSGRendererInterface::OpenGL:
@@ -186,7 +190,7 @@ void VideoTextureNode::sync()
                                                                       m_size);
         setTexture(wrapper);
         qDebug() << "Got QSGTexture wrapper" << wrapper << "for an OpenGL texture '" << tex << "' of size" << m_size;
-        m_player->scale(1.0f, -1.0f); // flip y
+        player->scale(1.0f, -1.0f); // flip y
 #endif
     }
         break;
@@ -211,7 +215,7 @@ void VideoTextureNode::sync()
         ra.context = ctx.Get();
         dev->CreateRenderTargetView(m_texture_d3d11.Get(), nullptr, &m_rtv);
         ra.rtv = m_rtv.Get();
-        m_player->setRenderAPI(&ra);
+        player->setRenderAPI(&ra);
 #endif
     }
         break;
@@ -243,14 +247,14 @@ void VideoTextureNode::sync()
         ra.texture = (__bridge void*)m_texture_mtl;
         ra.device = (__bridge void*)dev;
         ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
-        m_player->setRenderAPI(&ra);
+        player->setRenderAPI(&ra);
 #endif
     }
         break;
     default:
         break;
     }
-    m_player->setVideoSurfaceSize(m_size.width(), m_size.height());
+    player->setVideoSurfaceSize(m_size.width(), m_size.height());
 }
 
 // This is hooked up to beforeRendering() so we can start our own render
@@ -268,7 +272,10 @@ void VideoTextureNode::render()
         fbo_gl->bind();
     }
 #endif
-    m_player->renderVideo();
+    auto player = m_player.lock();
+    if (!player)
+        return;
+    player->renderVideo();
 #if QT_CONFIG(opengl)
     if (fbo_gl) {
         auto f = QOpenGLContext::currentContext()->functions();
