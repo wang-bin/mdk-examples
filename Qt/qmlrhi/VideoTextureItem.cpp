@@ -158,7 +158,7 @@ QSGTexture *VideoTextureNode::texture() const
 void VideoTextureNode::sync()
 {
     m_dpr = m_window->effectiveDevicePixelRatio();
-    const QSize newSize = m_window->size() * m_dpr;
+    const QSizeF newSize = m_item->size() * m_dpr;
     bool needsNew = false;
 
     if (!texture())
@@ -166,7 +166,7 @@ void VideoTextureNode::sync()
 
     if (newSize != m_size) {
         needsNew = true;
-        m_size = newSize;
+        m_size = {qRound(newSize.width()), qRound(newSize.height())};
     }
 
     if (!needsNew)
