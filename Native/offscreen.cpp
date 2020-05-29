@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     })
 #endif
     .setRenderCallback([](void*){
-        printf("notify your opengl context is ready to call player.renderVideo()\n");
+        printf("notify your opengl context is ready to call player.renderVideo() or directly call it\n");
     })
     ;
 

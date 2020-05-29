@@ -6,7 +6,7 @@ set(GLFW_NAME glfw)
 if(WIN32)
   set(GLFW_NAME glfw3)
 endif()
-if(WINDOWS_DESKTOP AND MSVC)
+if(WINDOWS_DESKTOP)# AND MSVC)
   set(GLFW_DEP ${EXTRA_LIB_DIRS_FLAG} gdi32 shell32 user32) # Gdi32.Lib, shell32.lib, User32.Lib. but cmake treates .Lib as .Lib.lib
 elseif(APPLE)
   set(GLFW_DEP "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo")
