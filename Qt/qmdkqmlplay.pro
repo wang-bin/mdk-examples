@@ -21,6 +21,7 @@ macx {
   LIBS += -F$$PWD/../mdk-sdk/lib -F/usr/local/lib -framework mdk
 } else {
   LIBS += -L$$PWD/../mdk-sdk/lib/$$MDK_ARCH -lmdk
+  win32: LIBS += -L$$PWD/../../mdk-sdk/bin/$$MDK_ARCH # qtcreator will prepend $$LIBS to PATH to run targets
 }
 linux: LIBS += -Wl,-rpath-link,$$PWD/../mdk-sdk/lib/$$MDK_ARCH # for libc++ symbols
 
