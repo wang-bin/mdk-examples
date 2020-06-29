@@ -60,7 +60,7 @@ VideoTextureItem::VideoTextureItem()
 {
     setFlag(ItemHasContents, true);
     m_player = make_shared<Player>();
-    //m_player->setVideoDecoders({"VT", "FFmpeg"});
+    //m_player->setVideoDecoders({"VT", "MFT:d3d=11", "VAAPI", "FFmpeg"});
     m_player->setRenderCallback([=](void *){
         QMetaObject::invokeMethod(this, "update");
     });
@@ -191,6 +191,9 @@ void VideoTextureNode::sync()
                                                                       m_size);
         setTexture(wrapper);
         qDebug() << "Got QSGTexture wrapper" << wrapper << "for an OpenGL texture '" << tex << "' of size" << m_size;
+        GLRenderAPI ra;
+        ra.fbo = fbo_gl->handle();
+        player->setRenderAPI(&ra);
         player->scale(1.0f, -1.0f); // flip y
 #endif
     }
@@ -265,25 +268,10 @@ void VideoTextureNode::sync()
 //! [6]
 void VideoTextureNode::render()
 {
-#if QT_CONFIG(opengl)
-    GLuint prevFbo = 0;
-    if (fbo_gl) {
-        auto f = QOpenGLContext::currentContext()->functions();
-        f->glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&prevFbo);
-        fbo_gl->bind();
-    }
-#endif
     auto player = m_player.lock();
     if (!player)
         return;
     player->renderVideo();
-#if QT_CONFIG(opengl)
-    if (fbo_gl) {
-        auto f = QOpenGLContext::currentContext()->functions();
-        f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
-        //fbo_gl->toImage().save("/tmp/fbo.jpg");
-    }
-#endif
 }
 
 #include "VideoTextureItem.moc"
