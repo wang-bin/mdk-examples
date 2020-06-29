@@ -14,9 +14,11 @@
 #ifndef MDK_VERSION_CHECK
 #define MDK_VERSION_CHECK(...) 0
 #endif
-
 #if MDK_VERSION_CHECK(0, 5, 0)
-#include "mdk/RenderAPI.h"
+# if __has_include(<vulkan/vulkan_core.h>) // FIXME: -I
+#   include <vulkan/vulkan_core.h>
+# endif
+# include "mdk/RenderAPI.h"
 #endif
 #include <cstdio>
 #include <cstdlib>
@@ -145,7 +147,8 @@ void showHelp(const char* argv0)
     printf("usage: %s [-d3d11] [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
             "-gl: use gl renderer. context is created by mdk instead of glfw\n"
-            "-d3d11: metal renderer. support additiona options: -d3d11:device_index=0 \n"
+            "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
+            "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
             "-logfile: save log to a given file\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
@@ -248,6 +251,9 @@ int main(int argc, char** argv)
 #if MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI)
     GLRenderAPI glra;
 #endif
+#if (VK_VERSION_1_0+0) && (MDK_VERSION_CHECK(0, 10, 0) || defined(MDK_ABI))
+    VulkanRenderAPI vkra;
+#endif
     RenderAPI *ra = nullptr;
     //player.setAspectRatio(-1.0);
     for (int i = 1; i < argc; ++i) {
@@ -307,6 +313,15 @@ int main(int argc, char** argv)
                     mtlra.device_index = std::atoi(value);
             });
 #endif
+        } else if (strstr(argv[i], "-vk") == argv[i]) {
+            gfxthread = true;
+#if (VK_VERSION_1_0+0) && (MDK_VERSION_CHECK(0, 10, 0) || defined(MDK_ABI))
+            ra = &vkra;
+            parse_options(argv[i] + sizeof("-vk") - 1, [&vkra](const char* name, const char* value){
+                if (strcmp(name, "device_index") == 0)
+                    vkra.device_index = std::atoi(value);
+            });
+#endif
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
@@ -357,6 +372,7 @@ int main(int argc, char** argv)
             break;
         }
     }
+    //SetGlobalOption("videoout.clear_on_stop", 0);
     //auto libavformat = dlopen("libavformat.58.dylib", RTLD_LOCAL);
     //SetGlobalOption("avformat", libavformat);
     if (help)
