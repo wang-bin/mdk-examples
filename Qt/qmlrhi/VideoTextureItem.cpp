@@ -51,7 +51,6 @@ private:
 #endif
 #if (_WIN32+0)
     ComPtr<ID3D11Texture2D> m_texture_d3d11;
-    ComPtr<ID3D11RenderTargetView> m_rtv;
 #endif
     std::weak_ptr<Player> m_player;
 };
@@ -178,6 +177,7 @@ void VideoTextureNode::sync()
     if (!player)
         return;
     QSGRendererInterface *rif = m_window->rendererInterface();
+    void* nativeObj = nullptr;
     switch (rif->graphicsApi()) {
     case QSGRendererInterface::OpenGL:
         Q_FALLTHROUGH();
@@ -185,12 +185,7 @@ void VideoTextureNode::sync()
 #if QT_CONFIG(opengl)
         fbo_gl.reset(new QOpenGLFramebufferObject(m_size));
         auto tex = fbo_gl->texture();
-        QSGTexture *wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
-                                                                      &tex,
-                                                                      0,
-                                                                      m_size);
-        setTexture(wrapper);
-        qDebug() << "Got QSGTexture wrapper" << wrapper << "for an OpenGL texture '" << tex << "' of size" << m_size;
+        nativeObj = (void*)tex;
         GLRenderAPI ra;
         ra.fbo = fbo_gl->handle();
         player->setRenderAPI(&ra);
@@ -207,18 +202,9 @@ void VideoTextureNode::sync()
         if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
 
         }
-        QSGTexture *wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
-                                                                      m_texture_d3d11.GetAddressOf(),
-                                                                      0,
-                                                                      m_size);
-        setTexture(wrapper);
-        qDebug() << "Got QSGTexture wrapper" << wrapper << "for an D3D11 texture of size" << m_size;
+        nativeObj = m_texture_d3d11.Get();
         D3D11RenderAPI ra;
-        ComPtr<ID3D11DeviceContext> ctx;
-        dev->GetImmediateContext(&ctx);
-        ra.context = ctx.Get();
-        dev->CreateRenderTargetView(m_texture_d3d11.Get(), nullptr, &m_rtv);
-        ra.rtv = m_rtv.Get();
+        ra.rtv = m_texture_d3d11.Get();
         player->setRenderAPI(&ra);
 #endif
     }
@@ -238,17 +224,9 @@ void VideoTextureNode::sync()
         desc.storageMode = MTLStorageModePrivate;
         desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
         m_texture_mtl = [dev newTextureWithDescriptor: desc];
-
-        QSGTexture *wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
-                                                                      &m_texture_mtl,
-                                                                      0,
-                                                                      m_size);
-        setTexture(wrapper);
-
-        qDebug() << "Got QSGTexture wrapper" << wrapper << "for an MTLTexture of size" << m_size;
-
+        nativeObj = (__bridge void*)m_texture_mtl;
         MetalRenderAPI ra{};
-        ra.texture = (__bridge void*)m_texture_mtl;
+        ra.texture = nativeObj;
         ra.device = (__bridge void*)dev;
         ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
         player->setRenderAPI(&ra);
@@ -257,6 +235,13 @@ void VideoTextureNode::sync()
         break;
     default:
         break;
+    }
+    if (nativeObj) {
+        QSGTexture *wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
+                                                                      &nativeObj,
+                                                                      0,
+                                                                      m_size);
+        setTexture(wrapper);
     }
     player->setVideoSurfaceSize(m_size.width(), m_size.height());
 }
