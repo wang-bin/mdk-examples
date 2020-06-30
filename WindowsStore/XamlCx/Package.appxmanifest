@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10" IgnorableNamespaces="uap mp iot">
-  <Identity Name="3438f525-3a56-49c6-b119-292aaf2e61e2" Publisher="CN=Lucas Wang" Version="1.0.24.0" />
+  <Identity Name="3438f525-3a56-49c6-b119-292aaf2e61e2" Publisher="CN=Lucas Wang" Version="1.0.26.0" />
   <mp:PhoneIdentity PhoneProductId="3438f525-3a56-49c6-b119-292aaf2e61e2" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>MDK XAML/CX Example</DisplayName>
