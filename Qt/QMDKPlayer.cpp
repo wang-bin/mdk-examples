@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKPlayer.h"
@@ -14,13 +14,6 @@ QMDKPlayer::QMDKPlayer(QObject *parent)
     : QObject(parent)
     , player_(new Player())
 {
-    setLogHandler([](LogLevel level, const char* msg){
-        if (level >= std::underlying_type<LogLevel>::type(LogLevel::Info)) {
-            qDebug() << msg;
-        } else if (level >= std::underlying_type<LogLevel>::type(LogLevel::Warning)) {
-            qWarning() << msg;
-        }
-    });
     player_->setRenderCallback([](void* vo_opaque){
         auto vo = reinterpret_cast<QObject*>(vo_opaque);
         if (!vo->isWidgetType()) { // isWidgetType() is fastest, and no need to include <QWidget>
@@ -28,11 +21,11 @@ QMDKPlayer::QMDKPlayer(QObject *parent)
                 QCoreApplication::instance()->postEvent(vo, new QEvent(QEvent::UpdateRequest));
             return;
         }
-        class QUpdateLaterEvent final : public QEvent {   
+        class QUpdateLaterEvent final : public QEvent {
         public:
             explicit QUpdateLaterEvent(const QRegion& paintRegion)
                 : QEvent(UpdateLater), m_region(paintRegion)
-            {} 
+            {}
             ~QUpdateLaterEvent() {}
             inline const QRegion &region() const { return m_region; }
         protected:
@@ -103,4 +96,9 @@ void QMDKPlayer::addRenderer(QObject* vo, int w, int h)
 void QMDKPlayer::renderVideo(QObject* vo)
 {
     player_->renderVideo(vo);
+}
+
+void QMDKPlayer::destroyGLContext(QObject* vo)
+{
+    player_->setVideoSurfaceSize(-1, -1, vo); // it's better to cleanup gl renderer resources
 }

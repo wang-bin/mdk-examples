@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
  */
 #include "QMDKRenderer.h"
 #include "QMDKPlayer.h"
@@ -38,11 +38,12 @@ void QMDKWindowRenderer::initializeGL()
 {
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
     auto ctx = context();
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [ctx]{
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
         QOffscreenSurface s;
         s.create();
         ctx->makeCurrent(&s);
-        Player::foreignGLContextDestroyed();
+        if (player_)
+            player_->destroyGLContext(this); // it's better to cleanup gl renderer resources
         ctx->doneCurrent();
     });
 }
@@ -91,11 +92,12 @@ void QMDKWidgetRenderer::initializeGL()
 {
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
     auto ctx = context();
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [ctx]{
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
         QOffscreenSurface s;
         s.create();
         ctx->makeCurrent(&s);
-        Player::foreignGLContextDestroyed();
+        if (player_)
+            player_->destroyGLContext(this); // it's better to cleanup gl renderer resources
         ctx->doneCurrent();
     });
 }

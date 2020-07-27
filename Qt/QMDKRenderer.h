@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
  */
 #ifndef QMDKRenderer_H
 #define QMDKRenderer_H
@@ -40,7 +40,7 @@ public:
     QMDKWidgetRenderer(QWidget *parent = nullptr);
     ~QMDKWidgetRenderer() override;
     void setSource(QMDKPlayer* player);
-
+    QMDKPlayer* source() const { return player_; }
 protected:
     virtual void beforeGL() {}
     virtual void afterGL() {}

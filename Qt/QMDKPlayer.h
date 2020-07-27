@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #ifndef QMDKPlayer_H
@@ -31,6 +31,8 @@ public:
 
     void addRenderer(QObject* vo = nullptr, int w = -1, int h = -1);
     void renderVideo(QObject* vo = nullptr);
+
+    void destroyGLContext(QObject* vo);
 private:
     std::unique_ptr<mdk::Player> player_;
 };
