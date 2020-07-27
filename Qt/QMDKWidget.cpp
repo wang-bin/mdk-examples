@@ -1,31 +1,33 @@
 /*
- * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
- * MDK SDK with QOpenGLWindow example
+ * Copyright (c) 2020 WangBin <wbsecg1 at gmail.com>
+ * MDK SDK with QOpenGLWidget example
  */
-#include "QMDKWindow.h"
+#include "QMDKWidget.h"
 #include "mdk/Player.h"
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QKeyEvent>
 #include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <QStringList>
 #include <QScreen>
 
 using namespace MDK_NS;
-QMDKWindow::QMDKWindow(QWindow *parent)
-    : QOpenGLWindow(NoPartialUpdate, parent)
+QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
+    : QOpenGLWidget(parent, f)
     , player_(std::make_shared<Player>())
 {
     player_->setVideoDecoders({"VT", "VAAPI", "MFT:d3d=11", "DXVA", "MMAL", "AMediaCodec:java=1:copy=0:surface=1:async=0", "FFmpeg"});
     player_->setRenderCallback([this](void*){
-        QCoreApplication::instance()->postEvent(this, new QEvent(QEvent::UpdateRequest), INT_MAX);
+        update();
     });
 }
 
-QMDKWindow::~QMDKWindow() = default;
+QMDKWidget::~QMDKWidget() = default;
 
-void QMDKWindow::setDecoders(const QStringList &dec)
+void QMDKWidget::setDecoders(const QStringList &dec)
 {
     std::vector<std::string> v;
     foreach (QString d, dec) {
@@ -34,42 +36,42 @@ void QMDKWindow::setDecoders(const QStringList &dec)
     player_->setVideoDecoders(v);
 }
 
-void QMDKWindow::setMedia(const QString &url)
+void QMDKWidget::setMedia(const QString &url)
 {
     player_->setMedia(url.toUtf8().constData());
 }
 
-void QMDKWindow::play()
+void QMDKWidget::play()
 {
     player_->setState(State::Playing);
 }
 
-void QMDKWindow::pause()
+void QMDKWidget::pause()
 {
     player_->setState(State::Paused);
 }
 
-void QMDKWindow::stop()
+void QMDKWidget::stop()
 {
     player_->setState(State::Stopped);
 }
 
-bool QMDKWindow::isPaused() const
+bool QMDKWidget::isPaused() const
 {
     return player_->state() == State::Paused;
 }
 
-void QMDKWindow::seek(qint64 ms)
+void QMDKWidget::seek(qint64 ms)
 {
     player_->seek(ms);
 }
 
-qint64 QMDKWindow::position() const
+qint64 QMDKWidget::position() const
 {
     return player_->position();
 }
 
-void QMDKWindow::snapshot() {
+void QMDKWidget::snapshot() {
     Player::SnapshotRequest sr{};
     player_->snapshot(&sr, [](Player::SnapshotRequest *_sr, double frameTime) {
         const QString path = QDir::toNativeSeparators(
@@ -93,7 +95,7 @@ void QMDKWindow::snapshot() {
     });
 }
 
-void QMDKWindow::initializeGL()
+void QMDKWidget::initializeGL()
 {
     auto player = player_;
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
@@ -102,24 +104,24 @@ void QMDKWindow::initializeGL()
         QOffscreenSurface s;
         s.create();
         ctx->makeCurrent(&s);
-        Player::foreignGLContextDestroyed();
+        player->setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources
         ctx->doneCurrent();
     });
 }
 
-void QMDKWindow::resizeGL(int w, int h)
+void QMDKWidget::resizeGL(int w, int h)
 {
     auto s = screen();
     qDebug("resizeGL>>>>>dpr: %f, logical dpi: (%f,%f), phy dpi: (%f,%f)", s->devicePixelRatio(), s->logicalDotsPerInchX(), s->logicalDotsPerInchY(), s->physicalDotsPerInchX(), s->physicalDotsPerInchY());
     player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio());
 }
 
-void QMDKWindow::paintGL()
+void QMDKWidget::paintGL()
 {
     player_->renderVideo();
 }
 
-void QMDKWindow::keyPressEvent(QKeyEvent *e)
+void QMDKWidget::keyPressEvent(QKeyEvent *e)
 {
     switch (e->key()) {
     case Qt::Key_Space: {

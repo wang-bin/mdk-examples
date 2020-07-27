@@ -1,4 +1,4 @@
-QT       += gui
+QT       += gui widgets
 CONFIG += c++17 utf8_source
 CONFIG -= app_bundle
 TEMPLATE = app
@@ -24,10 +24,11 @@ macx {
 }
 linux: LIBS += -Wl,-rpath-link,$$PWD/../mdk-sdk/lib/$$MDK_ARCH # for libc++ symbols
 
-SOURCES += qmdkplay.cpp\
-        QMDKWindow.cpp
+SOURCES += qmdkplay.cpp \
+        QMDKWindow.cpp \
+        QMDKWidget.cpp
 
-HEADERS  += QMDKWindow.h
+HEADERS  += QMDKWindow.h QMDKWidget.h
 
 mac {
   RPATHDIR *= @executable_path/Frameworks
