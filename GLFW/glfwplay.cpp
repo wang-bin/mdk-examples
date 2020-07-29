@@ -93,6 +93,14 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->setVideoDecoders({decs[++d%std::size(decs)]});
         }
             break;
+        case GLFW_KEY_H: {
+            static float h = 0;
+            h += 0.1f;
+            if (h > 1.0)
+                h = -1.0f;
+            p->set(VideoEffect::Hue, h);
+        }
+            break;
         case GLFW_KEY_SPACE:
             p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
@@ -220,8 +228,8 @@ int main(int argc, char** argv)
         }
     }
     setLogHandler([&log_file](LogLevel level, const char* msg){
-        static const char level_name[] = {'I', 'W'};
-        print_log_msg(level_name[level<LogLevel::Info], msg, log_file);
+        static const char level_name[] = {'N', 'E', 'W', 'I', 'D', 'A'};
+        print_log_msg(level_name[level], msg, log_file);
     });
     SetGlobalOption("MDK_KEY", "46BEA5D0C6D0C773BDBED9C336547750D5AD5D2102C130003B0AB4D6B51A8E99172B156D04933211A5AD3F6133E33E82CA912AEBA1F05602C3AFCAD311EE6A07B9415A2FC6D0CE734241263CC9AB88AF95AD55466EA74770576BCD01419E94424BCD1BEC314907D7664337DF33944DA93F4023FD7EC661A9FADFB91155342607");
 {
@@ -274,7 +282,7 @@ int main(int argc, char** argv)
                 else if (strcmp(name, "adapter") == 0)
                     d3d11ra.adapter = std::atoi(value);
                 else if (strcmp(name, "feature_level") == 0)
-                    d3d11ra.feature_level = std::atof(value);
+                    d3d11ra.feature_level = (float)std::atof(value);
             });
 # endif
 #endif
@@ -300,7 +308,7 @@ int main(int argc, char** argv)
                         glra.profile = GLRenderAPI::Profile::No;
                 }
                 else if (strcmp(name, "version") == 0)
-                    glra.version = std::atof(value);
+                    glra.version = (float)std::atof(value);
             });
 #endif // MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
 
@@ -318,8 +326,25 @@ int main(int argc, char** argv)
 #if (VK_VERSION_1_0+0) && (MDK_VERSION_CHECK(0, 10, 0) || defined(MDK_ABI))
             ra = &vkra;
             parse_options(argv[i] + sizeof("-vk") - 1, [&vkra](const char* name, const char* value){
-                if (strcmp(name, "device_index") == 0)
+                if (strcmp(name, "version") == 0)
+                    vkra.max_version = VK_MAKE_VERSION((int)std::atof(value), int(std::atof(value)*10)%10, 0);
+                else if (strcmp(name, "debug") == 0)
+                    vkra.debug = std::atoi(value);
+                else if (strcmp(name, "buffers") == 0)
+                    vkra.buffers = std::atoi(value);
+                else if (strcmp(name, "device_index") == 0)
                     vkra.device_index = std::atoi(value);
+                else if (strcmp(name, "gfx_family") == 0)
+                    vkra.graphics_family = std::atoi(value);
+                else if (strcmp(name, "present_family") == 0)
+                    vkra.present_family = std::atoi(value);
+                else if (strcmp(name, "compute_family") == 0)
+                    vkra.compute_family = std::atoi(value);
+                else if (strcmp(name, "transfer_family") == 0)
+                    vkra.transfer_family = std::atoi(value);
+                else if (strcmp(name, "gfx_queue") == 0)
+                    vkra.gfx_queue_index = std::atoi(value);
+                printf("vkra.graphics_family: %d, vkra.max_version: %u\n", vkra.graphics_family, vkra.max_version);
             });
 #endif
         } else if (strcmp(argv[i], "-es") == 0) {
@@ -348,7 +373,7 @@ int main(int argc, char** argv)
         } else if (std::strcmp(argv[i], "-loop") == 0) {
             loop = atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-speed") == 0) {
-            speed = atof(argv[++i]);
+            speed = (float)atof(argv[++i]);
         } else if (std::strcmp(argv[i], "-seek_any") == 0) {
             gSeekFlag = SeekFlag::FromStart;
         } else if (std::strcmp(argv[i], "-seek_step") == 0) {
@@ -357,6 +382,8 @@ int main(int argc, char** argv)
             SetGlobalOption("plugins", argv[++i]);
         } else if (std::strcmp(argv[i], "-autoclose") == 0) {
             autoclose = true;
+        } else if (std::strcmp(argv[i], "-record") == 0) {
+            player.record("record.mkv"); // FIXME: record before play is not supported yet
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
             help = true;
             break;
@@ -444,6 +471,7 @@ int main(int argc, char** argv)
 #endif
     glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        printf("************framebuffer size changed: %dx%d***********\n", w, h);
         p->setVideoSurfaceSize(w, h);
     });
     glfwSetScrollCallback(win, [](GLFWwindow* win, double dx, double dy){
