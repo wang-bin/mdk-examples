@@ -1,9 +1,12 @@
 #include "VkMDKWindow.h"
 #include <QVulkanFunctions>
 #include <QGuiApplication>
+#include "mdk/RenderAPI.h"
+#include "mdk/Player.h"
+
+using namespace MDK_NS;
 using namespace std;
-//! [0]
-//!
+
 class VulkanRenderer : public QVulkanWindowRenderer
 {
 public:

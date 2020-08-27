@@ -1,5 +1,5 @@
 QT       += gui
-CONFIG += c++17 utf8_source
+CONFIG += utf8_source
 CONFIG -= app_bundle
 TEMPLATE = app
 

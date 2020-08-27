@@ -2,10 +2,9 @@
 #include <QVulkanWindow>
 #include <memory>
 
-#include "mdk/RenderAPI.h"
-#include "mdk/Player.h"
-
-using namespace MDK_NS;
+namespace mdk {
+class Player;
+}
 
 class VkMDKWindow : public QVulkanWindow
 {
@@ -24,6 +23,6 @@ public:
 
     QVulkanWindowRenderer *createRenderer() override;
 private:
-    std::shared_ptr<Player> player_;
+    std::shared_ptr<mdk::Player> player_;
 };
 
