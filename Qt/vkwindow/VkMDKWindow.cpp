@@ -39,6 +39,8 @@ void VulkanRenderer::initResources()
 
 void VulkanRenderer::initSwapChainResources()
 {
+    const auto size = m_window->swapChainImageSize();
+    player_->setVideoSurfaceSize(size.width(), size.height());
     qDebug("initSwapChainResources");
     // called when swapchain is recreated, e.g. device lost, resize
     VulkanRenderAPI ra;
@@ -67,11 +69,8 @@ void VulkanRenderer::initSwapChainResources()
     };
     ra.endFrame = [](void* opaque, VkSemaphore* drawSem/* = nullptr*/){
     };
-    ra.graphics_family = m_window->graphicsQueueFamilyIndex();
     player_->setRenderAPI(&ra); // will recreate resources
 
-    const auto size = m_window->swapChainImageSize();
-    player_->setVideoSurfaceSize(size.width(), size.height());
 
 }
 
@@ -83,6 +82,7 @@ void VulkanRenderer::releaseSwapChainResources()
 void VulkanRenderer::releaseResources()
 {
     qDebug("releaseResources");
+    player_->setVideoSurfaceSize(-1, -1);
 }
 
 void VulkanRenderer::startNextFrame()
