@@ -16,7 +16,6 @@
 using namespace Microsoft::WRL; //ComPtr
 #endif
 #if QT_CONFIG(opengl)
-#include <QOpenGLFunctions>
 #include <QOpenGLFramebufferObject>
 #endif
 #include <QVulkanInstance>
@@ -168,8 +167,10 @@ VideoTextureNode::~VideoTextureNode()
     fbo_gl.reset();
 #endif
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
-    m_devFuncs->vkDestroyRenderPass(m_dev, m_renderPass, nullptr);
-    freeTexture();
+    if (m_devFuncs) {
+        m_devFuncs->vkDestroyRenderPass(m_dev, m_renderPass, nullptr);
+        freeTexture();
+    }
 #endif
     qDebug("renderer destroyed");
 }
