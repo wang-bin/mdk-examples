@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 CONFIG -= ordered
-SUBDIRS = libqtmdk qtmultiwidgets qtmultiplayers qtpaintonvideo qmdkplay vkwindow
+SUBDIRS = libqtmdk qtmultiwidgets qtmultiplayers qtpaintonvideo qmdkplay
+qtConfig(vulkan): SUBDIRS += vkwindow
 qtHaveModule(quick): SUBDIRS += qmdkqmlplay
 
 libqtmdk.file = libqtmdk.pro
