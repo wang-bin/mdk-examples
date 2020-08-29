@@ -36,8 +36,6 @@ QVulkanWindowRenderer *VkMDKWindow::createRenderer()
 void VulkanRenderer::initResources()
 {
     qDebug("initResources");
-
-    //m_devFuncs = m_window->vulkanInstance()->deviceFunctions(m_window->device());
 }
 
 void VulkanRenderer::initSwapChainResources()
@@ -54,7 +52,7 @@ void VulkanRenderer::initSwapChainResources()
     ra.graphics_family = m_window->graphicsQueueFamilyIndex(); // must
     ra.render_pass = m_window->defaultRenderPass(); //
     ra.opaque = m_window;
-    ra.renderTargetSize = [](void* opaque, int* w, int* h) {
+    ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat*) {
         auto win = static_cast<QVulkanWindow*>(opaque);
         const auto s = win->swapChainImageSize();
         *w = s.width();
@@ -69,8 +67,6 @@ void VulkanRenderer::initSwapChainResources()
     ra.currentCommandBuffer = [](void* opaque){
         auto win = static_cast<QVulkanWindow*>(opaque);
         return win->currentCommandBuffer();
-    };
-    ra.endFrame = [](void* opaque, VkSemaphore* drawSem/* = nullptr*/){
     };
     player_->setRenderAPI(&ra); // will recreate resources
 
@@ -94,7 +90,7 @@ void VulkanRenderer::startNextFrame()
 
     m_window->frameReady();
     // TODO: why not update in callback of setRenderCallback()
-    m_window->requestUpdate(); // render continuously, throttled by the presentation rate
+    m_window->requestUpdate(); // render continuously, throttled by the presentation rate. call on gui thread only
 }
 
 
@@ -102,10 +98,9 @@ VkMDKWindow::VkMDKWindow(QWindow *parent)
     : QVulkanWindow(parent)
     , player_(std::make_shared<Player>())
 {
-    // FIXME: why can not update in render callback
+    // no need to set callback if requestUpdate in startNextFrame()
     //player_->setRenderCallback([this](void*){
         //QCoreApplication::instance()->postEvent(this, new QEvent(QEvent::UpdateRequest), INT_MAX);
-        requestUpdate();
     //});
 }
 
