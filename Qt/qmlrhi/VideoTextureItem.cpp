@@ -168,6 +168,11 @@ VideoTextureNode::~VideoTextureNode()
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     freeTexture();
 #endif
+    // when device lost occurs
+    auto player = m_player.lock();
+    if (!player)
+        return;
+    player->setVideoSurfaceSize(-1, -1);
     qDebug("renderer destroyed");
 }
 
@@ -199,7 +204,7 @@ void VideoTextureNode::sync()
     if (!player)
         return;
     QSGRendererInterface *rif = m_window->rendererInterface();
-    void* nativeObj = nullptr;
+    intmax_t nativeObj = 0;
     int nativeLayout = 0;
     switch (rif->graphicsApi()) {
     case QSGRendererInterface::OpenGL:
@@ -208,7 +213,7 @@ void VideoTextureNode::sync()
 #if QT_CONFIG(opengl)
         fbo_gl.reset(new QOpenGLFramebufferObject(m_size));
         auto tex = fbo_gl->texture();
-        nativeObj = (void*)tex;
+        nativeObj = decltype(nativeObj)(tex);
         GLRenderAPI ra;
         ra.fbo = fbo_gl->handle();
         player->setRenderAPI(&ra);
@@ -225,7 +230,7 @@ void VideoTextureNode::sync()
         if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
 
         }
-        nativeObj = m_texture_d3d11.Get();
+        nativeObj = decltype(nativeObj)(m_texture_d3d11.Get());
         D3D11RenderAPI ra;
         ra.rtv = m_texture_d3d11.Get();
         player->setRenderAPI(&ra);
@@ -247,7 +252,7 @@ void VideoTextureNode::sync()
         desc.storageMode = MTLStorageModePrivate;
         desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
         m_texture_mtl = [dev newTextureWithDescriptor: desc];
-        nativeObj = (__bridge void*)m_texture_mtl;
+        nativeObj = decltype(nativeObj)((__bridge void*)m_texture_mtl);
         MetalRenderAPI ra{};
         ra.texture = nativeObj;
         ra.device = (__bridge void*)dev;
@@ -268,7 +273,7 @@ void VideoTextureNode::sync()
         m_devFuncs = inst->deviceFunctions(m_dev);
 
         buildTexture(m_size);
-        nativeObj = (void*)m_texture_vk;
+        nativeObj = decltype(nativeObj)(m_texture_vk);
 
         VulkanRenderAPI ra{};
         ra.device =m_dev;
@@ -384,14 +389,15 @@ bool VideoTextureNode::buildTexture(const QSize &size)
 
 void VideoTextureNode::freeTexture()
 {
-    if (m_texture_vk) {
-        m_devFuncs->vkFreeMemory(m_dev, m_textureMemory, nullptr);
-        m_textureMemory = VK_NULL_HANDLE;
-        m_devFuncs->vkDestroyImageView(m_dev, m_textureView, nullptr);
-        m_textureView = VK_NULL_HANDLE;
-        m_devFuncs->vkDestroyImage(m_dev, m_texture_vk, nullptr);
-        m_texture_vk = VK_NULL_HANDLE;
-    }
+    if (!m_texture_vk)
+        return;
+    VK_WARN(m_devFuncs->vkDeviceWaitIdle(m_dev));
+    m_devFuncs->vkFreeMemory(m_dev, m_textureMemory, nullptr);
+    m_textureMemory = VK_NULL_HANDLE;
+    m_devFuncs->vkDestroyImageView(m_dev, m_textureView, nullptr);
+    m_textureView = VK_NULL_HANDLE;
+    m_devFuncs->vkDestroyImage(m_dev, m_texture_vk, nullptr);
+    m_texture_vk = VK_NULL_HANDLE;
 }
 #endif //(VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
 
