@@ -279,10 +279,11 @@ void VideoTextureNode::sync()
         ra.device =m_dev;
         ra.phy_device = m_physDev;
         ra.opaque = this;
-        ra.renderTargetSize = [](void* opaque, int* w, int* h) {
+        ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat* fmt) {
             auto node = static_cast<VideoTextureNode*>(opaque);
             *w = node->m_size.width();
             *h = node->m_size.height();
+            *fmt = VK_FORMAT_R8G8B8A8_UNORM;
             return 1;
         };
         ra.beginFrame = [](void* opaque, VkImageView* view/* = nullptr*/, VkFramebuffer* fb/*= nullptr*/, VkSemaphore* imgSem/* = nullptr*/){
@@ -295,6 +296,25 @@ void VideoTextureNode::sync()
             QSGRendererInterface *rif = node->m_window->rendererInterface();
             auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
             return cmdBuf;
+        };
+        ra.endFrame = [](void* opaque, VkSemaphore*){
+            auto node = static_cast<VideoTextureNode*>(opaque);
+            QSGRendererInterface *rif = node->m_window->rendererInterface();
+            auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
+            VkImageMemoryBarrier imageTransitionBarrier = {};
+            imageTransitionBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            imageTransitionBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            imageTransitionBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            imageTransitionBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            imageTransitionBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageTransitionBarrier.image = node->m_texture_vk;
+            imageTransitionBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            imageTransitionBarrier.subresourceRange.levelCount = imageTransitionBarrier.subresourceRange.layerCount = 1;
+            node->m_devFuncs->vkCmdPipelineBarrier(cmdBuf,
+                                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                                             0, 0, nullptr, 0, nullptr,
+                                             1, &imageTransitionBarrier);
         };
         player->setRenderAPI(&ra);
 #endif
@@ -334,7 +354,7 @@ bool VideoTextureNode::buildTexture(const QSize &size)
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.flags = 0;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM; // qtquick hardcoded
     imageInfo.extent.width = uint32_t(size.width());
     imageInfo.extent.height = uint32_t(size.height());
     imageInfo.extent.depth = 1;
