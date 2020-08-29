@@ -25,7 +25,16 @@ using namespace Microsoft::WRL; //ComPtr
 #include "mdk/RenderAPI.h"
 using namespace std;
 
-//! [1]
+#define VK_ENSURE(x, ...) VK_RUN_CHECK(x, return __VA_ARGS__)
+#define VK_WARN(x, ...) VK_RUN_CHECK(x)
+#define VK_RUN_CHECK(x, ...) do { \
+        VkResult __vkret__ = x; \
+        if (__vkret__ != VK_SUCCESS) { \
+          qDebug() << #x " ERROR: " << __vkret__ << " @" << __LINE__ << __func__; \
+          __VA_ARGS__; \
+        } \
+    } while(false)
+
 class VideoTextureNode : public QSGTextureProvider, public QSGSimpleTextureNode
 {
     Q_OBJECT
@@ -36,7 +45,6 @@ public:
     QSGTexture *texture() const override;
 
     void sync();
-//! [1]
 private slots:
     void render();
 
@@ -57,19 +65,14 @@ private:
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     bool buildTexture(const QSize &size);
     void freeTexture();
-    bool createRenderPass();
 
     VkImage m_texture_vk = VK_NULL_HANDLE;
     VkDeviceMemory m_textureMemory = VK_NULL_HANDLE;
-    VkFramebuffer m_textureFramebuffer = VK_NULL_HANDLE;
     VkImageView m_textureView = VK_NULL_HANDLE;
 
     VkPhysicalDevice m_physDev = VK_NULL_HANDLE;
     VkDevice m_dev = VK_NULL_HANDLE;
     QVulkanDeviceFunctions *m_devFuncs = nullptr;
-    QVulkanFunctions *m_funcs = nullptr;
-
-    VkRenderPass m_renderPass = VK_NULL_HANDLE;
 #endif
 
     std::weak_ptr<Player> m_player;
@@ -100,7 +103,6 @@ void VideoTextureItem::releaseResources() // called on the gui thread if the ite
     m_node = nullptr;
 }
 
-//! [2]
 QSGNode *VideoTextureItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
 {
     auto n = static_cast<VideoTextureNode*>(node);
@@ -123,7 +125,6 @@ QSGNode *VideoTextureItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
 
     return n;
 }
-//! [2]
 
 void VideoTextureItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
@@ -145,7 +146,6 @@ void VideoTextureItem::play()
     m_player->setState(PlaybackState::Playing);
 }
 
-//! [3]
 VideoTextureNode::VideoTextureNode(VideoTextureItem *item)
     : m_item(item)
     , m_player(item->m_player)
@@ -156,7 +156,6 @@ VideoTextureNode::VideoTextureNode(VideoTextureItem *item)
         if (m_window->effectiveDevicePixelRatio() != m_dpr)
             m_item->update();
     });
-//! [3]
 }
 
 VideoTextureNode::~VideoTextureNode()
@@ -167,10 +166,7 @@ VideoTextureNode::~VideoTextureNode()
     fbo_gl.reset();
 #endif
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
-    if (m_devFuncs) {
-        m_devFuncs->vkDestroyRenderPass(m_dev, m_renderPass, nullptr);
-        freeTexture();
-    }
+    freeTexture();
 #endif
     qDebug("renderer destroyed");
 }
@@ -264,21 +260,19 @@ void VideoTextureNode::sync()
         nativeLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         auto inst = reinterpret_cast<QVulkanInstance *>(rif->getResource(m_window, QSGRendererInterface::VulkanInstanceResource));
         m_physDev = *static_cast<VkPhysicalDevice *>(rif->getResource(m_window, QSGRendererInterface::PhysicalDeviceResource));
-        m_dev = *static_cast<VkDevice *>(rif->getResource(m_window, QSGRendererInterface::DeviceResource));
-        m_devFuncs = inst->deviceFunctions(m_dev);
-        m_funcs = inst->functions();
-
-        createRenderPass();
-
+        auto newDev = *static_cast<VkDevice *>(rif->getResource(m_window, QSGRendererInterface::DeviceResource));
+        qDebug("old device: %p, newDev: %p", (void*)m_dev, (void*)newDev);
+        // TODO: why m_dev is 0 if device lost
         freeTexture();
+        m_dev = newDev;
+        m_devFuncs = inst->deviceFunctions(m_dev);
+
         buildTexture(m_size);
         nativeObj = (void*)m_texture_vk;
 
         VulkanRenderAPI ra{};
-        ra.instance = inst->vkInstance();
         ra.device =m_dev;
         ra.phy_device = m_physDev;
-        ra.render_pass = m_renderPass; //
         ra.opaque = this;
         ra.renderTargetSize = [](void* opaque, int* w, int* h) {
             auto node = static_cast<VideoTextureNode*>(opaque);
@@ -288,7 +282,7 @@ void VideoTextureNode::sync()
         };
         ra.beginFrame = [](void* opaque, VkImageView* view/* = nullptr*/, VkFramebuffer* fb/*= nullptr*/, VkSemaphore* imgSem/* = nullptr*/){
             auto node = static_cast<VideoTextureNode*>(opaque);
-            *fb = node->m_textureFramebuffer;
+            *view = node->m_textureView;
             return 0;
         };
         ra.currentCommandBuffer = [](void* opaque){
@@ -296,8 +290,6 @@ void VideoTextureNode::sync()
             QSGRendererInterface *rif = node->m_window->rendererInterface();
             auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
             return cmdBuf;
-        };
-        ra.endFrame = [](void* opaque, VkSemaphore* drawSem/* = nullptr*/){
         };
         player->setRenderAPI(&ra);
 #endif
@@ -351,10 +343,7 @@ bool VideoTextureNode::buildTexture(const QSize &size)
     imageInfo.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     VkImage image = VK_NULL_HANDLE;
-    if (m_devFuncs->vkCreateImage(m_dev, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-        qCritical("VulkanWrapper: failed to create image!");
-        return  false;
-    }
+    VK_ENSURE(m_devFuncs->vkCreateImage(m_dev, &imageInfo, nullptr, &image), false);
 
     m_texture_vk = image;
 
@@ -377,63 +366,25 @@ bool VideoTextureNode::buildTexture(const QSize &size)
         memIndex
     };
 
-    VkResult err = m_devFuncs->vkAllocateMemory(m_dev, &allocInfo, nullptr, &m_textureMemory);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to allocate memory for linear image: %d", err);
-        return false;
-    }
+    VK_ENSURE(m_devFuncs->vkAllocateMemory(m_dev, &allocInfo, nullptr, &m_textureMemory), false);
 
-    err = m_devFuncs->vkBindImageMemory(m_dev, image, m_textureMemory, 0);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to bind linear image memory: %d", err);
-        return false;
-    }
+    VK_ENSURE(m_devFuncs->vkBindImageMemory(m_dev, image, m_textureMemory, 0), false);
 
-    VkImageViewCreateInfo viewInfo;
-    memset(&viewInfo, 0, sizeof(viewInfo));
+    VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = imageInfo.format;
-    viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
-    viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
-    viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
-    viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
     viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-
-    err = m_devFuncs->vkCreateImageView(m_dev, &viewInfo, nullptr, &m_textureView);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to create render target image view: %d", err);
-        return false;
-    }
-
-    VkFramebufferCreateInfo fbInfo;
-    memset(&fbInfo, 0, sizeof(fbInfo));
-    fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fbInfo.renderPass = m_renderPass;
-    fbInfo.attachmentCount = 1;
-    fbInfo.pAttachments = &m_textureView;
-    fbInfo.width = uint32_t(size.width());
-    fbInfo.height = uint32_t(size.height());
-    fbInfo.layers = 1;
-
-    err = m_devFuncs->vkCreateFramebuffer(m_dev, &fbInfo, nullptr, &m_textureFramebuffer);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to create framebuffer: %d", err);
-        return false;
-    }
+    VK_ENSURE(m_devFuncs->vkCreateImageView(m_dev, &viewInfo, nullptr, &m_textureView), false);
     return true;
 }
 
 void VideoTextureNode::freeTexture()
 {
     if (m_texture_vk) {
-        m_devFuncs->vkDestroyFramebuffer(m_dev, m_textureFramebuffer, nullptr);
-        m_textureFramebuffer = VK_NULL_HANDLE;
         m_devFuncs->vkFreeMemory(m_dev, m_textureMemory, nullptr);
         m_textureMemory = VK_NULL_HANDLE;
         m_devFuncs->vkDestroyImageView(m_dev, m_textureView, nullptr);
@@ -441,55 +392,6 @@ void VideoTextureNode::freeTexture()
         m_devFuncs->vkDestroyImage(m_dev, m_texture_vk, nullptr);
         m_texture_vk = VK_NULL_HANDLE;
     }
-}
-
-
-
-static inline VkDeviceSize aligned(VkDeviceSize v, VkDeviceSize byteAlign)
-{
-    return (v + byteAlign - 1) & ~(byteAlign - 1);
-}
-
-bool VideoTextureNode::createRenderPass()
-{
-    const VkFormat vkformat = VK_FORMAT_R8G8B8A8_UNORM;
-    const VkSampleCountFlagBits samples =  VK_SAMPLE_COUNT_1_BIT;
-    VkAttachmentDescription colorAttDesc;
-    memset(&colorAttDesc, 0, sizeof(colorAttDesc));
-    colorAttDesc.format = vkformat;
-    colorAttDesc.samples = samples;
-    colorAttDesc.loadOp =  VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttDesc.storeOp =  VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    const VkAttachmentReference colorRef = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-
-    VkSubpassDescription subpassDesc;
-    memset(&subpassDesc, 0, sizeof(subpassDesc));
-    subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDesc.colorAttachmentCount = 1;
-    subpassDesc.pColorAttachments = &colorRef;
-    subpassDesc.pDepthStencilAttachment = nullptr;
-    subpassDesc.pResolveAttachments = nullptr;
-
-    VkRenderPassCreateInfo rpInfo;
-    memset(&rpInfo, 0, sizeof(rpInfo));
-    rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    rpInfo.attachmentCount = 1;
-    rpInfo.pAttachments = &colorAttDesc;
-    rpInfo.subpassCount = 1;
-    rpInfo.pSubpasses = &subpassDesc;
-
-    VkResult err = m_devFuncs->vkCreateRenderPass(m_dev, &rpInfo, nullptr, &m_renderPass);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to create renderpass: %d", err);
-        return false;
-    }
-
-    return true;
 }
 #endif //(VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
 
