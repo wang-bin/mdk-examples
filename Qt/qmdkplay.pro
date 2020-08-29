@@ -2,7 +2,9 @@ QT       += gui widgets
 CONFIG += c++17 utf8_source
 CONFIG -= app_bundle
 TEMPLATE = app
-INCLUDEPATH += $$PWD/../mdk-sdk/include
+
+MDK_SDK = $$PWD/../mdk-sdk
+INCLUDEPATH += $$MDK_SDK/include
 contains(QT_ARCH, x.*64) {
   android: MDK_ARCH = x86_64
   else: MDK_ARCH = x64
@@ -17,12 +19,12 @@ contains(QT_ARCH, x.*64) {
 }
 
 macx {
-  LIBS += -F$$PWD/../mdk-sdk/lib -F/usr/local/lib -framework mdk
+  LIBS += -F$$MDK_SDK/lib -F/usr/local/lib -framework mdk
 } else {
-  LIBS += -L$$PWD/../mdk-sdk/lib/$$MDK_ARCH -lmdk
+  LIBS += -L$$MDK_SDK/lib/$$MDK_ARCH -lmdk
   win32: LIBS += -L$$PWD/../../mdk-sdk/bin/$$MDK_ARCH # qtcreator will prepend $$LIBS to PATH to run targets
 }
-linux: LIBS += -Wl,-rpath-link,$$PWD/../mdk-sdk/lib/$$MDK_ARCH # for libc++ symbols
+linux: LIBS += -Wl,-rpath-link,$$MDK_SDK/lib/$$MDK_ARCH # for libc++ symbols
 
 SOURCES += qmdkplay.cpp \
         QMDKWindow.cpp \

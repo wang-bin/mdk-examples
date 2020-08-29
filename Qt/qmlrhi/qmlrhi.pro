@@ -1,5 +1,6 @@
 QT += qml quick
 CONFIG += qmltypes
+CONFIG -= app_bundle
 QML_IMPORT_NAME = MDKTextureItem
 QML_IMPORT_MAJOR_VERSION = 1
 
@@ -14,7 +15,8 @@ target.path = $$[QT_INSTALL_EXAMPLES]/quick/scenegraph/mdktextureitem
 INSTALLS += target
 
 ######## MDK SDK ##########
-INCLUDEPATH += $$PWD/../../mdk-sdk/include
+MDK_SDK = $$PWD/../../mdk-sdk
+INCLUDEPATH += $$MDK_SDK/include
 contains(QT_ARCH, x.*64) {
   android: MDK_ARCH = x86_64
   else: MDK_ARCH = x64
@@ -35,13 +37,13 @@ static|contains(CONFIG, staticlib) {
 }
 macx|ios {
   MDK_ARCH=
-  QMAKE_CXXFLAGS += -F$$PWD/../../mdk-sdk/lib -x objective-c++ -fobjc-arc
-  LIBS += -F$$PWD/../../mdk-sdk/lib -F/usr/local/lib -framework mdk
+  QMAKE_CXXFLAGS += -F$$MDK_SDK/lib -x objective-c++ -fobjc-arc
+  LIBS += -F$$MDK_SDK/lib -F/usr/local/lib -framework mdk
 } else {
-  LIBS += -L$$PWD/../../mdk-sdk/lib/$$MDK_ARCH -lmdk
-  win32: LIBS += -L$$PWD/../../mdk-sdk/bin/$$MDK_ARCH # qtcreator will prepend $$LIBS to PATH to run targets
+  LIBS += -L$$MDK_SDK/lib/$$MDK_ARCH -lmdk
+  win32: LIBS += -L$$MDK_SDK/bin/$$MDK_ARCH # qtcreator will prepend $$LIBS to PATH to run targets
 }
-linux: LIBS += -Wl,-rpath-link,$$PWD/../../mdk-sdk/lib/$$MDK_ARCH # for libc++ symbols
+linux: LIBS += -Wl,-rpath-link,$$MDK_SDK/lib/$$MDK_ARCH # for libc++ symbols
 
 
 mac {

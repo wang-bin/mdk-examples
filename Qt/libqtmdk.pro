@@ -3,7 +3,9 @@ TARGET = qtmdk
 CONFIG += c++11
 CONFIG -= app_bundle
 TEMPLATE = lib
-INCLUDEPATH += $$PWD/../mdk-sdk/include
+
+MDK_SDK = $$PWD/../mdk-sdk
+INCLUDEPATH += $$MDK_SDK/include
 contains(QT_ARCH, x.*64) {
   android: MDK_ARCH = x86_64
   else: MDK_ARCH = x64
@@ -24,12 +26,12 @@ static|contains(CONFIG, staticlib) {
 }
 macx|ios {
   MDK_ARCH=
-  QMAKE_CXXFLAGS += -F$$PWD/../mdk-sdk/lib
-  LIBS += -F$$PWD/../mdk-sdk/lib -F/usr/local/lib -framework mdk
+  QMAKE_CXXFLAGS += -F$$MDK_SDK/lib
+  LIBS += -F$$MDK_SDK/lib -F/usr/local/lib -framework mdk
 } else {
-  LIBS += -L$$PWD/../mdk-sdk/lib/$$MDK_ARCH -lmdk
+  LIBS += -L$$MDK_SDK/lib/$$MDK_ARCH -lmdk
 }
-linux: LIBS += -Wl,-rpath-link,$$PWD/../mdk-sdk/lib/$$MDK_ARCH # for libc++ symbols
+linux: LIBS += -Wl,-rpath-link,$$MDK_SDK/lib/$$MDK_ARCH # for libc++ symbols
 
 SOURCES += QMDKRenderer.cpp \
         QMDKPlayer.cpp
