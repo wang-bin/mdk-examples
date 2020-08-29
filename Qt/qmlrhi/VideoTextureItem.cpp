@@ -252,12 +252,12 @@ void VideoTextureNode::sync()
         desc.storageMode = MTLStorageModePrivate;
         desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
         m_texture_mtl = [dev newTextureWithDescriptor: desc];
-        nativeObj = decltype(nativeObj)((__bridge void*)m_texture_mtl);
         MetalRenderAPI ra{};
-        ra.texture = nativeObj;
+        ra.texture = (__bridge void*)m_texture_mtl;
         ra.device = (__bridge void*)dev;
         ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
         player->setRenderAPI(&ra);
+        nativeObj = decltype(nativeObj)(ra.texture);
 #endif
     }
     case QSGRendererInterface::VulkanRhi: {
