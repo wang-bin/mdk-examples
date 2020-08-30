@@ -52,7 +52,7 @@ void VulkanRenderer::initSwapChainResources()
     ra.graphics_family = m_window->graphicsQueueFamilyIndex(); // must
     ra.render_pass = m_window->defaultRenderPass(); //
     ra.opaque = m_window;
-    ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat*) {
+    ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat*, VkImageLayout*) {
         auto win = static_cast<QVulkanWindow*>(opaque);
         const auto s = win->swapChainImageSize();
         *w = s.width();
