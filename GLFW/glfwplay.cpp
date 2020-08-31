@@ -231,7 +231,7 @@ int main(int argc, char** argv)
         static const char level_name[] = {'N', 'E', 'W', 'I', 'D', 'A'};
         print_log_msg(level_name[level], msg, log_file);
     });
-    SetGlobalOption("MDK_KEY", "46BEA5D0C6D0C773BDBED9C336547750D5AD5D2102C130003B0AB4D6B51A8E99172B156D04933211A5AD3F6133E33E82CA912AEBA1F05602C3AFCAD311EE6A07B9415A2FC6D0CE734241263CC9AB88AF95AD55466EA74770576BCD01419E94424BCD1BEC314907D7664337DF33944DA93F4023FD7EC661A9FADFB91155342607");
+    SetGlobalOption("MDK_KEY", "AEECF460DF08472261708ACA826B565CD314537ED98CF4705EF13618082AA57542C8957519B8C5796F734AA9F339177A6F0553CB9A4377C5C8D595B6A4F0F30551130B9FDF084D229E8F75357D94A9A393145B19B5EA830032904F3C8E69E68985D393F36D5ECC04619F32399D9246A9B6E21E5149CE4798F4EABA50B1649305");
 {
     bool help = argc < 2;
     bool es = false;
@@ -250,6 +250,7 @@ int main(int argc, char** argv)
     const char* urla = nullptr;
     std::string ca, cv;
     Player player;
+    //player.setBackgroundColor(1, 0, 0, 1);
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra;
 #endif
@@ -582,7 +583,6 @@ int main(int argc, char** argv)
     }
 }
     //player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources
-    setLogHandler(nullptr);
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
