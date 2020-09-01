@@ -50,10 +50,9 @@ OpenGLESPage::~OpenGLESPage()
 
 void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-  SetEnvironmentVariableA("D3D11_GL", "eglpbuf"); 
 	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(swapChainPanel_0));
-	mPlayer->setVideoDecoders({ "D3D11", "FFmpeg" });
-    mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
+	mPlayer->setVideoDecoders({ "MFT:d3d=11", "D3D11", "FFmpeg" });
+    //mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
     
     mPlayer->onMediaStatusChanged([=](auto s) {
       if (s & MediaStatus::Loaded) {
