@@ -9,17 +9,12 @@
 #ifdef _WIN32
 #include <d3d11.h>
 #endif
+#if __has_include(<vulkan/vulkan_core.h>) // FIXME: -I
+# include <vulkan/vulkan_core.h>
+#endif
+#include "mdk/RenderAPI.h"
 #include "mdk/Player.h"
 
-#ifndef MDK_VERSION_CHECK
-#define MDK_VERSION_CHECK(...) 0
-#endif
-#if MDK_VERSION_CHECK(0, 5, 0)
-# if __has_include(<vulkan/vulkan_core.h>) // FIXME: -I
-#   include <vulkan/vulkan_core.h>
-# endif
-# include "mdk/RenderAPI.h"
-#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -252,16 +247,16 @@ int main(int argc, char** argv)
     Player player;
     //player.setBackgroundColor(1, 0, 0, 1);
 #ifdef _WIN32
-    D3D11RenderAPI d3d11ra;
+    D3D11RenderAPI d3d11ra{};
 #endif
 #if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI))
     MetalRenderAPI mtlra;
 #endif
 #if MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI)
-    GLRenderAPI glra;
+    GLRenderAPI glra{};
 #endif
 #if (VK_VERSION_1_0+0) && (MDK_VERSION_CHECK(0, 10, 0) || defined(MDK_ABI))
-    VulkanRenderAPI vkra;
+    VulkanRenderAPI vkra{};
 #endif
     RenderAPI *ra = nullptr;
     //player.setAspectRatio(-1.0);

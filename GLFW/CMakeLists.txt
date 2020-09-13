@@ -1,4 +1,5 @@
 
+find_package(Vulkan) #cmake 3.7+
 #find_package(glfw)
 set(CMAKE_REQUIRED_LIBRARIES_OLD ${CMAKE_REQUIRED_LIBRARIES})
 set(CMAKE_REQUIRED_INCLUDES_OLD ${CMAKE_REQUIRED_INCLUDES})
@@ -17,6 +18,7 @@ set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_OLD})
 set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_OLD})
 if(HAVE_GLFW3)
   add_executable(glfwplay ${APPTYPE} glfwplay.cpp)# ${CMAKE_CURRENT_BINARY_DIR}/app.rc)
+  target_include_directories(glfwplay PRIVATE ${Vulkan_INCLUDE_DIR})
   target_link_libraries(glfwplay PRIVATE mdk ${GLFW_NAME} ${GLFW_DEP})
 
   add_executable(multiplayers ${APPTYPE} multiplayers.cpp)
