@@ -23,11 +23,18 @@ if(HAVE_GLFW3)
   endif()
   target_link_libraries(glfwplay PRIVATE mdk ${GLFW_NAME} ${GLFW_DEP})
 
+
+  add_executable(PlaylistAsOne ${APPTYPE} PlaylistAsOne.cpp)# ${CMAKE_CURRENT_BINARY_DIR}/app.rc)
+  if (EXISTS ${Vulkan_INCLUDE_DIR})
+    target_include_directories(PlaylistAsOne PRIVATE ${Vulkan_INCLUDE_DIR})
+  endif()
+  target_link_libraries(PlaylistAsOne PRIVATE mdk ${GLFW_NAME} ${GLFW_DEP})
+
   add_executable(multiplayers ${APPTYPE} multiplayers.cpp)
   target_link_libraries(multiplayers PRIVATE mdk ${GLFW_NAME} ${GLFW_DEP})
 
   add_executable(multiwindows ${APPTYPE} multiwindows.cpp)
   target_link_libraries(multiwindows PRIVATE mdk ${GLFW_NAME} ${GLFW_DEP})
 
-  install(TARGETS glfwplay multiplayers multiwindows RUNTIME DESTINATION bin)
+  install(TARGETS PlaylistAsOne glfwplay multiplayers multiwindows RUNTIME DESTINATION bin)
 endif()
