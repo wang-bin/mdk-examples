@@ -24,7 +24,7 @@ if(HAVE_GLFW3)
   target_link_libraries(glfwplay PRIVATE mdk ${GLFW_NAME} ${GLFW_DEP})
 
 
-  add_executable(PlaylistAsOne ${APPTYPE} PlaylistAsOne.cpp)# ${CMAKE_CURRENT_BINARY_DIR}/app.rc)
+  add_executable(PlaylistAsOne ${APPTYPE} PlayListAsOne.cpp)# ${CMAKE_CURRENT_BINARY_DIR}/app.rc)
   if (EXISTS ${Vulkan_INCLUDE_DIR})
     target_include_directories(PlaylistAsOne PRIVATE ${Vulkan_INCLUDE_DIR})
   endif()

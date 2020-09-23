@@ -1,8 +1,9 @@
 if(NOT IOS)
-  add_executable(mdkplay ${APPTYPE} mdkplay.cpp)
-  target_link_libraries(mdkplay PRIVATE mdk)
-  add_executable(offscreen ${APPTYPE} offscreen.cpp)
-  target_link_libraries(offscreen PRIVATE mdk)
+  foreach(tgt mdkplay offscreen DecodeFps)
+    add_executable(${tgt} ${APPTYPE} ${tgt}.cpp)
+    target_link_libraries(${tgt} PRIVATE mdk)
+  endforeach()
+  install(TARGETS DecodeFps RUNTIME DESTINATION bin)
 endif()
 
 find_package(X11)
