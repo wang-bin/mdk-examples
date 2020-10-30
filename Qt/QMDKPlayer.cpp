@@ -21,6 +21,8 @@ QMDKPlayer::QMDKPlayer(QObject *parent)
                 QCoreApplication::instance()->postEvent(vo, new QEvent(QEvent::UpdateRequest));
             return;
         }
+        QMetaObject::invokeMethod(vo, "update", Qt::QueuedConnection);
+#if 0
         class QUpdateLaterEvent final : public QEvent {
         public:
             explicit QUpdateLaterEvent(const QRegion& paintRegion)
@@ -32,6 +34,7 @@ QMDKPlayer::QMDKPlayer(QObject *parent)
             QRegion m_region;
         };
         QCoreApplication::instance()->postEvent(vo, new QUpdateLaterEvent(QRegion(0, 0, vo->property("width").toInt(), vo->property("height").toInt())));
+#endif
     });
 }
 

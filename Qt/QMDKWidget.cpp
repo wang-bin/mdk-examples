@@ -21,11 +21,11 @@ QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
 {
     player_->setVideoDecoders({"VT", "VAAPI", "MFT:d3d=11", "DXVA", "MMAL", "AMediaCodec:java=1:copy=0:surface=1:async=0", "FFmpeg"});
     player_->setRenderCallback([this](void*){
-        update();
+        QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
     });
 }
 
-QMDKWidget::~QMDKWidget() = default;
+QMDKWidget::~QMDKWidget() = default; // TODO: release gfx resources in an offscreen context
 
 void QMDKWidget::setDecoders(const QStringList &dec)
 {
