@@ -1,0 +1,3 @@
+${PODS_ROOT}/Target Support Files/Pods-OCPlayer/Pods-OCPlayer-frameworks.sh
+${PODS_ROOT}/mdk/mdk-sdk/lib/libffmpeg.4.dylib
+${PODS_ROOT}/mdk/mdk-sdk/lib/mdk.framework

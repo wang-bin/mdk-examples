@@ -1,0 +1,16 @@
+PODS:
+  - mdk (0.10.1.1)
+
+DEPENDENCIES:
+  - mdk
+
+SPEC REPOS:
+  trunk:
+    - mdk
+
+SPEC CHECKSUMS:
+  mdk: a19b23d0ee48a644a9875aaacd3cb4e216eb6f15
+
+PODFILE CHECKSUM: 1a27fa23a11869fd32570f4db6b209b9859c31b8
+
+COCOAPODS: 1.10.0
