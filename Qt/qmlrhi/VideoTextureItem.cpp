@@ -125,9 +125,17 @@ QSGNode *VideoTextureItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
     return n;
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+void VideoTextureItem::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
+#else
 void VideoTextureItem::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+#endif
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    QQuickItem::geometryChange(newGeometry, oldGeometry);
+#else
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
+#endif
 
     if (newGeometry.size() != oldGeometry.size())
         update();
@@ -203,20 +211,30 @@ void VideoTextureNode::sync()
     if (!player)
         return;
     QSGRendererInterface *rif = m_window->rendererInterface();
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     intmax_t nativeObj = 0;
     int nativeLayout = 0;
+#endif
     switch (rif->graphicsApi()) {
-    case QSGRendererInterface::OpenGL:
-        Q_FALLTHROUGH();
-    case QSGRendererInterface::OpenGLRhi: { // FIXME: OpenGLRhi does not work
+    case QSGRendererInterface::OpenGLRhi: {
 #if QT_CONFIG(opengl)
         fbo_gl.reset(new QOpenGLFramebufferObject(m_size));
         auto tex = fbo_gl->texture();
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(tex);
+#endif
         GLRenderAPI ra;
         ra.fbo = fbo_gl->handle();
         player->setRenderAPI(&ra);
         player->scale(1.0f, -1.0f); // flip y
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0,0 ))
+        if (tex) {
+            QSGTexture *wrapper = QNativeInterface::QSGOpenGLTexture::fromNative(tex,
+                                                                                 m_window,
+                                                                                 m_size);
+            setTexture(wrapper);
+        }
+#endif
 #endif
     }
         break;
@@ -229,10 +247,21 @@ void VideoTextureNode::sync()
         if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
 
         }
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(m_texture_d3d11.Get());
+#endif
         D3D11RenderAPI ra;
         ra.rtv = m_texture_d3d11.Get();
         player->setRenderAPI(&ra);
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+        auto nativeObj = m_texture_d3d11.Get();
+        if (nativeObj) {
+            QSGTexture *wrapper = QNativeInterface::QSGD3D11Texture::fromNative(nativeObj,
+                                                                                m_window,
+                                                                                m_size);
+            setTexture(wrapper);
+        }
+#endif
 #endif
     }
         break;
@@ -261,7 +290,9 @@ void VideoTextureNode::sync()
     }
     case QSGRendererInterface::VulkanRhi: {
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+#endif
         auto inst = reinterpret_cast<QVulkanInstance *>(rif->getResource(m_window, QSGRendererInterface::VulkanInstanceResource));
         m_physDev = *static_cast<VkPhysicalDevice *>(rif->getResource(m_window, QSGRendererInterface::PhysicalDeviceResource));
         auto newDev = *static_cast<VkDevice *>(rif->getResource(m_window, QSGRendererInterface::DeviceResource));
@@ -272,7 +303,9 @@ void VideoTextureNode::sync()
         m_devFuncs = inst->deviceFunctions(m_dev);
 
         buildTexture(m_size);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(m_texture_vk);
+#endif
 
         VulkanRenderAPI ra{};
         ra.device =m_dev;
@@ -294,12 +327,20 @@ void VideoTextureNode::sync()
             return cmdBuf;
         };
         player->setRenderAPI(&ra);
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+        if (m_texture_vk) {
+            QSGTexture *wrapper = QNativeInterface::QSGVulkanTexture::fromNative(
+                m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, m_size);
+            setTexture(wrapper);
+        }
+#endif
 #endif
     }
         break;
     default:
         break;
     }
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     if (nativeObj) {
         QSGTexture *wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture,
                                                                       &nativeObj,
@@ -307,6 +348,7 @@ void VideoTextureNode::sync()
                                                                       m_size);
         setTexture(wrapper);
     }
+#endif
     player->setVideoSurfaceSize(m_size.width(), m_size.height());
 }
 
