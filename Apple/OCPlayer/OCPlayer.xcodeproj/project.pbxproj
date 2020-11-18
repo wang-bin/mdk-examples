@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		68BBC6A31EA3424B2BE201C9 /* libPods-OCPlayer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FFAD683B2301FC18A2251FA0 /* libPods-OCPlayer.a */; };
 		A60A161F255390A50019BEB6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A60A161E255390A50019BEB6 /* AppDelegate.m */; };
 		A60A1622255390A50019BEB6 /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A60A1621255390A50019BEB6 /* ViewController.mm */; };
 		A60A1624255390A80019BEB6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A60A1623255390A80019BEB6 /* Assets.xcassets */; };
@@ -18,8 +17,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		51460A1C507FFF7973F53FC7 /* Pods-OCPlayer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OCPlayer.debug.xcconfig"; path = "Target Support Files/Pods-OCPlayer/Pods-OCPlayer.debug.xcconfig"; sourceTree = "<group>"; };
-		96A79AFBD94F1ACA8E9A8960 /* Pods-OCPlayer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OCPlayer.release.xcconfig"; path = "Target Support Files/Pods-OCPlayer/Pods-OCPlayer.release.xcconfig"; sourceTree = "<group>"; };
 		A60A161A255390A50019BEB6 /* OCPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OCPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A60A161D255390A50019BEB6 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		A60A161E255390A50019BEB6 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -32,7 +29,6 @@
 		A60A162B255390A80019BEB6 /* OCPlayer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OCPlayer.entitlements; sourceTree = "<group>"; };
 		A60A16322553917A0019BEB6 /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A60A163B255394BB0019BEB6 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
-		FFAD683B2301FC18A2251FA0 /* libPods-OCPlayer.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OCPlayer.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,7 +36,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68BBC6A31EA3424B2BE201C9 /* libPods-OCPlayer.a in Frameworks */,
 				A60A163C255394BB0019BEB6 /* MetalKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -52,7 +47,6 @@
 			isa = PBXGroup;
 			children = (
 				A60A163B255394BB0019BEB6 /* MetalKit.framework */,
-				FFAD683B2301FC18A2251FA0 /* libPods-OCPlayer.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -95,8 +89,6 @@
 		CDDAFB06BB2DA0F9C2AA84B0 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				51460A1C507FFF7973F53FC7 /* Pods-OCPlayer.debug.xcconfig */,
-				96A79AFBD94F1ACA8E9A8960 /* Pods-OCPlayer.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -108,11 +100,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A60A162E255390A80019BEB6 /* Build configuration list for PBXNativeTarget "OCPlayer" */;
 			buildPhases = (
-				D630BC6AB0503C0FE0ED2849 /* [CP] Check Pods Manifest.lock */,
 				A60A1616255390A50019BEB6 /* Sources */,
 				A60A1617255390A50019BEB6 /* Frameworks */,
 				A60A1618255390A50019BEB6 /* Resources */,
-				9B53CD7B019099F7B699BDF0 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -166,48 +156,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		9B53CD7B019099F7B699BDF0 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OCPlayer/Pods-OCPlayer-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OCPlayer/Pods-OCPlayer-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OCPlayer/Pods-OCPlayer-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D630BC6AB0503C0FE0ED2849 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-OCPlayer-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A60A1616255390A50019BEB6 /* Sources */ = {
@@ -347,7 +295,6 @@
 		};
 		A60A162F255390A80019BEB6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 51460A1C507FFF7973F53FC7 /* Pods-OCPlayer.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -372,7 +319,6 @@
 		};
 		A60A1630255390A80019BEB6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 96A79AFBD94F1ACA8E9A8960 /* Pods-OCPlayer.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
