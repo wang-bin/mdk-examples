@@ -33,9 +33,9 @@ using namespace MDK_NS;
     ra.device = (__bridge void*)dev;
     ra.cmdQueue = (__bridge void*)_cmdQueue;
     ra.opaque = (__bridge void*)_mkv;
-    ra.currentRenderTarget = [](void* opaque){
+    ra.currentRenderTarget = [](const void* opaque){
         auto view = (__bridge MTKView*)opaque;
-        return (__bridge void*)view.currentDrawable.texture;
+        return (__bridge const void*)view.currentDrawable.texture;
     };
     _player.setRenderAPI(&ra);
     _player.setVideoDecoders({"VT", "FFmpeg"});
