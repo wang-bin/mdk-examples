@@ -133,7 +133,7 @@ class ViewController: NSViewController {
         // Do any additional setup after loading the view.
         //player.setVideoDecoders({"VT", "FFmpeg"});
         player.setLoop(-1);
-        player.setMedia(url: "/Users/wangbin/Movies/newyear.mp4")
+        player.setMedia(url: "https://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear1/prog_index.m3u8")
         player.setState(state: MDK_State_Playing)
     }
 

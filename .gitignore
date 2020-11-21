@@ -1,5 +1,12 @@
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
+Pods/
+Podfile.lock
+xcuserdata/
+project.xcworkspace/
+DerivedData/
+.DS_Store
+
 
 build.xml
 *~

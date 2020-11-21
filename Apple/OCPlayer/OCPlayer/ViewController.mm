@@ -65,7 +65,7 @@ using namespace MDK_NS;
 
 -(void)viewDidAppear
 {
-    _player.setMedia("/tmp/test.mp4");
+    _player.setMedia("http://huan.mediacdn.cedock.net/ts/ceshi20151014/ceshi1.ts");
     _player.setState(State::Playing);
 }
 

@@ -103,6 +103,7 @@
 				A60A1616255390A50019BEB6 /* Sources */,
 				A60A1617255390A50019BEB6 /* Frameworks */,
 				A60A1618255390A50019BEB6 /* Resources */,
+				62134C8D2568D10000DC04E5 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -156,6 +157,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		62134C8D2568D10000DC04E5 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n[ -n \"$CODE_SIGN_IDENTITY\" ] && find \"$BUILT_PRODUCTS_DIR\" -depth -name \"libffmpeg*.dylib\" -exec codesign -i mdk.framework.ffmpeg -f -vvvv -s\"${EXPANDED_CODE_SIGN_IDENTITY}\" -o runtime --timestamp=none --preserve-metadata=identifier,entitlements,flags {} \\;\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A60A1616255390A50019BEB6 /* Sources */ = {
@@ -301,13 +322,14 @@
 				CODE_SIGN_ENTITLEMENTS = OCPlayer/OCPlayer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 47757HJGBA;
+				DEVELOPMENT_TEAM = 9EET53W9T3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = OCPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fcxx-modules",
@@ -325,13 +347,14 @@
 				CODE_SIGN_ENTITLEMENTS = OCPlayer/OCPlayer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 47757HJGBA;
+				DEVELOPMENT_TEAM = 9EET53W9T3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = OCPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fcxx-modules",

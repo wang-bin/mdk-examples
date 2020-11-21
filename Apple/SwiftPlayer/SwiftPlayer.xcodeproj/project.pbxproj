@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -15,6 +15,19 @@
 		A6096D8B2555218D00F1B6C6 /* libswiftMetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A6096D8A2555218600F1B6C6 /* libswiftMetalKit.tbd */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		62A15692255FF00100E678CE /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		A6096D722555210000F1B6C6 /* SwiftPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6096D752555210000F1B6C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -23,7 +36,7 @@
 		A6096D7C2555210100F1B6C6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		A6096D7E2555210100F1B6C6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A6096D7F2555210100F1B6C6 /* SwiftPlayer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftPlayer.entitlements; sourceTree = "<group>"; };
-		A6096D862555215900F1B6C6 /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; };
+		A6096D862555215900F1B6C6 /* Podfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A6096D8A2555218600F1B6C6 /* libswiftMetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libswiftMetalKit.tbd; path = usr/lib/swift/libswiftMetalKit.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -46,6 +59,7 @@
 				A6096D742555210000F1B6C6 /* SwiftPlayer */,
 				A6096D732555210000F1B6C6 /* Products */,
 				A6096D892555218500F1B6C6 /* Frameworks */,
+				B7610FA2CD29E06947914E1D /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -78,6 +92,13 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		B7610FA2CD29E06947914E1D /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -88,6 +109,8 @@
 				A6096D6E2555210000F1B6C6 /* Sources */,
 				A6096D6F2555210000F1B6C6 /* Frameworks */,
 				A6096D702555210000F1B6C6 /* Resources */,
+				62A15692255FF00100E678CE /* Embed Frameworks */,
+				62134C8E2568DB7000DC04E5 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -142,6 +165,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		62134C8E2568DB7000DC04E5 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n[ -n \"$CODE_SIGN_IDENTITY\" ] && find \"$BUILT_PRODUCTS_DIR\" -depth -name \"libffmpeg*.dylib\" -exec codesign -i mdk.framework.ffmpeg -f -vvvv -s\"${EXPANDED_CODE_SIGN_IDENTITY}\" -o runtime --timestamp=none --preserve-metadata=identifier,entitlements,flags {} \\;\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A6096D6E2555210000F1B6C6 /* Sources */ = {
@@ -290,7 +333,7 @@
 				CODE_SIGN_ENTITLEMENTS = SwiftPlayer/SwiftPlayer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 47757HJGBA;
+				DEVELOPMENT_TEAM = 9EET53W9T3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SwiftPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -315,7 +358,7 @@
 				CODE_SIGN_ENTITLEMENTS = SwiftPlayer/SwiftPlayer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 47757HJGBA;
+				DEVELOPMENT_TEAM = 9EET53W9T3;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = SwiftPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
