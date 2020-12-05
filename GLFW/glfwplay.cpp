@@ -12,6 +12,7 @@
 #if __has_include(<vulkan/vulkan_core.h>) // FIXME: -I
 # include <vulkan/vulkan_core.h>
 #endif
+#include "mdk/MediaInfo.h"
 #include "mdk/RenderAPI.h"
 #include "mdk/Player.h"
 
@@ -227,7 +228,7 @@ int main(int argc, char** argv)
         print_log_msg(level_name[level], msg, log_file);
     });
     SetGlobalOption("MDK_KEY", "AEECF460DF08472261708ACA826B565CD314537ED98CF4705EF13618082AA57542C8957519B8C5796F734AA9F339177A6F0553CB9A4377C5C8D595B6A4F0F30551130B9FDF084D229E8F75357D94A9A393145B19B5EA830032904F3C8E69E68985D393F36D5ECC04619F32399D9246A9B6E21E5149CE4798F4EABA50B1649305");
-{
+//{
     bool help = argc < 2;
     bool es = false;
     bool gfxthread = false;
@@ -406,7 +407,7 @@ int main(int argc, char** argv)
 #endif
     if (speed != 1.0f)
         player.setPlaybackRate(speed);
-//player.setProperty("continue_at_end", "0");
+//player.setProperty("continue_at_end", "1");
     //player.setProperty("video.avfilter", "format=pix_fmts=yuv420p10be");
     if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
@@ -576,8 +577,8 @@ int main(int argc, char** argv)
         else
             glfwWaitEvents();
     }
-}
-    //player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources
+    player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current context
+//}
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }

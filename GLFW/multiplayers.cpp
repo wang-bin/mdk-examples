@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK example of multiple players
  */
 #include <GLFW/glfw3.h>
@@ -27,6 +27,7 @@ int main(int argc, char** argv)
     });
     if (!glfwInit())
         exit(EXIT_FAILURE);
+//{
     auto monitor = glfwGetPrimaryMonitor();
     auto mode = glfwGetVideoMode(monitor);
     printf("primary screen size: %dx%d\n", mode->width, mode->height);
@@ -119,13 +120,22 @@ int main(int argc, char** argv)
             player->renderVideo();
             glfwSwapBuffers(w);
             if (glfwWindowShouldClose(w))
-                goto end;
+                goto loopend;
         }
         if (wait > 0)
             glfwWaitEventsTimeout(wait);
         else
             glfwWaitEvents();
     }
+loopend:
+    for (int i = 0; i < nb_win; ++i) {
+        auto& player = players[i];
+        auto& w = win[i];
+        // cleanup renderer and gl resources in render context(current)
+        glfwMakeContextCurrent(w);
+        player->setVideoSurfaceSize(-1, -1);
+    }
+//}
 end:
     glfwTerminate();
     exit(EXIT_SUCCESS);

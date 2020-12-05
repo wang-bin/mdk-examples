@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK example of rendering 1 video in multiple windows and OpenGL contexts
  */
 #include <GLFW/glfw3.h>
@@ -26,6 +26,7 @@ int main(int argc, char** argv)
     });
     if (!glfwInit())
         exit(EXIT_FAILURE);
+{
     auto monitor = glfwGetPrimaryMonitor();
     auto mode = glfwGetVideoMode(monitor);
     printf("primary screen size: %dx%d\n", mode->width, mode->height);
@@ -105,13 +106,20 @@ int main(int argc, char** argv)
             // player.renderVideo(); // this works too. unlike renderVideo in a callback, no need to set vo opaque because every window is updated
             glfwSwapBuffers(w);
             if (glfwWindowShouldClose(w))
-                goto end;
+                goto endloop;
         }
         if (wait > 0)
             glfwWaitEventsTimeout(wait);
         else
             glfwWaitEvents();
     }
+endloop:
+    for (auto w : win) {
+        // cleanup renderer and gl resources in render context(current)
+        glfwMakeContextCurrent(w);
+        player.setVideoSurfaceSize(-1, -1, w);
+    }
+}
 end:
     glfwTerminate();
     exit(EXIT_SUCCESS);
