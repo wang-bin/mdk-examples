@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with SDL OpenGL example
  */
 #include <mdk/Player.h>
@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
             return print_help(argv[0]);
         }
     }
+while (true) {
     int url_now = url_index;
     Player player;
     if (cv)
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
 # endif
 #endif
     });
-    
+
     player.setState(State::Playing);
 //    player.waitFor(State::Playing);
     //player.setState(State::Paused);
@@ -99,12 +100,12 @@ int main(int argc, char *argv[])
         std::cout << "event: " << e.category << ", detail: " <<e.detail << std::endl;
         return false;
     });
-    
+
     while (true) {
         SDL_Event event;
         SDL_WaitEvent(&event);
         switch (event.type) {
-        case SDL_QUIT: goto done;
+        case SDL_QUIT: goto end;
         case SDL_WINDOWEVENT:
             if (event.window.event == SDL_WINDOWEVENT_EXPOSED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                 SDL_GetWindowSize(window, &w, &h);
@@ -137,6 +138,8 @@ int main(int argc, char *argv[])
                 player.setState(State::Stopped);
             } else if (event.key.keysym.sym == SDLK_p) {
                 player.setState(State::Playing);
+            } else if (event.key.keysym.sym == SDLK_q) {
+                goto loopend;
             } else if (event.key.keysym.sym == SDLK_RIGHT) {
                 printf("seekForward from: %" PRId64 "ms\n", player.position());
                 player.seek(player.position()+10*int(TimeScaleForInt),[](int64_t t){
@@ -177,8 +180,14 @@ int main(int argc, char *argv[])
             break;
         }
     }
+end:
+    player.setVideoSurfaceSize(-1, -1);
+    goto done;
+loopend:
+    //player.setVideoSurfaceSize(-1, -1);
+    printf("new player\n");
+}
 done:
-    Player::foreignGLContextDestroyed();
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
