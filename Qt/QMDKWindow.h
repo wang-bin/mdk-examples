@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #ifndef QMDKWINDOW_H
@@ -27,7 +27,6 @@ public:
     void snapshot();
 
 protected:
-    void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
     void keyPressEvent(QKeyEvent *) override;

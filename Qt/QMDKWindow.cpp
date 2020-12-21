@@ -8,7 +8,6 @@
 #include <QDebug>
 #include <QDir>
 #include <QKeyEvent>
-#include <QOffscreenSurface>
 #include <QStringList>
 #include <QScreen>
 
@@ -23,7 +22,11 @@ QMDKWindow::QMDKWindow(QWindow *parent)
     });
 }
 
-QMDKWindow::~QMDKWindow() = default;
+QMDKWindow::~QMDKWindow()
+{
+    makeCurrent();
+    player->setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources
+}
 
 void QMDKWindow::setDecoders(const QStringList &dec)
 {
@@ -90,20 +93,6 @@ void QMDKWindow::snapshot() {
             qDebug() << "Snapshot failed.";
         }
         return "";*/
-    });
-}
-
-void QMDKWindow::initializeGL()
-{
-    auto player = player_;
-    // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
-    auto ctx = context();
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [player, ctx] {
-        QOffscreenSurface s;
-        s.create();
-        ctx->makeCurrent(&s);
-        Player::foreignGLContextDestroyed();
-        ctx->doneCurrent();
     });
 }
 

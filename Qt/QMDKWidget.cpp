@@ -8,9 +8,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QKeyEvent>
-#include <QOffscreenSurface>
 #include <QOpenGLContext>
-#include <QOpenGLFunctions>
 #include <QStringList>
 #include <QScreen>
 
@@ -25,7 +23,11 @@ QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
     });
 }
 
-QMDKWidget::~QMDKWidget() = default; // TODO: release gfx resources in an offscreen context
+QMDKWidget::~QMDKWidget()
+{
+    makeCurrent();
+    player->setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources
+}
 
 void QMDKWidget::setDecoders(const QStringList &dec)
 {
@@ -92,20 +94,6 @@ void QMDKWidget::snapshot() {
             qDebug() << "Snapshot failed.";
         }
         return "";*/
-    });
-}
-
-void QMDKWidget::initializeGL()
-{
-    auto player = player_;
-    // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
-    auto ctx = context();
-    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [player, ctx] {
-        QOffscreenSurface s;
-        s.create();
-        ctx->makeCurrent(&s);
-        player->setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources
-        ctx->doneCurrent();
     });
 }
 

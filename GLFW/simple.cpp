@@ -30,7 +30,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
     switch (key) {
         case GLFW_KEY_SPACE:
             p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
-            break;  
+            break;
         case GLFW_KEY_RIGHT:
             p->seek(p->position()+10000);
             break;
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
         else
             glfwWaitEvents();
     }
-    Player::foreignGLContextDestroyed();
+    player.setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources in current context
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
