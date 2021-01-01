@@ -26,7 +26,7 @@ QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
 QMDKWidget::~QMDKWidget()
 {
     makeCurrent();
-    player->setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources
+    player_->setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources
 }
 
 void QMDKWidget::setDecoders(const QStringList &dec)
