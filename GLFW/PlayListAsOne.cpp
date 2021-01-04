@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
  * MDK SDK Playlist as 1 video
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -13,7 +13,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <future>
 #include <iostream>
 #include <regex>
 #include <GLFW/glfw3.h>
@@ -115,8 +114,6 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 int64_t ItemsFromUrls(std::vector<PlaylistItem>* items, const char** urls, int count)
 {
     items->clear();
-    vector<promise<int64_t>> ps(count);
-    vector<future<int64_t>> futs;
     vector<Player> infoReader(count);
     for (int i = 0; i < count; ++i) {
         PlaylistItem item;
@@ -124,28 +121,15 @@ int64_t ItemsFromUrls(std::vector<PlaylistItem>* items, const char** urls, int c
         items->push_back(move(item));
         auto reader = &infoReader[i];
         reader->setMedia(urls[i]);
-        auto& p = ps[i];
-        futs.push_back(std::move(p.get_future()));
         printf("prepare %d: %s\n", i, urls[i]);
-        reader->prepare(0, [&](int64_t position, bool*){
-            printf("+++++++++++++prepare: %lld\n", position);
-            if (position < 0) {
-                p.set_value(0);
-            } else {
-                const auto& info = reader->mediaInfo();
-                p.set_value(info.duration);
-            }
-            return false;
-        });
+        reader->prepare();
     }
     int64_t duration = 0;
     for (int i = 0; i < count; ++i) {
-        auto& f = futs[i];
-        auto t = f.get();
-        if (t <= 0)
-            continue;
-        duration += t;
-        items->at(i).duration = t;
+        auto reader = &infoReader[i];
+        reader->waitFor(State::Paused); // prepare() will change to State::Paused when completed
+        duration += reader->mediaInfo().duration;
+        items->at(i).duration = reader->mediaInfo().duration;
         if (i > 0)
             items->at(i).startTime = items->at(i-1).startTime + items->at(i-1).duration;
         printf("++++++++++%lld+%lld: %s\n", items->at(i).startTime, duration, items->at(i).url.data());
