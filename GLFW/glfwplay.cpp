@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2021 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -468,7 +468,12 @@ int main(int argc, char** argv)
 #endif
     glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
-        printf("************framebuffer size changed: %dx%d***********\n", w, h);
+        float xscale = 1.0f, yscale = 1.0f;
+#if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
+    if (glfwGetWindowContentScale)
+        glfwGetWindowContentScale(win, &xscale, &yscale);
+#endif
+        printf("************framebuffer size changed: %dx%d, scale: %f***********\n", w, h, xscale);
         p->setVideoSurfaceSize(w, h);
     });
     glfwSetScrollCallback(win, [](GLFWwindow* win, double dx, double dy){
@@ -500,6 +505,17 @@ int main(int argc, char** argv)
             glfwSetWindowShouldClose(win, 1);
             glfwPostEmptyEvent();
         }
+    });
+    glfwSetCursorPosCallback(win, [](GLFWwindow* win, double x,double y){
+        if (glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+            return;
+        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        int w = 0, h = 0;
+        glfwGetWindowSize(win, &w, &h);
+        if (x > w || y > h)
+            return;
+        auto duration = p->mediaInfo().duration;
+        p->seek(duration*x/w, SeekFlag::FromStart);
     });
     player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
     float xscale = 1.0f, yscale = 1.0f;
@@ -577,7 +593,8 @@ int main(int argc, char** argv)
         else
             glfwWaitEvents();
     }
-    player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current context
+    if (!gfxthread) // will release internally if use native surface
+        player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current foreign context
 //}
     glfwTerminate();
     exit(EXIT_SUCCESS);

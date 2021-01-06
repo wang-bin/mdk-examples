@@ -174,7 +174,8 @@ int main(int argc, char** argv)
         else
             glfwWaitEvents();
     }
-    player.setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources in current context
+    if (!gfxthread)// will release internally if use native surface
+        player.setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources in current foreign context
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }

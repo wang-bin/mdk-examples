@@ -318,8 +318,8 @@ int main(int argc, const char** argv)
         glfwSwapBuffers(win);
         glfwWaitEvents();
     }
+    //player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current foreign context. also will release in ~Player()
 }
-    //player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
