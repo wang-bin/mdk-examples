@@ -146,7 +146,7 @@ void Seek(Player* player, const vector<PlaylistItem>& items, int64_t position)
         return;
     auto offset = position - it->startTime;
     if (it->url == player->url()) {
-        player->seek(offset);
+        player->seek(offset, SeekFlag::FromStart);
         return;
     }
     item_now = distance(it, items.cbegin());
