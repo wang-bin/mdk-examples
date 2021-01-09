@@ -1,5 +1,10 @@
 
-find_package(Vulkan) #cmake 3.7+
+if(CMAKE_CROSSCOMPILING)
+  find_package(Vulkan NO_CMAKE_SYSTEM_PATH) #cmake 3.7+. cross build win on linux may include /usr/include, which is not desired
+else()
+  find_package(Vulkan)
+endif()
+
 #find_package(glfw)
 set(CMAKE_REQUIRED_LIBRARIES_OLD ${CMAKE_REQUIRED_LIBRARIES})
 set(CMAKE_REQUIRED_INCLUDES_OLD ${CMAKE_REQUIRED_INCLUDES})
