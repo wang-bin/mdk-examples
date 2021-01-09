@@ -228,7 +228,7 @@ int main(int argc, char** argv)
         print_log_msg(level_name[level], msg, log_file);
     });
     SetGlobalOption("MDK_KEY", "AEECF460DF08472261708ACA826B565CD314537ED98CF4705EF13618082AA57542C8957519B8C5796F734AA9F339177A6F0553CB9A4377C5C8D595B6A4F0F30551130B9FDF084D229E8F75357D94A9A393145B19B5EA830032904F3C8E69E68985D393F36D5ECC04619F32399D9246A9B6E21E5149CE4798F4EABA50B1649305");
-//{
+{
     bool help = argc < 2;
     bool es = false;
     bool gfxthread = false;
@@ -515,7 +515,7 @@ int main(int argc, char** argv)
         if (x > w || y > h)
             return;
         auto duration = p->mediaInfo().duration;
-        p->seek(duration*x/w, SeekFlag::FromStart);
+        p->seek(duration*int(x)/w, SeekFlag::FromStart); // duration*x/w crashes clang-cl-11/12 -Oz
     });
     player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
     float xscale = 1.0f, yscale = 1.0f;
@@ -595,7 +595,7 @@ int main(int argc, char** argv)
     }
     if (!gfxthread) // will release internally if use native surface
         player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current foreign context
-//}
+}
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }
