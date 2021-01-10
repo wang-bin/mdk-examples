@@ -25,7 +25,7 @@ QMDKWindow::QMDKWindow(QWindow *parent)
 QMDKWindow::~QMDKWindow()
 {
     makeCurrent();
-    player->setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources
+    player_->setVideoSurfaceSize(-1, -1); // cleanup gl renderer resources
 }
 
 void QMDKWindow::setDecoders(const QStringList &dec)
