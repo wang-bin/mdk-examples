@@ -1,0 +1,2 @@
+- supports macOS, iOS, macCatalyst
+- 2 players

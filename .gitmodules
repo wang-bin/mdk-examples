@@ -1,3 +1,6 @@
 [submodule "Apple/HelloTriangle"]
 	path = Apple/HelloTriangle
 	url = https://github.com/wang-bin/HelloTriangle.git
+[submodule "Apple/SwiftMdkExample/Shared/swiftMDK"]
+	path = Apple/SwiftMdkExample/Shared/swiftMDK
+	url = https://github.com/wang-bin/swiftMDK.git
