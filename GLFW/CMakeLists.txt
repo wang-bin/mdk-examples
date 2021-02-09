@@ -13,7 +13,7 @@ if(WIN32)
   set(GLFW_NAME glfw3)
 endif()
 if(WINDOWS_DESKTOP)# AND MSVC)
-  set(GLFW_DEP ${EXTRA_LIB_DIRS_FLAG} gdi32 shell32 user32) # Gdi32.Lib, shell32.lib, User32.Lib. but cmake treates .Lib as .Lib.lib
+  set(GLFW_DEP gdi32 shell32 user32) # Gdi32.Lib, shell32.lib, User32.Lib. but cmake treates .Lib as .Lib.lib
 elseif(APPLE)
   set(GLFW_DEP "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo")
 endif()
@@ -27,7 +27,6 @@ if(HAVE_GLFW3)
     target_include_directories(glfwplay PRIVATE ${Vulkan_INCLUDE_DIR})
   endif()
   target_link_libraries(glfwplay PRIVATE mdk ${GLFW_NAME} ${GLFW_DEP})
-
 
   add_executable(PlaylistAsOne ${APPTYPE} PlayListAsOne.cpp)# ${CMAKE_CURRENT_BINARY_DIR}/app.rc)
   if (EXISTS ${Vulkan_INCLUDE_DIR})

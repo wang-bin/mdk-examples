@@ -8,12 +8,9 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-if(NOT WIN32 AND NOT CMAKE_CROSSCOMPILING AND EXISTS /usr/local/include)
-  include_directories(/usr/local/include)
-  link_directories(/usr/local/lib)
-  list(APPEND CMAKE_REQUIRED_INCLUDES /usr/local/include)
-  list(APPEND CMAKE_REQUIRED_LIBRARIES -L/usr/local/lib)
+if(EXTRA_LIB_DIRS_FLAG)
+  link_libraries(${EXTRA_LIB_DIRS_FLAG})
+  list(APPEND CMAKE_REQUIRED_LIBRARIES ${EXTRA_LIB_DIRS_FLAG})
 endif()
 include_directories(${EXTRA_INCLUDE})
 #link_directories(${EXTRA_LIB_DIRS_FLAG}) # why will append -L.../examples and become invalid -L..../examples-L....external...?
