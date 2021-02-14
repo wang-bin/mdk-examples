@@ -101,7 +101,7 @@ class GameViewController: UIViewController {
         // Do any additional setup after loading the view.
         player.media = "https://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear1/prog_index.m3u8"
 
-        player.videoDecoders = ["VT:copy=1", "FFmpeg"]
+        player.videoDecoders = ["VT:copy=0", "FFmpeg"]
         player.setRange(from: 1000)
         player.setBufferRange(msMin: 1000, msMax: 4000)
         //player.loop = -1;
@@ -114,7 +114,7 @@ class GameViewController: UIViewController {
             print("MediaInfo: \(info)")
             return true
         })
-        setGlobalOption(name: "MDK_KEY", value: "123")
+        //setGlobalOption(name: "MDK_KEY", value: "123")
         setGlobalOption(name: "videoout.clear_on_stop", value: 1)
         player.state = .Playing
     }

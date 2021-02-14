@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6251130B25D8CF6E00D59D44 /* mdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A649199D25BDA84C0093D019 /* mdk.xcframework */; };
+		6251130C25D8CF6E00D59D44 /* mdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A649199D25BDA84C0093D019 /* mdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A64918E625BD985A0093D019 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A64918E525BD985A0093D019 /* AppDelegate.swift */; };
 		A64918EB25BD985A0093D019 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A64918E925BD985A0093D019 /* Main.storyboard */; };
 		A64918EE25BD985A0093D019 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A64918EC25BD985A0093D019 /* LaunchScreen.storyboard */; };
@@ -23,8 +25,6 @@
 		A649195B25BDA5650093D019 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A649190925BD985A0093D019 /* GameViewController.swift */; };
 		A64919A025BDA8540093D019 /* mdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A649199D25BDA84C0093D019 /* mdk.xcframework */; };
 		A64919A125BDA8540093D019 /* mdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A649199D25BDA84C0093D019 /* mdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A64919AD25BDAA0D0093D019 /* mdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A649199D25BDA84C0093D019 /* mdk.xcframework */; };
-		A64919AE25BDAA0D0093D019 /* mdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A649199D25BDA84C0093D019 /* mdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A69F923425C1703C005DE673 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69F923025C1703C005DE673 /* Player.swift */; };
 		A69F923525C1703C005DE673 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69F923025C1703C005DE673 /* Player.swift */; };
 		A69F923625C1703C005DE673 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69F923025C1703C005DE673 /* Player.swift */; };
@@ -40,13 +40,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A649198C25BDA6BB0093D019 /* Embed Frameworks */ = {
+		6251130D25D8CF6E00D59D44 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A64919AE25BDAA0D0093D019 /* mdk.xcframework in Embed Frameworks */,
+				6251130C25D8CF6E00D59D44 /* mdk.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -95,7 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A64919AD25BDAA0D0093D019 /* mdk.xcframework in Frameworks */,
+				6251130B25D8CF6E00D59D44 /* mdk.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,7 +212,8 @@
 				A64918DE25BD985A0093D019 /* Sources */,
 				A64918DF25BD985A0093D019 /* Frameworks */,
 				A64918E025BD985A0093D019 /* Resources */,
-				A649198C25BDA6BB0093D019 /* Embed Frameworks */,
+				6251130D25D8CF6E00D59D44 /* Embed Frameworks */,
+				6251131125D8E1A600D59D44 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -329,6 +330,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		6251131125D8E1A600D59D44 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "[ -n \"$CODE_SIGN_IDENTITY\" ] && find \"$BUILT_PRODUCTS_DIR\" -depth -name \"libffmpeg*.dylib\" -exec codesign -i mdk.framework.ffmpeg -f -vvvv -s\"${EXPANDED_CODE_SIGN_IDENTITY}\" ${OTHER_CODE_SIGN_FLAGS:-} --preserve-metadata=identifier,entitlements,flags {} \\;\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A64918DE25BD985A0093D019 /* Sources */ = {
@@ -537,6 +558,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9EET53W9T3;
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.1;
@@ -562,6 +584,7 @@
 				CODE_SIGN_ENTITLEMENTS = iOS/iOS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9EET53W9T3;
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.1;
