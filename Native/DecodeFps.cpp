@@ -1,6 +1,7 @@
 #include "mdk/Player.h"
 #include "mdk/VideoFrame.h"
 #include <chrono>
+#include <cstring>
 #include <future>
 #include <queue>
 
