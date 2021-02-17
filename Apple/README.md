@@ -1,1 +1,4 @@
 - HelloTriangle: Using mdk sdk to play video in Apple's official example https://developer.apple.com/documentation/metal/using_a_render_pipeline_to_render_primitives?language=objc
+- OCPlayer
+- SwiftMdkExample: supports macOS, iOS, macCatalyst. via submodule [swiftMDK](https://github.com/wang-bin/swiftMDK)
+- SwiftPlayer: macOS only
