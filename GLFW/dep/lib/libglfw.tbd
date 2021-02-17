@@ -1,0 +1,58 @@
+---
+archs:           [ x86_64, arm64, arm64e ]
+platform:        macosx
+install-name:    '@rpath/libglfw.3.dylib'
+current-version: 3.3
+compatibility-version: 3.0
+exports:
+  - archs:           [ x86_64, arm64, arm64e ]
+    symbols:         [ _glfwCreateCursor, _glfwCreateStandardCursor, _glfwCreateWindow,
+                       _glfwCreateWindowSurface, _glfwDefaultWindowHints,
+                       _glfwDestroyCursor, _glfwDestroyWindow, _glfwExtensionSupported,
+                       _glfwFocusWindow, _glfwGetClipboardString, _glfwGetCocoaMonitor,
+                       _glfwGetCocoaWindow, _glfwGetCurrentContext, _glfwGetCursorPos,
+                       _glfwGetEGLContext, _glfwGetEGLDisplay, _glfwGetEGLSurface,
+                       _glfwGetError, _glfwGetFramebufferSize, _glfwGetGamepadName,
+                       _glfwGetGamepadState, _glfwGetGammaRamp, _glfwGetInputMode,
+                       _glfwGetInstanceProcAddress, _glfwGetJoystickAxes,
+                       _glfwGetJoystickButtons, _glfwGetJoystickGUID, _glfwGetJoystickHats,
+                       _glfwGetJoystickName, _glfwGetJoystickUserPointer,
+                       _glfwGetKey, _glfwGetKeyName, _glfwGetKeyScancode,
+                       _glfwGetMonitorContentScale, _glfwGetMonitorName,
+                       _glfwGetMonitorPhysicalSize, _glfwGetMonitorPos,
+                       _glfwGetMonitorUserPointer, _glfwGetMonitorWorkarea,
+                       _glfwGetMonitors, _glfwGetMouseButton, _glfwGetNSGLContext,
+                       _glfwGetOSMesaColorBuffer, _glfwGetOSMesaContext,
+                       _glfwGetOSMesaDepthBuffer, _glfwGetPhysicalDevicePresentationSupport,
+                       _glfwGetPrimaryMonitor, _glfwGetProcAddress, _glfwGetRequiredInstanceExtensions,
+                       _glfwGetTime, _glfwGetTimerFrequency, _glfwGetTimerValue,
+                       _glfwGetVersion, _glfwGetVersionString, _glfwGetVideoMode,
+                       _glfwGetVideoModes, _glfwGetWindowAttrib, _glfwGetWindowContentScale,
+                       _glfwGetWindowFrameSize, _glfwGetWindowMonitor,
+                       _glfwGetWindowOpacity, _glfwGetWindowPos, _glfwGetWindowSize,
+                       _glfwGetWindowUserPointer, _glfwHideWindow, _glfwIconifyWindow,
+                       _glfwInit, _glfwInitHint, _glfwJoystickIsGamepad,
+                       _glfwJoystickPresent, _glfwMakeContextCurrent, _glfwMaximizeWindow,
+                       _glfwPollEvents, _glfwPostEmptyEvent, _glfwRawMouseMotionSupported,
+                       _glfwRequestWindowAttention, _glfwRestoreWindow,
+                       _glfwSetCharCallback, _glfwSetCharModsCallback,
+                       _glfwSetClipboardString, _glfwSetCursor, _glfwSetCursorEnterCallback,
+                       _glfwSetCursorPos, _glfwSetCursorPosCallback, _glfwSetDropCallback,
+                       _glfwSetErrorCallback, _glfwSetFramebufferSizeCallback,
+                       _glfwSetGamma, _glfwSetGammaRamp, _glfwSetInputMode,
+                       _glfwSetJoystickCallback, _glfwSetJoystickUserPointer,
+                       _glfwSetKeyCallback, _glfwSetMonitorCallback, _glfwSetMonitorUserPointer,
+                       _glfwSetMouseButtonCallback, _glfwSetScrollCallback,
+                       _glfwSetTime, _glfwSetWindowAspectRatio, _glfwSetWindowAttrib,
+                       _glfwSetWindowCloseCallback, _glfwSetWindowContentScaleCallback,
+                       _glfwSetWindowFocusCallback, _glfwSetWindowIcon,
+                       _glfwSetWindowIconifyCallback, _glfwSetWindowMaximizeCallback,
+                       _glfwSetWindowMonitor, _glfwSetWindowOpacity, _glfwSetWindowPos,
+                       _glfwSetWindowPosCallback, _glfwSetWindowRefreshCallback,
+                       _glfwSetWindowShouldClose, _glfwSetWindowSize, _glfwSetWindowSizeCallback,
+                       _glfwSetWindowSizeLimits, _glfwSetWindowTitle, _glfwSetWindowUserPointer,
+                       _glfwShowWindow, _glfwSwapBuffers, _glfwSwapInterval,
+                       _glfwTerminate, _glfwUpdateGamepadMappings, _glfwVulkanSupported,
+                       _glfwWaitEvents, _glfwWaitEventsTimeout, _glfwWindowHint,
+                       _glfwWindowHintString, _glfwWindowShouldClose ]
+...
