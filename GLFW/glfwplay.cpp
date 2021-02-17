@@ -236,8 +236,8 @@ int main(int argc, char** argv)
     int from = 0;
     float wait = 0;
     float speed = 1.0f;
-    int64_t buf_min = 4000;
-    int64_t buf_max = 16000;
+    int64_t buf_min = 1000;
+    int64_t buf_max = 2000;
     int loop = -2;
     int64_t loop_a = -1;
     int64_t loop_b = 0;
