@@ -122,7 +122,7 @@ int64_t ItemsFromUrls(std::vector<PlaylistItem>* items, const char** urls, int c
         auto reader = &infoReader[i];
         reader->setMedia(urls[i]);
         printf("prepare %d: %s\n", i, urls[i]);
-        reader->prepare();
+        reader->prepare(0, [](int64_t, bool*){ return false;});
     }
     int64_t duration = 0;
     for (int i = 0; i < count; ++i) {
