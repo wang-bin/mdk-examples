@@ -45,6 +45,8 @@ using namespace MDK_NS;
 
 int64_t gSeekStep = 10000LL;
 SeekFlag gSeekFlag = SeekFlag::Default;
+int atrack = 0;
+int vtrack = 0;
 
 static void* sNativeDisp = nullptr;
 extern "C" MDK_EXPORT void* GetCurrentNativeDisplay() // required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
@@ -140,6 +142,12 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             break;
         case GLFW_KEY_S:
             p->setState(State::Stopped);
+            break;
+        case GLFW_KEY_A:
+            p->setActiveTracks(MediaType::Audio, {++atrack % (int)p->mediaInfo().video.size()});
+            break;
+        case GLFW_KEY_V:
+            p->setActiveTracks(MediaType::Video, {++vtrack % (int)p->mediaInfo().video.size()});
             break;
         default:
             break;
@@ -266,6 +274,12 @@ int main(int argc, char** argv)
             cv = argv[++i];
         } else if (strcmp(argv[i], "-c:a") == 0) {
             ca = argv[++i];
+        } else if (strcmp(argv[i], "-t:a") == 0) {
+            atrack = std::atoi(argv[++i]);
+            player.setActiveTracks(MediaType::Audio, {atrack});
+        } else if (strcmp(argv[i], "-t:v") == 0) {
+            vtrack = std::atoi(argv[++i]);
+            player.setActiveTracks(MediaType::Video, {vtrack});
         } else if (strstr(argv[i], "-d3d11") == argv[i]) {
             gfxthread = true;
 #ifdef _WIN32
