@@ -17,7 +17,7 @@ if(WINDOWS_DESKTOP)# AND MSVC)
 elseif(APPLE)
   set(GLFW_DEP -L${CMAKE_CURRENT_SOURCE_DIR}/dep/lib "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo")
 endif()
-list(APPEND CMAKE_REQUIRED_LIBRARIES ${GLFW_DEP})
+list(PREPEND CMAKE_REQUIRED_LIBRARIES ${GLFW_DEP}) # find libglfw.tbd before libglfw.dylib(single arch) in /usr/local/lib
 check_library_exists(${GLFW_NAME} glfwInit "" HAVE_GLFW3)
 set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_OLD})
 set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_OLD})
