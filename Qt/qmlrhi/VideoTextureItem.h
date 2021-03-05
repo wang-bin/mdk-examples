@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #pragma once
@@ -15,6 +15,7 @@ class VideoTextureItem : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(bool autoPlay READ autoPlay WRITE setAutoPlay NOTIFY autoPlayChanged)
     QML_ELEMENT
 
 public:
@@ -24,10 +25,14 @@ public:
     QString source() { return m_source; }
     void setSource(const QString & s);
 
+    bool autoPlay() const { return m_autoPlay; }
+    void setAutoPlay(bool value);
+
     Q_INVOKABLE void play();
 
 signals:
     void sourceChanged();
+    void autoPlayChanged();
 
 protected:
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
@@ -45,6 +50,7 @@ private:
 
     friend class VideoTextureNode;
     VideoTextureNode *m_node = nullptr;
+    bool m_autoPlay = true;
     QString m_source;
     std::shared_ptr<Player> m_player;
 };

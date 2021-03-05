@@ -13,8 +13,6 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 10
         source: url
-
-        Component.onCompleted: renderer.play()
     }
 
     Rectangle {

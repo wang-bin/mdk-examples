@@ -147,6 +147,16 @@ void VideoTextureItem::setSource(const QString & s)
     m_player->setMedia(s.toLocal8Bit().data());
     m_source = s;
     emit sourceChanged();
+    if (autoPlay())
+        play();
+}
+
+void VideoTextureItem::setAutoPlay(bool value)
+{
+    if (m_autoPlay == value)
+        return;
+    m_autoPlay = value;
+    emit autoPlayChanged();
 }
 
 void VideoTextureItem::play()
@@ -286,7 +296,17 @@ void VideoTextureNode::sync()
         ra.device = (__bridge void*)dev;
         ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
         player->setRenderAPI(&ra);
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(ra.texture);
+# else
+        auto nativeObj = m_texture_mtl;
+        if (nativeObj) {
+            QSGTexture *wrapper = QNativeInterface::QSGMetalTexture::fromNative(nativeObj,
+                                                                                m_window,
+                                                                                m_size);
+            setTexture(wrapper);
+        }
+# endif
 #endif
     }
     case QSGRendererInterface::VulkanRhi: {
