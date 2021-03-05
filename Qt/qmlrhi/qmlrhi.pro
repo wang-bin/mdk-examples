@@ -1,4 +1,5 @@
 QT += qml quick
+CONFIG += c++17
 CONFIG += qmltypes
 CONFIG -= app_bundle
 QML_IMPORT_NAME = MDKTextureItem
