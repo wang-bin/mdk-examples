@@ -1,5 +1,10 @@
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
+
+mdk-sdk/
+mdk.framework/
+mdk.xcframework/
+
 Pods/
 Podfile.lock
 xcuserdata/

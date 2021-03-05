@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2021 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKPlayer.h"
@@ -7,6 +7,7 @@
 #include <QStringList>
 #include <QtDebug>
 #include <QRegion>
+#include <QVariant>
 #include "mdk/Player.h"
 
 using namespace MDK_NS;

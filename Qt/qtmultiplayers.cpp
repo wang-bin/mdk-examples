@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2021 WangBin <wbsecg1 at gmail.com>
  */
 #include "QMDKRenderer.h"
 #include "QMDKPlayer.h"
@@ -10,11 +10,15 @@ class MyRenderWidget : public QMDKWidgetRenderer {
 public:
     MyRenderWidget(QWidget *parent = nullptr) : QMDKWidgetRenderer(parent) {}
 private:
-    void enterEvent(QEvent *event) override {
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    void enterEvent(QEnterEvent*) override {
+#else
+    void enterEvent(QEvent*) override {
+#endif
         source()->play();
     }
 
-    void leaveEvent(QEvent *event) override {
+    void leaveEvent(QEvent*) override {
         source()->stop();
     }
 };

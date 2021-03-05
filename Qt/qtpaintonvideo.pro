@@ -1,4 +1,6 @@
 QT     += widgets
+greaterThan(QT_MAJOR_VERSION, 5): QT += opengl openglwidgets
+
 CONFIG += c++11
 CONFIG -= app_bundle
 TEMPLATE = app
