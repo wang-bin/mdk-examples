@@ -520,6 +520,19 @@ int main(int argc, char** argv)
             glfwPostEmptyEvent();
         }
     });
+    glfwSetMouseButtonCallback(win, [](GLFWwindow* win, int button, int action, int mods){
+        if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS)
+            return;
+        double x, y = 0;
+        glfwGetCursorPos(win, &x, &y);
+        int w = 0, h = 0;
+        glfwGetWindowSize(win, &w, &h);
+        if (x > w || y > h)
+            return;
+        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        auto duration = p->mediaInfo().duration;
+        p->seek(duration*int(x)/w, SeekFlag::FromStart); // duration*x/w crashes clang-cl-11/12 -Oz
+    });
     glfwSetCursorPosCallback(win, [](GLFWwindow* win, double x,double y){
         if (glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
             return;

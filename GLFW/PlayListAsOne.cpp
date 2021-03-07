@@ -121,8 +121,7 @@ int64_t ItemsFromUrls(std::vector<PlaylistItem>* items, const char** urls, int c
         items->push_back(move(item));
         auto reader = &infoReader[i];
         reader->setMedia(urls[i]);
-        printf("prepare %d: %s\n", i, urls[i]);
-        reader->prepare(0, [](int64_t, bool*){ return false;});
+        reader->prepare(); // callback [](int64_t, bool*){ return false;} will result in empty mediaInfo
     }
     int64_t duration = 0;
     for (int i = 0; i < count; ++i) {
@@ -180,6 +179,8 @@ int main(int argc, const char** argv)
     int64_t loop_b = 0;
     std::string cv;
     Player player;
+
+    player.setProperty("continue_at_end", "1"); // do not stop when the last frame is decoded
     //player.setBackgroundColor(1, 0, 0, 1);
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-c:v") == 0) {
@@ -256,6 +257,26 @@ int main(int argc, const char** argv)
         p->setMedia(nullptr); // 1st url may be the same as current url
         p->setMedia(items[item_now].url.data());
         p->setState(State::Playing);
+    });
+
+    glfwSetMouseButtonCallback(win, [](GLFWwindow* win, int button, int action, int mods){
+        if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS)
+            return;
+        if (gDuration <= 0)
+            return;
+        double x, y = 0;
+        glfwGetCursorPos(win, &x, &y);
+        int ww = 0, wh = 0;
+        glfwGetWindowSize(win, &ww, &wh);
+        if (x < 0 || x > ww)
+            return;
+        if (y < 0 || y > wh)
+            return;
+        const int64_t pos = x * gDuration/ww;
+        if (pos < 0)
+            return;
+        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        Seek(p, items, pos);
     });
     glfwSetCursorPosCallback(win, [](GLFWwindow* win, double x, double y){
         if (glfwGetKey(win, GLFW_KEY_Z) == GLFW_RELEASE)
