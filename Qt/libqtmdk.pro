@@ -9,14 +9,16 @@ MDK_SDK = $$PWD/../mdk-sdk
 INCLUDEPATH += $$MDK_SDK/include
 contains(QT_ARCH, x.*64) {
   android: MDK_ARCH = x86_64
+  else:linux: MDK_ARCH = amd64
   else: MDK_ARCH = x64
 } else:contains(QT_ARCH, .*86) {
   MDK_ARCH = x86
-} else:contains(QT_ARCH, a.*64) {
+} else:contains(QT_ARCH, a.*64.*) { # arm64-v8a
   android: MDK_ARCH = arm64-v8a
   else: MDK_ARCH = arm64
 } else:contains(QT_ARCH, arm.*) {
   android: MDK_ARCH = armeabi-v7a
+  else:linux: MDK_ARCH = armhf
   else: MDK_ARCH = arm
 }
 
@@ -33,6 +35,7 @@ macx|ios {
   LIBS += -L$$MDK_SDK/lib/$$MDK_ARCH -lmdk
 }
 linux: LIBS += -Wl,-rpath-link,$$MDK_SDK/lib/$$MDK_ARCH # for libc++ symbols
+linux: LIBS += -Wl,-rpath,$$MDK_SDK/lib/$$MDK_ARCH
 
 SOURCES += QMDKRenderer.cpp \
         QMDKPlayer.cpp
