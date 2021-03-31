@@ -88,7 +88,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 #endif
             };
             static int d = 0;
-            p->setVideoDecoders({decs[++d%std::size(decs)]});
+            p->setDecoders(MediaType::Video, {decs[++d%std::size(decs)]});
         }
             break;
         case GLFW_KEY_H: {
@@ -149,6 +149,9 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_V:
             p->setActiveTracks(MediaType::Video, {++vtrack % (int)p->mediaInfo().video.size()});
             break;
+        case GLFW_KEY_PERIOD:
+            p->seek(1, SeekFlag::FromNow|SeekFlag::Frame);
+            break;
         default:
             break;
     }
@@ -162,6 +165,7 @@ void showHelp(const char* argv0)
             "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
             "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
             "-logfile: save log to a given file\n"
+            "-loglevel: log level name or int value\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
             "decoder properties(not supported by all): glva=0/1, hwdec_format=..., copy_frame=0/1/-1, hwdevice=...\n"
@@ -183,10 +187,7 @@ void showHelp(const char* argv0)
             "left/right: seek backward/forward (-/+10s)\n"
             "right: seek forward (+10s)\n"
             "up/down: speed +/-0.1\n"
-            "C: capture video frame\n"
-#ifdef INCLUDE_STB_IMAGE_WRITE_H
-            " and save as N.jpg\n"
-#endif
+            "C: capture video frame and save as N.jpg\n"
             "\n"
             "D: switch video decoder\n"
             "F: fullscreen\n"
@@ -194,6 +195,7 @@ void showHelp(const char* argv0)
             "O: change orientation\n"
             "Q: quit\n"
             "R: record video as 'mdk-record.mkv', press again to stop recording\n"
+            ".: 1 frame step forward\n"
             // TODO: display env vars
         , argv0);
 }
@@ -235,7 +237,7 @@ int main(int argc, char** argv)
         static const char level_name[] = {'N', 'E', 'W', 'I', 'D', 'A'};
         print_log_msg(level_name[level], msg, log_file);
     });
-    SetGlobalOption("MDK_KEY", "AEECF460DF08472261708ACA826B565CD314537ED98CF4705EF13618082AA57542C8957519B8C5796F734AA9F339177A6F0553CB9A4377C5C8D595B6A4F0F30551130B9FDF084D229E8F75357D94A9A393145B19B5EA830032904F3C8E69E68985D393F36D5ECC04619F32399D9246A9B6E21E5149CE4798F4EABA50B1649305");
+    SetGlobalOption("MDK_KEY", "10453B8F2140865027CEDD6FDF846D940CA738BE72FE5EE1397DF61714CAAA2A185B72EEC1F781FD5E1FA9BB0AB739E35CCC793F0EBC3FD0182D61EE56E59E08EFBAC47021408D50D8312290207B926B0CA730D91E982991551C8FD75973CAF6B1C4573E7CBF9467F3BAF34F8D9F0A8AE239503BFB1B7B02E4EB0F2121E5D408");
 {
     bool help = argc < 2;
     bool es = false;
@@ -534,9 +536,9 @@ int main(int argc, char** argv)
         p->seek(duration*int(x)/w, SeekFlag::FromStart); // duration*x/w crashes clang-cl-11/12 -Oz
     });
     glfwSetCursorPosCallback(win, [](GLFWwindow* win, double x,double y){
+        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         if (glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
             return;
-        auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         int w = 0, h = 0;
         glfwGetWindowSize(win, &w, &h);
         if (x > w || y > h)
@@ -568,7 +570,7 @@ int main(int argc, char** argv)
     if (!ca.empty()) {
         std::regex re(",");
         std::sregex_token_iterator first{ca.begin(), ca.end(), re, -1}, last;
-        player.setAudioDecoders({first, last});
+        player.setDecoders(MediaType::Audio, {first, last});
     }
 
     if (loop >= -1)
@@ -585,9 +587,7 @@ int main(int argc, char** argv)
         player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
-#if MDK_VERSION_CHECK(0, 5, 0)
             return true;
-#endif
         });
         if (!pause)
             player.setState(State::Playing);
