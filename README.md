@@ -42,6 +42,7 @@ examples without platform specific code
 
 ## Qt
 - Integrate with QOpenGLWindow and QOpenGLWidget. Use gl context provided by Qt.
+- Render on QOpenGLWindow and QOpenGLWidget via gl context provided by Qt
 - QML example via QOpenGLFrameBuffer
 - RHI example: vulkan, d3d11, metal, opengl
 

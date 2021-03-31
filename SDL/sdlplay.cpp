@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2021 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with SDL OpenGL example
  */
 #include <mdk/Player.h>
@@ -54,7 +54,7 @@ while (true) {
     int url_now = url_index;
     Player player;
     if (cv)
-        player.setVideoDecoders({cv});
+        player.setDecoders(MediaType::Video, {cv});
     if (ao)
         player.setAudioBackends({ao});
     player.onStateChanged([&](State s){
