@@ -11,14 +11,15 @@ import MetalKit
 
 class MTLVideoView: MTKView {
     private var cmdQueue : MTLCommandQueue!
-    private var player = Player()
+    private var player : Player!
 
-    init() {
+    init(player : Player) {
         super.init(frame: .zero, device: MTLCreateSystemDefaultDevice())
         // Make sure we are on a device that can run metal!
         guard let defaultDevice = device else {
             fatalError("Device loading error")
         }
+        self.player = player
         createRenderer(device: defaultDevice)
     }
 
