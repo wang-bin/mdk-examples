@@ -25,7 +25,7 @@ QmlMDKPlayer::QmlMDKPlayer(QQuickItem *parent):
     QQuickFramebufferObject(parent),
     internal_player(new Player)
 {
-
+    setMirrorVertically(true);
 }
 
 QmlMDKPlayer::~QmlMDKPlayer()
@@ -41,7 +41,6 @@ QQuickFramebufferObject::Renderer *QmlMDKPlayer::createRenderer() const
 void QmlMDKPlayer::play()
 {
     internal_player->setState(PlaybackState::Playing);
-    internal_player->scale(1.0f, -1.0f);
     internal_player->setRenderCallback([=](void *){
         QMetaObject::invokeMethod(this, "update");
     });
