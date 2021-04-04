@@ -17,6 +17,6 @@ Window {
         source: url
         anchors.fill: parent
 
-        Component.onCompleted: player.play()
+        Component.onCompleted: player.play() // to early, will stopped by setSource()
     }
 }

@@ -22,6 +22,7 @@ public:
         internal_player->setMedia(s.toLocal8Bit().data());
         m_source = s;
         emit sourceChanged();
+        play();
     }
 
     Q_INVOKABLE void play();
