@@ -227,6 +227,9 @@ void VideoTextureNode::sync()
     int nativeLayout = 0;
 #endif
     switch (rif->graphicsApi()) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    case QSGRendererInterface::OpenGL: // same as OpenGLRhi in qt6
+#endif
     case QSGRendererInterface::OpenGLRhi: {
 #if QT_CONFIG(opengl)
         fbo_gl.reset(new QOpenGLFramebufferObject(m_size));
