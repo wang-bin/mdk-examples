@@ -114,9 +114,13 @@ void QMDKWidget::prepreForPreview()
 
 void QMDKWidget::resizeGL(int w, int h)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     auto s = screen();
     qDebug("resizeGL>>>>>dpr: %f, logical dpi: (%f,%f), phy dpi: (%f,%f)", s->devicePixelRatio(), s->logicalDotsPerInchX(), s->logicalDotsPerInchY(), s->physicalDotsPerInchX(), s->physicalDotsPerInchY());
     player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio());
+#else
+    player_->setVideoSurfaceSize(w, h);
+#endif
 }
 
 void QMDKWidget::paintGL()
