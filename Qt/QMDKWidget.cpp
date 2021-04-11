@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #include "QMDKWidget.h"
@@ -63,9 +63,12 @@ bool QMDKWidget::isPaused() const
     return player_->state() == State::Paused;
 }
 
-void QMDKWidget::seek(qint64 ms)
+void QMDKWidget::seek(qint64 ms, bool accurate)
 {
-    player_->seek(ms);
+    auto flags = SeekFlag::FromStart;
+    if (!accurate)
+        flags |= SeekFlag::KeyFrame;
+    player_->seek(ms, flags);
 }
 
 qint64 QMDKWidget::position() const
@@ -95,6 +98,18 @@ void QMDKWidget::snapshot() {
         }
         return "";*/
     });
+}
+
+qint64 QMDKWidget::duration() const
+{
+    return player_->mediaInfo().duration;
+}
+
+void QMDKWidget::prepreForPreview()
+{
+    player_->setProperty("continue_at_end", "1");
+    player_->setBufferRange(0);
+    player_->prepare();
 }
 
 void QMDKWidget::resizeGL(int w, int h)
@@ -136,4 +151,16 @@ void QMDKWidget::keyPressEvent(QKeyEvent *e)
     default:
         break;
     }
+}
+
+void QMDKWidget::mouseMoveEvent(QMouseEvent *ev)
+{
+    Q_EMIT mouseMoved(ev->pos().x(), ev->pos().y());
+    ev->accept();
+}
+
+void QMDKWidget::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+    Q_EMIT doubleClicked();
+    ev->accept();
 }
