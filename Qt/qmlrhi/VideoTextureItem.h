@@ -16,8 +16,9 @@ class VideoTextureItem : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(bool autoPlay READ autoPlay WRITE setAutoPlay NOTIFY autoPlayChanged)
-    QML_ELEMENT
-
+#ifdef QML_ELEMENT
+    QML_ELEMENT // no need to call qmlRegisterType
+#endif
 public:
     VideoTextureItem();
     ~VideoTextureItem() override;

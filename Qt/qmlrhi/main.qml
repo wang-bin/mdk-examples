@@ -1,5 +1,5 @@
 
-import QtQuick 2.0
+import QtQuick 2.8 // GraphicsInfo
 //! [1]
 import MDKTextureItem 1.0
 //! [1]
@@ -32,6 +32,19 @@ Rectangle {
         anchors.right: renderer.right
         anchors.margins: 20
         wrapMode: Text.WordWrap
-        text: "mdk renders video in a OpenGL or RHI texture. The texture is then imported in a QtQuick item."
+        text: "mdk renders video in a " + gfxApi() + " texture. The texture is then imported in a QtQuick item."
+    }
+
+    function gfxApi() {
+        switch (GraphicsInfo.api) {
+        case GraphicsInfo.OpenGLRhi: return "OpenGL Rhi"
+        case GraphicsInfo.MetalRhi: return "Metal Rhi"
+        case GraphicsInfo.Direct3D11Rhi: return "D3D11 Rhi"
+        case GraphicsInfo.VulkanRhi: return "Vulkan Rhi"
+        case GraphicsInfo.OpenGL: return "OpenGL"
+        case GraphicsInfo.Direct3D12: return "D3D12"
+        }
     }
 }
+
+
