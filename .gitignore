@@ -5,6 +5,9 @@ mdk-sdk/
 mdk.framework/
 mdk.xcframework/
 
+# Qt
+build-*/
+# xcode
 Pods/
 Podfile.lock
 xcuserdata/

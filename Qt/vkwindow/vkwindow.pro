@@ -36,7 +36,7 @@ HEADERS  += \
     VkMDKWindow.h
 
 mac {
-  RPATHDIR *= @executable_path/Frameworks
+  RPATHDIR *= @executable_path/Frameworks $$MDK_SDK/lib
   QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
   isEmpty(QMAKE_LFLAGS_RPATH): QMAKE_LFLAGS_RPATH=-Wl,-rpath,
   for(R,RPATHDIR) {

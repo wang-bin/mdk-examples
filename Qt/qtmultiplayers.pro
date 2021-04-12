@@ -14,7 +14,7 @@ LIBS += -L$$OUT_PWD -lqtmdk
 SOURCES += qtmultiplayers.cpp
 
 mac {
-  RPATHDIR *= @executable_path/Frameworks @loader_path
+  RPATHDIR *= @executable_path/Frameworks @loader_path $$MDK_SDK/lib
   QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
   isEmpty(QMAKE_LFLAGS_RPATH): QMAKE_LFLAGS_RPATH=-Wl,-rpath,
   for(R,RPATHDIR) {
