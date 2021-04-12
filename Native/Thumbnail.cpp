@@ -3,8 +3,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <future>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 using namespace MDK_NS;
 using namespace std;
@@ -57,11 +55,9 @@ int main(int argc, const char** argv)
             width = v.width() * scale;
             height = v.height() * scale;
         }
-        if (width > 0)
-            width = (width + 63) & ~63; // stb jpeg assume aligments == 1
         const auto rgb = v.to(PixelFormat::RGB24, width, height);
         printf("decoded @%f. out size: %dx%d, stride: %d, scale: %f\n", v.timestamp(), width, height, rgb.bytesPerLine(), scale);
-        stbi_write_jpg("thumbnail.jpg", rgb.width(), rgb.height(), 3, rgb.bufferData(), 80);
+        rgb.save("thumbnail.jpg");
         pm.set_value(0);
         return 0;
     });
