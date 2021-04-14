@@ -50,10 +50,13 @@ private slots:
     void render();
 
 private:
+    QSGTexture* ensureTexture(Player* player, const QSize& size);
+
     QQuickItem *m_item;
     QQuickWindow *m_window;
     QSize m_size;
     qreal m_dpr;
+
 #if (__APPLE__+0)
     id<MTLTexture> m_texture_mtl = nil;
 #endif
@@ -202,31 +205,41 @@ QSGTexture *VideoTextureNode::texture() const
 void VideoTextureNode::sync()
 {
     m_dpr = m_window->effectiveDevicePixelRatio();
-    const QSizeF newSize = m_item->size() * m_dpr;
-    bool needsNew = false;
-
-    if (!texture())
-        needsNew = true;
-
-    if (newSize != m_size) {
-        needsNew = true;
-        m_size = {qRound(newSize.width()), qRound(newSize.height())};
-    }
-
-    if (!needsNew)
+    const QSizeF newSize = m_item->size() * m_dpr; // QQuickItem.size(): since 5.10
+    if (texture() && newSize == m_size)
         return;
-
+    m_size = {qRound(newSize.width()), qRound(newSize.height())};
     delete texture();
 
     auto player = m_player.lock();
     if (!player)
         return;
+    auto tex = ensureTexture(player.get(), m_size);
+    if (tex)
+        setTexture(tex);
+    player->setVideoSurfaceSize(m_size.width(), m_size.height());
+}
+
+// This is hooked up to beforeRendering() so we can start our own render
+// command encoder. If we instead wanted to use the scenegraph's render command
+// encoder (targeting the window), it should be connected to
+// beforeRenderPassRecording() instead.
+//! [6]
+void VideoTextureNode::render()
+{
+    auto player = m_player.lock();
+    if (!player)
+        return;
+    player->renderVideo();
+}
+
+QSGTexture* VideoTextureNode::ensureTexture(Player* player, const QSize& size)
+{
     QSGRendererInterface *rif = m_window->rendererInterface();
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     intmax_t nativeObj = 0;
     int nativeLayout = 0;
 #endif
-    QSGTexture *wrapper = nullptr;
     switch (rif->graphicsApi()) {
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     case QSGRendererInterface::OpenGL: // same as OpenGLRhi in qt6
@@ -236,7 +249,7 @@ void VideoTextureNode::sync()
 #endif // QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     {
 #if QT_CONFIG(opengl)
-        fbo_gl.reset(new QOpenGLFramebufferObject(m_size));
+        fbo_gl.reset(new QOpenGLFramebufferObject(size));
         GLRenderAPI ra;
         ra.fbo = fbo_gl->handle();
         player->setRenderAPI(&ra);
@@ -247,11 +260,11 @@ void VideoTextureNode::sync()
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(tex);
 #   if QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
-        wrapper = m_item->window()->createTextureFromId(tex, m_size);
+        return m_item->window()->createTextureFromId(tex, size);
 #   endif // QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
 # else
         if (tex)
-            wrapper = QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, m_size);
+            return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // if QT_CONFIG(opengl)
     }
@@ -260,7 +273,7 @@ void VideoTextureNode::sync()
     case QSGRendererInterface::Direct3D11Rhi: {
 #if (_WIN32)
         auto dev = (ID3D11Device*)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
-        D3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, m_size.width(), m_size.height(), 1, 1
+        D3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, size.width(), size.height(), 1, 1
                                                           , D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_RENDER_TARGET
                                                           , D3D11_USAGE_DEFAULT, 0, 1, 0, 0);
         if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
@@ -272,9 +285,8 @@ void VideoTextureNode::sync()
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(m_texture_d3d11.Get());
 # else
-        auto nativeObj = m_texture_d3d11.Get();
-        if (nativeObj)
-            wrapper = QNativeInterface::QSGD3D11Texture::fromNative(nativeObj, m_window, m_size);
+        if (m_texture_d3d11)
+            return QNativeInterface::QSGD3D11Texture::fromNative(m_texture_d3d11.Get(), m_window, size);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (_WIN32)
     }
@@ -287,8 +299,8 @@ void VideoTextureNode::sync()
         MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
         desc.textureType = MTLTextureType2D;
         desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
-        desc.width = m_size.width();
-        desc.height = m_size.height();
+        desc.width = size.width();
+        desc.height = size.height();
         desc.mipmapLevelCount = 1;
         desc.resourceOptions = MTLResourceStorageModePrivate;
         desc.storageMode = MTLStorageModePrivate;
@@ -302,12 +314,12 @@ void VideoTextureNode::sync()
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(ra.texture);
 # else
-        auto nativeObj = m_texture_mtl;
-        if (nativeObj)
-            wrapper = QNativeInterface::QSGMetalTexture::fromNative(nativeObj, m_window, m_size);
+        if (m_texture_mtl)
+            return QNativeInterface::QSGMetalTexture::fromNative(m_texture_mtl, m_window, size);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (__APPLE__+0)
     }
+        break;
     case QSGRendererInterface::VulkanRhi: {
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -322,7 +334,7 @@ void VideoTextureNode::sync()
         m_dev = newDev;
         m_devFuncs = inst->deviceFunctions(m_dev);
 
-        buildTexture(m_size);
+        buildTexture(size);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(m_texture_vk);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -349,7 +361,7 @@ void VideoTextureNode::sync()
         player->setRenderAPI(&ra);
 # if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
         if (m_texture_vk)
-            wrapper = QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, m_size);
+            return QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     }
@@ -361,25 +373,10 @@ void VideoTextureNode::sync()
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 # if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     if (nativeObj)
-        wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, m_size);
+        return m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, size);
 # endif
 #endif
-    if (wrapper)
-        setTexture(wrapper);
-    player->setVideoSurfaceSize(m_size.width(), m_size.height());
-}
-
-// This is hooked up to beforeRendering() so we can start our own render
-// command encoder. If we instead wanted to use the scenegraph's render command
-// encoder (targeting the window), it should be connected to
-// beforeRenderPassRecording() instead.
-//! [6]
-void VideoTextureNode::render()
-{
-    auto player = m_player.lock();
-    if (!player)
-        return;
-    player->renderVideo();
+    return nullptr;
 }
 
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
