@@ -31,7 +31,6 @@ private slots:
 private:
     virtual QSGTexture* ensureTexture(Player* player, const QSize& size) = 0;
 
-    QSize m_size;
     qreal m_dpr;
 
     std::weak_ptr<Player> m_player;
@@ -39,4 +38,5 @@ private:
 protected:
     QQuickWindow *m_window;
     QQuickItem *m_item;
+    QSize m_size;
 };

@@ -1,4 +1,5 @@
 QT += qml quick
+
 CONFIG += c++17
 CONFIG += qmltypes
 CONFIG -= app_bundle
@@ -11,6 +12,13 @@ SOURCES += VideoTextureItem.cpp main.cpp \
     VideoTextureNode.cpp \
     VideoTextureNodePub.cpp
 RESOURCES += mdktextureitem.qrc
+
+
+greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 14) {
+    QT += quick-private gui-private
+    SOURCES += VideoTextureNodePriv.cpp
+}
+
 
 macos|ios: LIBS += -framework Metal
 macos: LIBS += -framework AppKit

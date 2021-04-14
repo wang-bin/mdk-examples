@@ -40,19 +40,9 @@ void VideoTextureNode::sync()
 {
     m_dpr = m_window->effectiveDevicePixelRatio();
     const QSizeF newSize = m_item->size() * m_dpr; // QQuickItem.size(): since 5.10
-    bool needsNew = false;
-
-    if (!texture())
-        needsNew = true;
-
-    if (newSize != m_size) {
-        needsNew = true;
-        m_size = {qRound(newSize.width()), qRound(newSize.height())};
-    }
-
-    if (!needsNew)
+    if (texture() && newSize == m_size)
         return;
-
+    m_size = {qRound(newSize.width()), qRound(newSize.height())};
     delete texture();
 
     auto player = m_player.lock();

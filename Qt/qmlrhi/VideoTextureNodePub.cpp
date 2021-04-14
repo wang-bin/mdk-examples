@@ -190,8 +190,8 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         ra.rt = m_texture_vk;
         ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat* fmt, VkImageLayout* layout) {
             auto node = static_cast<VideoTextureNode*>(opaque);
-            *w = node->size.width();
-            *h = node->size.height();
+            *w = node->m_size.width();
+            *h = node->m_size.height();
             *fmt = VK_FORMAT_R8G8B8A8_UNORM;
             *layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             return 1;
