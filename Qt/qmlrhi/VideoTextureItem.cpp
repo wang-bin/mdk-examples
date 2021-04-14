@@ -50,10 +50,13 @@ private slots:
     void render();
 
 private:
+    QSGTexture* ensureTexture(Player* player, const QSize& size);
+
     QQuickItem *m_item;
     QQuickWindow *m_window;
     QSize m_size;
     qreal m_dpr;
+
 #if (__APPLE__+0)
     id<MTLTexture> m_texture_mtl = nil;
 #endif
@@ -202,7 +205,7 @@ QSGTexture *VideoTextureNode::texture() const
 void VideoTextureNode::sync()
 {
     m_dpr = m_window->effectiveDevicePixelRatio();
-    const QSizeF newSize = m_item->size() * m_dpr;
+    const QSizeF newSize = m_item->size() * m_dpr; // QQuickItem.size(): since 5.10
     bool needsNew = false;
 
     if (!texture())
@@ -221,151 +224,9 @@ void VideoTextureNode::sync()
     auto player = m_player.lock();
     if (!player)
         return;
-    QSGRendererInterface *rif = m_window->rendererInterface();
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-    intmax_t nativeObj = 0;
-    int nativeLayout = 0;
-#endif
-    QSGTexture *wrapper = nullptr;
-    switch (rif->graphicsApi()) {
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-    case QSGRendererInterface::OpenGL: // same as OpenGLRhi in qt6
-#endif
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    case QSGRendererInterface::OpenGLRhi:
-#endif // QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    {
-#if QT_CONFIG(opengl)
-        fbo_gl.reset(new QOpenGLFramebufferObject(m_size));
-        GLRenderAPI ra;
-        ra.fbo = fbo_gl->handle();
-        player->setRenderAPI(&ra);
-        player->scale(1.0f, -1.0f); // flip y
-        //setTextureCoordinatesTransform(QSGSimpleTextureNode::MirrorVertically);
-
-        auto tex = fbo_gl->texture();
-# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        nativeObj = decltype(nativeObj)(tex);
-#   if QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
-        wrapper = m_item->window()->createTextureFromId(tex, m_size);
-#   endif // QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
-# else
-        if (tex)
-            wrapper = QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, m_size);
-# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#endif // if QT_CONFIG(opengl)
-    }
-        break;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    case QSGRendererInterface::Direct3D11Rhi: {
-#if (_WIN32)
-        auto dev = (ID3D11Device*)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
-        D3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, m_size.width(), m_size.height(), 1, 1
-                                                          , D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_RENDER_TARGET
-                                                          , D3D11_USAGE_DEFAULT, 0, 1, 0, 0);
-        if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
-
-        }
-        D3D11RenderAPI ra;
-        ra.rtv = m_texture_d3d11.Get();
-        player->setRenderAPI(&ra);
-# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        nativeObj = decltype(nativeObj)(m_texture_d3d11.Get());
-# else
-        auto nativeObj = m_texture_d3d11.Get();
-        if (nativeObj)
-            wrapper = QNativeInterface::QSGD3D11Texture::fromNative(nativeObj, m_window, m_size);
-# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#endif // (_WIN32)
-    }
-        break;
-    case QSGRendererInterface::MetalRhi: {
-#if (__APPLE__+0)
-        auto dev = (__bridge id<MTLDevice>)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
-        Q_ASSERT(dev);
-
-        MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
-        desc.textureType = MTLTextureType2D;
-        desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
-        desc.width = m_size.width();
-        desc.height = m_size.height();
-        desc.mipmapLevelCount = 1;
-        desc.resourceOptions = MTLResourceStorageModePrivate;
-        desc.storageMode = MTLStorageModePrivate;
-        desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-        m_texture_mtl = [dev newTextureWithDescriptor: desc];
-        MetalRenderAPI ra{};
-        ra.texture = (__bridge void*)m_texture_mtl;
-        ra.device = (__bridge void*)dev;
-        ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
-        player->setRenderAPI(&ra);
-# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        nativeObj = decltype(nativeObj)(ra.texture);
-# else
-        auto nativeObj = m_texture_mtl;
-        if (nativeObj)
-            wrapper = QNativeInterface::QSGMetalTexture::fromNative(nativeObj, m_window, m_size);
-# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#endif // (__APPLE__+0)
-    }
-    case QSGRendererInterface::VulkanRhi: {
-#if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
-# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        nativeLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        auto inst = reinterpret_cast<QVulkanInstance *>(rif->getResource(m_window, QSGRendererInterface::VulkanInstanceResource));
-        m_physDev = *static_cast<VkPhysicalDevice *>(rif->getResource(m_window, QSGRendererInterface::PhysicalDeviceResource));
-        auto newDev = *static_cast<VkDevice *>(rif->getResource(m_window, QSGRendererInterface::DeviceResource));
-        qDebug("old device: %p, newDev: %p", (void*)m_dev, (void*)newDev);
-        // TODO: why m_dev is 0 if device lost
-        freeTexture();
-        m_dev = newDev;
-        m_devFuncs = inst->deviceFunctions(m_dev);
-
-        buildTexture(m_size);
-# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        nativeObj = decltype(nativeObj)(m_texture_vk);
-# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-
-        VulkanRenderAPI ra{};
-        ra.device =m_dev;
-        ra.phy_device = m_physDev;
-        ra.opaque = this;
-        ra.rt = m_texture_vk;
-        ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat* fmt, VkImageLayout* layout) {
-            auto node = static_cast<VideoTextureNode*>(opaque);
-            *w = node->m_size.width();
-            *h = node->m_size.height();
-            *fmt = VK_FORMAT_R8G8B8A8_UNORM;
-            *layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            return 1;
-        };
-        ra.currentCommandBuffer = [](void* opaque){
-            auto node = static_cast<VideoTextureNode*>(opaque);
-            QSGRendererInterface *rif = node->m_window->rendererInterface();
-            auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
-            return cmdBuf;
-        };
-        player->setRenderAPI(&ra);
-# if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-        if (m_texture_vk)
-            wrapper = QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, m_size);
-# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#endif // (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
-    }
-        break;
-#endif //QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    default:
-        break;
-    }
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-# if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    if (nativeObj)
-        wrapper = m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, m_size);
-# endif
-#endif
-    if (wrapper)
-        setTexture(wrapper);
+    auto tex = ensureTexture(player.get(), m_size);
+    if (tex)
+        setTexture(tex);
     player->setVideoSurfaceSize(m_size.width(), m_size.height());
 }
 
@@ -380,6 +241,152 @@ void VideoTextureNode::render()
     if (!player)
         return;
     player->renderVideo();
+}
+
+QSGTexture* VideoTextureNode::ensureTexture(Player* player, const QSize& size)
+{
+    QSGRendererInterface *rif = m_window->rendererInterface();
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    intmax_t nativeObj = 0;
+    int nativeLayout = 0;
+#endif
+    switch (rif->graphicsApi()) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    case QSGRendererInterface::OpenGL: // same as OpenGLRhi in qt6
+#endif
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    case QSGRendererInterface::OpenGLRhi:
+#endif // QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    {
+#if QT_CONFIG(opengl)
+        fbo_gl.reset(new QOpenGLFramebufferObject(size));
+        GLRenderAPI ra;
+        ra.fbo = fbo_gl->handle();
+        player->setRenderAPI(&ra);
+        player->scale(1.0f, -1.0f); // flip y
+        //setTextureCoordinatesTransform(QSGSimpleTextureNode::MirrorVertically);
+
+        auto tex = fbo_gl->texture();
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        nativeObj = decltype(nativeObj)(tex);
+#   if QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
+        return m_item->window()->createTextureFromId(tex, size);
+#   endif // QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
+# else
+        if (tex)
+            return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#endif // if QT_CONFIG(opengl)
+    }
+        break;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    case QSGRendererInterface::Direct3D11Rhi: {
+#if (_WIN32)
+        auto dev = (ID3D11Device*)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
+        D3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, size.width(), size.height(), 1, 1
+                                                          , D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_RENDER_TARGET
+                                                          , D3D11_USAGE_DEFAULT, 0, 1, 0, 0);
+        if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
+
+        }
+        D3D11RenderAPI ra;
+        ra.rtv = m_texture_d3d11.Get();
+        player->setRenderAPI(&ra);
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        nativeObj = decltype(nativeObj)(m_texture_d3d11.Get());
+# else
+        if (m_texture_d3d11)
+            return QNativeInterface::QSGD3D11Texture::fromNative(m_texture_d3d11.Get(), m_window, size);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#endif // (_WIN32)
+    }
+        break;
+    case QSGRendererInterface::MetalRhi: {
+#if (__APPLE__+0)
+        auto dev = (__bridge id<MTLDevice>)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
+        Q_ASSERT(dev);
+
+        MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
+        desc.textureType = MTLTextureType2D;
+        desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
+        desc.width = size.width();
+        desc.height = size.height();
+        desc.mipmapLevelCount = 1;
+        desc.resourceOptions = MTLResourceStorageModePrivate;
+        desc.storageMode = MTLStorageModePrivate;
+        desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+        m_texture_mtl = [dev newTextureWithDescriptor: desc];
+        MetalRenderAPI ra{};
+        ra.texture = (__bridge void*)m_texture_mtl;
+        ra.device = (__bridge void*)dev;
+        ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
+        player->setRenderAPI(&ra);
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        nativeObj = decltype(nativeObj)(ra.texture);
+# else
+        if (m_texture_mtl)
+            return QNativeInterface::QSGMetalTexture::fromNative(m_texture_mtl, m_window, size);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#endif // (__APPLE__+0)
+    }
+        break;
+    case QSGRendererInterface::VulkanRhi: {
+#if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        nativeLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        auto inst = reinterpret_cast<QVulkanInstance *>(rif->getResource(m_window, QSGRendererInterface::VulkanInstanceResource));
+        m_physDev = *static_cast<VkPhysicalDevice *>(rif->getResource(m_window, QSGRendererInterface::PhysicalDeviceResource));
+        auto newDev = *static_cast<VkDevice *>(rif->getResource(m_window, QSGRendererInterface::DeviceResource));
+        qDebug("old device: %p, newDev: %p", (void*)m_dev, (void*)newDev);
+        // TODO: why m_dev is 0 if device lost
+        freeTexture();
+        m_dev = newDev;
+        m_devFuncs = inst->deviceFunctions(m_dev);
+
+        buildTexture(size);
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        nativeObj = decltype(nativeObj)(m_texture_vk);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+
+        VulkanRenderAPI ra{};
+        ra.device =m_dev;
+        ra.phy_device = m_physDev;
+        ra.opaque = this;
+        ra.rt = m_texture_vk;
+        ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat* fmt, VkImageLayout* layout) {
+            auto node = static_cast<VideoTextureNode*>(opaque);
+            *w = node->size.width();
+            *h = node->size.height();
+            *fmt = VK_FORMAT_R8G8B8A8_UNORM;
+            *layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            return 1;
+        };
+        ra.currentCommandBuffer = [](void* opaque){
+            auto node = static_cast<VideoTextureNode*>(opaque);
+            QSGRendererInterface *rif = node->m_window->rendererInterface();
+            auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
+            return cmdBuf;
+        };
+        player->setRenderAPI(&ra);
+# if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+        if (m_texture_vk)
+            return QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#endif // (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
+    }
+        break;
+#endif //QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    default:
+        break;
+    }
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+# if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    if (nativeObj)
+        return m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, size);
+# endif
+#endif
+    return nullptr;
 }
 
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
