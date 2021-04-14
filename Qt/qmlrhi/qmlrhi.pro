@@ -5,8 +5,11 @@ CONFIG -= app_bundle
 QML_IMPORT_NAME = MDKTextureItem
 QML_IMPORT_MAJOR_VERSION = 1
 
-HEADERS += VideoTextureItem.h
-SOURCES += VideoTextureItem.cpp main.cpp
+HEADERS += VideoTextureItem.h \
+    VideoTextureNode.h
+SOURCES += VideoTextureItem.cpp main.cpp \
+    VideoTextureNode.cpp \
+    VideoTextureNodePub.cpp
 RESOURCES += mdktextureitem.qrc
 
 macos|ios: LIBS += -framework Metal

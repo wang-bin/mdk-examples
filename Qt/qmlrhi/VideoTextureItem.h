@@ -49,7 +49,7 @@ private slots:
 private:
     void releaseResources() override;
 
-    friend class VideoTextureNode;
+    friend class VideoTextureNode; // TODO: QSGNode
     VideoTextureNode *m_node = nullptr;
     bool m_autoPlay = true;
     QString m_source;
