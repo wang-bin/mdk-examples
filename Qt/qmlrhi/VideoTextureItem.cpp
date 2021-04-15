@@ -38,7 +38,6 @@ using namespace std;
 
 class VideoTextureNode : public QSGTextureProvider, public QSGSimpleTextureNode
 {
-    Q_OBJECT
 public:
     VideoTextureNode(VideoTextureItem *item);
     ~VideoTextureNode();
@@ -46,10 +45,8 @@ public:
     QSGTexture *texture() const override;
 
     void sync();
-private slots:
-    void render();
-
 private:
+    void render();
     QSGTexture* ensureTexture(Player* player, const QSize& size);
 
     QQuickItem *m_item;
@@ -440,5 +437,3 @@ void VideoTextureNode::freeTexture()
     m_texture_vk = VK_NULL_HANDLE;
 }
 #endif //(VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
-
-#include "VideoTextureItem.moc"
