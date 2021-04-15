@@ -6,7 +6,10 @@
 #include <QQuickWindow>
 #include <private/qquickitem_p.h>
 #include <private/qrhi_p.h>
-
+#include <private/qrhigles2_p_p.h>
+#if (_WIN32+0)
+#include <d3d11.h>
+#endif
 #include "mdk/Player.h"
 #include "mdk/RenderAPI.h"
 using namespace std;
@@ -47,7 +50,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 #else
     if (!m_texture->build()) {
 #endif
-        // TODO: release
+        releaseResources();
         return nullptr;
     }
     QRhiColorAttachment color0(m_texture);
@@ -70,16 +73,36 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         releaseResources();
         return nullptr;
     }
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    intmax_t nativeObj = 0;
+    int nativeLayout = 0;
+#endif
     QSGRendererInterface *rif = m_window->rendererInterface();
     switch (rif->graphicsApi()) {
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     case QSGRendererInterface::OpenGL: // same as OpenGLRhi in qt6
 #endif
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     case QSGRendererInterface::OpenGLRhi:
-#endif // QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     {
-        // TODO:
+#if QT_CONFIG(opengl)
+        auto glrt = static_cast<QGles2TextureRenderTarget*>(m_rt);
+        GLRenderAPI ra;
+        ra.fbo = glrt->framebuffer;
+        player->setRenderAPI(&ra);
+        player->scale(1.0f, -1.0f); // flip y
+        //setTextureCoordinatesTransform(QSGSimpleTextureNode::MirrorVertically);
+
+        auto tex = GLuint(m_texture->nativeTexture().object);
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        nativeObj = decltype(nativeObj)(tex);
+#   if QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
+        return m_window->createTextureFromId(tex, size);
+#   endif // QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
+# else
+        if (tex)
+            return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#endif // if QT_CONFIG(opengl)
     }
         break;
     case QSGRendererInterface::MetalRhi: {
@@ -95,11 +118,57 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(ra.texture);
 # else
-        auto nativeObj = ra.texture;
-        if (nativeObj)
-            return QNativeInterface::QSGMetalTexture::fromNative((__bridge id<MTLTexture>)nativeObj, m_window, size);
+        if (ra.texture)
+            return QNativeInterface::QSGMetalTexture::fromNative((__bridge id<MTLTexture>)ra.texture, m_window, size);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (__APPLE__+0)
+    }
+        break;
+    case QSGRendererInterface::Direct3D11Rhi: {
+#if (_WIN32+0)
+        D3D11RenderAPI ra;
+        ra.rtv = reinterpret_cast<ID3D11DeviceChild*>(quintptr(m_texture->nativeTexture().object));
+        player->setRenderAPI(&ra);
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        nativeObj = decltype(nativeObj)(ra.rtv);
+# else
+        if (ra.rtv)
+            return QNativeInterface::QSGD3D11Texture::fromNative(ra.rtv, m_window, size);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#endif // (_WIN32)
+    }
+        break;
+
+    case QSGRendererInterface::VulkanRhi: {
+#if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
+        VulkanRenderAPI ra{};
+        ra.device =*static_cast<VkDevice *>(rif->getResource(m_window, QSGRendererInterface::DeviceResource));
+        ra.phy_device = *static_cast<VkPhysicalDevice *>(rif->getResource(m_window, QSGRendererInterface::PhysicalDeviceResource));
+        ra.opaque = this;
+        ra.rt = VkImage(m_texture->nativeTexture().object);
+        ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat* fmt, VkImageLayout* layout) {
+            auto node = static_cast<VideoTextureNodePriv*>(opaque);
+            *w = node->m_size.width();
+            *h = node->m_size.height();
+            *fmt = VK_FORMAT_R8G8B8A8_UNORM;
+            *layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            return 1;
+        };
+        ra.currentCommandBuffer = [](void* opaque){
+            auto node = static_cast<VideoTextureNodePriv*>(opaque);
+            QSGRendererInterface *rif = node->m_window->rendererInterface();
+            auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
+            return cmdBuf;
+        };
+        player->setRenderAPI(&ra);
+# if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+        if (ra.rt)
+            return QNativeInterface::QSGVulkanTexture::fromNative(ra.rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);
+# else
+        nativeLayout = m_texture->nativeTexture().layout;
+        nativeObj = decltype(nativeObj)(ra.rt);
+# endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#endif // (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     }
         break;
     default:

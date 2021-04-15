@@ -19,6 +19,7 @@ VideoTextureItem::VideoTextureItem()
     m_player->setRenderCallback([=](void *){
         QMetaObject::invokeMethod(this, "update");
     });
+    // window() is null here
 }
 
 VideoTextureItem::~VideoTextureItem() = default;

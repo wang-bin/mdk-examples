@@ -17,7 +17,6 @@ class QQuickWindow;
 class VideoTextureItem;
 class VideoTextureNode : public QSGTextureProvider, public QSGSimpleTextureNode
 {
-    Q_OBJECT
 public:
     VideoTextureNode(VideoTextureItem *item);
     ~VideoTextureNode();
@@ -25,18 +24,15 @@ public:
     QSGTexture *texture() const override;
 
     void sync();
-private slots:
-    void render();
-
 private:
+    void render();
     virtual QSGTexture* ensureTexture(Player* player, const QSize& size) = 0;
-
-    qreal m_dpr;
-
-    std::weak_ptr<Player> m_player;
 
 protected:
     QQuickWindow *m_window;
     QQuickItem *m_item;
     QSize m_size;
+
+private:
+    std::weak_ptr<Player> m_player;
 };

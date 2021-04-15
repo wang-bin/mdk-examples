@@ -15,8 +15,7 @@ VideoTextureNode::VideoTextureNode(VideoTextureItem *item)
     m_window = m_item->window();
     connect(m_window, &QQuickWindow::beforeRendering, this, &VideoTextureNode::render);
     connect(m_window, &QQuickWindow::screenChanged, this, [this]() {
-        if (m_window->effectiveDevicePixelRatio() != m_dpr)
-            m_item->update();
+        m_item->update();
     });
 }
 
@@ -38,8 +37,8 @@ QSGTexture *VideoTextureNode::texture() const
 
 void VideoTextureNode::sync()
 {
-    m_dpr = m_window->effectiveDevicePixelRatio();
-    const QSizeF newSize = m_item->size() * m_dpr; // QQuickItem.size(): since 5.10
+    const auto dpr = m_window->effectiveDevicePixelRatio();
+    const QSizeF newSize = m_item->size() * dpr; // QQuickItem.size(): since 5.10
     if (texture() && newSize == m_size)
         return;
     m_size = {qRound(newSize.width()), qRound(newSize.height())};

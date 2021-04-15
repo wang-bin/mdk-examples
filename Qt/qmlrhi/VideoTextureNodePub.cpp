@@ -189,7 +189,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         ra.opaque = this;
         ra.rt = m_texture_vk;
         ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat* fmt, VkImageLayout* layout) {
-            auto node = static_cast<VideoTextureNode*>(opaque);
+            auto node = static_cast<VideoTextureNodePub*>(opaque);
             *w = node->m_size.width();
             *h = node->m_size.height();
             *fmt = VK_FORMAT_R8G8B8A8_UNORM;
@@ -197,7 +197,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
             return 1;
         };
         ra.currentCommandBuffer = [](void* opaque){
-            auto node = static_cast<VideoTextureNode*>(opaque);
+            auto node = static_cast<VideoTextureNodePub*>(opaque);
             QSGRendererInterface *rif = node->m_window->rendererInterface();
             auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
             return cmdBuf;
