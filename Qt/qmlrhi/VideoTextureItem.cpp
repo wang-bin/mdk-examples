@@ -45,6 +45,7 @@ public:
     QSGTexture *texture() const override;
 
     void sync();
+    TextureCoordinatesTransformMode texCoordTransform() const { return m_tx; }
 private:
     void render();
     QSGTexture* ensureTexture(Player* player, const QSize& size);
@@ -53,6 +54,7 @@ private:
     QQuickWindow *m_window;
     QSize m_size;
     qreal m_dpr;
+    TextureCoordinatesTransformMode m_tx = TextureCoordinatesTransformFlag::NoTransform;
 
 #if (__APPLE__+0)
     id<MTLTexture> m_texture_mtl = nil;
@@ -116,10 +118,6 @@ QSGNode *VideoTextureItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
     }
 
     m_node->sync();
-
-    n->setTextureCoordinatesTransform(QSGSimpleTextureNode::NoTransform);
-    n->setFiltering(QSGTexture::Linear);
-    n->setRect(0, 0, width(), height());
 
     window()->update(); // ensure getting to beforeRendering() at some point
 
@@ -205,15 +203,18 @@ void VideoTextureNode::sync()
     const QSize newSize = QSizeF(m_item->size() * m_dpr).toSize(); // QQuickItem.size(): since 5.10
     if (texture() && newSize == m_size)
         return;
-    m_size = newSize;
-    delete texture();
-
     auto player = m_player.lock();
     if (!player)
         return;
+    m_size = newSize;
     auto tex = ensureTexture(player.get(), m_size);
-    if (tex)
-        setTexture(tex);
+    if (!tex)
+        return;
+    delete texture();
+    setTexture(tex);
+    setTextureCoordinatesTransform(m_tx); // MUST set when texture() is available
+    setFiltering(QSGTexture::Linear);
+    setRect(0, 0, m_item->width(), m_item->height());
     player->setVideoSurfaceSize(m_size.width(), m_size.height());
 }
 
@@ -246,12 +247,11 @@ QSGTexture* VideoTextureNode::ensureTexture(Player* player, const QSize& size)
 #endif // QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     {
 #if QT_CONFIG(opengl)
+        m_tx = TextureCoordinatesTransformFlag::MirrorVertically;
         fbo_gl.reset(new QOpenGLFramebufferObject(size));
         GLRenderAPI ra;
         ra.fbo = fbo_gl->handle();
         player->setRenderAPI(&ra);
-        player->scale(1.0f, -1.0f); // flip y
-        //setTextureCoordinatesTransform(QSGSimpleTextureNode::MirrorVertically);
 
         auto tex = fbo_gl->texture();
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
