@@ -33,6 +33,7 @@ Rectangle {
         anchors.margins: 20
         wrapMode: Text.WordWrap
         text: "mdk renders video in a " + gfxApi() + " texture. The texture is then imported in a QtQuick item."
+        color: "red" // FIXME: video color is the same as text color in opengl rhi
     }
 
     function gfxApi() {
@@ -46,5 +47,3 @@ Rectangle {
         }
     }
 }
-
-
