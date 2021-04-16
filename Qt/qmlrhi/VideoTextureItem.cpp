@@ -202,10 +202,10 @@ QSGTexture *VideoTextureNode::texture() const
 void VideoTextureNode::sync()
 {
     m_dpr = m_window->effectiveDevicePixelRatio();
-    const QSizeF newSize = m_item->size() * m_dpr; // QQuickItem.size(): since 5.10
+    const QSize newSize = QSizeF(m_item->size() * m_dpr).toSize(); // QQuickItem.size(): since 5.10
     if (texture() && newSize == m_size)
         return;
-    m_size = {qRound(newSize.width()), qRound(newSize.height())};
+    m_size = newSize;
     delete texture();
 
     auto player = m_player.lock();
