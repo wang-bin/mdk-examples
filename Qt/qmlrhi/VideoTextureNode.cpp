@@ -38,18 +38,22 @@ QSGTexture *VideoTextureNode::texture() const
 void VideoTextureNode::sync()
 {
     const auto dpr = m_window->effectiveDevicePixelRatio();
-    const QSizeF newSize = m_item->size() * dpr; // QQuickItem.size(): since 5.10
+    const QSize newSize = QSizeF(m_item->size() * dpr).toSize(); // QQuickItem.size(): since 5.10
     if (texture() && newSize == m_size)
         return;
-    m_size = {qRound(newSize.width()), qRound(newSize.height())};
-    delete texture();
 
     auto player = m_player.lock();
     if (!player)
         return;
+    m_size = newSize;
     auto tex = ensureTexture(player.get(), m_size);
-    if (tex)
-        setTexture(tex);
+    if (!tex)
+        return;
+    delete texture();
+    setTexture(tex);
+    setTextureCoordinatesTransform(m_tx); // MUST set when texture() is available
+    setFiltering(QSGTexture::Linear);
+    setRect(0, 0, m_item->width(), m_item->height());
     player->setVideoSurfaceSize(m_size.width(), m_size.height());
 }
 

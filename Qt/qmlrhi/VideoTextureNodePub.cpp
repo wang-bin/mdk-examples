@@ -93,13 +93,11 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
 #endif // QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     {
 #if QT_CONFIG(opengl)
+        m_tx = TextureCoordinatesTransformFlag::MirrorVertically;
         fbo_gl.reset(new QOpenGLFramebufferObject(size));
         GLRenderAPI ra;
         ra.fbo = fbo_gl->handle();
         player->setRenderAPI(&ra);
-        player->scale(1.0f, -1.0f); // flip y
-        //setTextureCoordinatesTransform(QSGSimpleTextureNode::MirrorVertically);
-
         auto tex = fbo_gl->texture();
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(tex);

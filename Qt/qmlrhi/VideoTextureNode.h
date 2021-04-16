@@ -29,10 +29,10 @@ private:
     virtual QSGTexture* ensureTexture(Player* player, const QSize& size) = 0;
 
 protected:
+    TextureCoordinatesTransformMode m_tx = TextureCoordinatesTransformFlag::NoTransform;
     QQuickWindow *m_window;
     QQuickItem *m_item;
     QSize m_size;
-
 private:
     std::weak_ptr<Player> m_player;
 };

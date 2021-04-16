@@ -85,20 +85,19 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
     case QSGRendererInterface::OpenGLRhi:
     {
 #if QT_CONFIG(opengl)
+        m_tx = TextureCoordinatesTransformFlag::MirrorVertically;
         auto glrt = static_cast<QGles2TextureRenderTarget*>(m_rt);
         GLRenderAPI ra;
         ra.fbo = glrt->framebuffer;
         player->setRenderAPI(&ra);
-        player->scale(1.0f, -1.0f); // flip y
-        //setTextureCoordinatesTransform(QSGSimpleTextureNode::MirrorVertically);
-
-        auto tex = GLuint(m_texture->nativeTexture().object);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        auto tex = GLuint((quintptr)m_texture->nativeTexture().object);
         nativeObj = decltype(nativeObj)(tex);
 #   if QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
         return m_window->createTextureFromId(tex, size);
 #   endif // QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
 # else
+        auto tex = GLuint(m_texture->nativeTexture().object);
         if (tex)
             return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))

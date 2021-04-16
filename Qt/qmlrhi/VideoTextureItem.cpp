@@ -51,10 +51,6 @@ QSGNode *VideoTextureItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
 
     m_node->sync();
 
-    n->setTextureCoordinatesTransform(QSGSimpleTextureNode::NoTransform);
-    n->setFiltering(QSGTexture::Linear);
-    n->setRect(0, 0, width(), height());
-
     window()->update(); // ensure getting to beforeRendering() at some point
 
     return n;
