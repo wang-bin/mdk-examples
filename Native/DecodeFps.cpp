@@ -9,7 +9,7 @@ using namespace MDK_NS;
 using namespace std;
 int main(int argc, const char** argv)
 {
-    printf("usage: %s [-c:v DecoderName] file\n", argv[0]);
+    printf("usage: %s [-c:v DecoderName] [-from milliseconds] file\n", argv[0]);
     VideoFrame v;
     int64_t from = 0;
     bool decode1 = false;

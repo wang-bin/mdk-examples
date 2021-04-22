@@ -4,9 +4,17 @@
 mdk-sdk/
 mdk.framework/
 mdk.xcframework/
+.ninja_*
+build.ninja
+*.qmltypes
+*_qmltyperegistrations.cpp
 
 # Qt
 build-*/
+.qmake*
+moc_*
+*.moc.json
+*_metatypes.json
 # xcode
 Pods/
 Podfile.lock

@@ -1,5 +1,7 @@
 if(NOT IOS)
-  foreach(tgt mdkplay offscreen DecodeFps)
+  foreach(tgt mdkplay offscreen DecodeFps
+    MediaInfoReader
+  )
     add_executable(${tgt} ${APPTYPE} ${tgt}.cpp)
     target_link_libraries(${tgt} PRIVATE mdk)
   endforeach()
