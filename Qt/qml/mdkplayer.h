@@ -19,7 +19,7 @@ public:
 
     Q_INVOKABLE QString source() { return m_source; }
     Q_INVOKABLE void setSource(const QString & s) {
-        internal_player->setMedia(s.toLocal8Bit().data());
+        internal_player->setMedia(s.toUtf8().data());
         m_source = s;
         emit sourceChanged();
         play();

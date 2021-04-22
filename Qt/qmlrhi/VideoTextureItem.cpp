@@ -74,7 +74,7 @@ void VideoTextureItem::geometryChanged(const QRectF &newGeometry, const QRectF &
 
 void VideoTextureItem::setSource(const QString & s)
 {
-    m_player->setMedia(s.toLocal8Bit().data());
+    m_player->setMedia(s.toUtf8().data());
     m_source = s;
     emit sourceChanged();
     if (autoPlay())
