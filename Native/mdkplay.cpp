@@ -89,8 +89,8 @@ int main(int argc, char *argv[])
     p.updateNativeSurface(hwnd);
 #else
     p.createSurface(nullptr, surface_type(surface)); // "x11", "wayland" ...s
-    p.resizeSurface(w, h); 
-#endif 
+    p.resizeSurface(w, h);
+#endif
     p.currentMediaChanged([&]{
         printf("currentMediaChanged %d/%d, now: %s\n", url_now-url_index, argc-url_index, p.url());fflush(stdout);
         if (argc > url_now+1)
@@ -104,11 +104,7 @@ int main(int argc, char *argv[])
     //if (from > 0)
         p.prepare(from*int64_t(TimeScaleForInt), [&p](int64_t t, bool*) {
             std::cout << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
-#if defined(MDK_VERSION_CHECK)
-# if MDK_VERSION_CHECK(0, 5, 0)
             return true;
-# endif
-#endif
         });
     p.setState(State::Playing);
 #if 0//def _WIN32

@@ -141,11 +141,7 @@ int main(int argc, char** argv)
     //player.setPreloadImmediately(false);
     player.prepare(from*1000LL, [](int64_t t, bool*) {
         std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
-#if defined(MDK_VERSION_CHECK)
-# if MDK_VERSION_CHECK(0, 5, 0)
         return true;
-# endif
-#endif
     });
     player.setState(State::Playing);
 

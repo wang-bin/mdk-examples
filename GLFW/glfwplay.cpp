@@ -68,12 +68,8 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_C: {
             Player::SnapshotRequest req{};
             p->snapshot(&req,
-#if MDK_VERSION_CHECK(0, 5, 0)
         [](Player::SnapshotRequest* ret, double frameTime){
             return std::to_string(frameTime).append(".jpg");
-#else
-        [](Player::SnapshotRequest* ret){
-#endif
             });
         }
             break;
@@ -237,6 +233,7 @@ int main(int argc, char** argv)
         static const char level_name[] = {'N', 'E', 'W', 'I', 'D', 'A'};
         print_log_msg(level_name[level], msg, log_file);
     });
+    //setLogLevel(LogLevel::Error);
     SetGlobalOption("MDK_KEY", "10453B8F2140865027CEDD6FDF846D940CA738BE72FE5EE1397DF61714CAAA2A185B72EEC1F781FD5E1FA9BB0AB739E35CCC793F0EBC3FD0182D61EE56E59E08EFBAC47021408D50D8312290207B926B0CA730D91E982991551C8FD75973CAF6B1C4573E7CBF9467F3BAF34F8D9F0A8AE239503BFB1B7B02E4EB0F2121E5D408");
 {
     bool help = argc < 2;
@@ -417,10 +414,8 @@ int main(int argc, char** argv)
     //SetGlobalOption("avformat", libavformat);
     if (help)
         showHelp(argv[0]);
-#if MDK_VERSION_CHECK(0, 5, 0)
     if (ra)
         player.setRenderAPI(ra);
-#endif
     if (speed != 1.0f)
         player.setPlaybackRate(speed);
 //player.setProperty("continue_at_end", "1");

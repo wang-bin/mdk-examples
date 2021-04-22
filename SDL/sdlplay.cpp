@@ -77,11 +77,7 @@ while (true) {
     player.setMedia(argv[url_index]);
     player.prepare(from*int64_t(TimeScaleForInt), [](int64_t t, bool*) {
         std::cout << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
-#if defined(MDK_VERSION_CHECK)
-# if MDK_VERSION_CHECK(0, 5, 0)
         return true;
-# endif
-#endif
     });
 
     player.setState(State::Playing);

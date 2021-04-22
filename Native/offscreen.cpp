@@ -38,16 +38,12 @@ int main(int argc, char *argv[])
     player.prepare(0LL, [&](int64_t position, bool*){
         if (position < 0) {
             p.set_value();
-            return;
+            return false;
         }
         auto& c = player.mediaInfo().video[0].codec;
         player.setVideoSurfaceSize(c.width, c.height);
         printf("notify your opengl fbo is ready to resize %dx%d\n", c.width, c.height);
-#if defined(MDK_VERSION_CHECK)
-# if MDK_VERSION_CHECK(0, 5, 0)
         return true;
-# endif
-#endif
     });
 #endif
     player.setState(State::Playing);

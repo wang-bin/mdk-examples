@@ -326,9 +326,7 @@ int main(int argc, const char** argv)
         player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
-#if MDK_VERSION_CHECK(0, 5, 0)
             return true;
-#endif
         });
         player.setState(State::Playing);
     }
