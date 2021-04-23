@@ -2,6 +2,7 @@
 #include "mdk/MediaInfo.h"
 #include <cstdio>
 #include <future>
+#include <optional>
 using namespace MDK_NS;
 using namespace std;
 
