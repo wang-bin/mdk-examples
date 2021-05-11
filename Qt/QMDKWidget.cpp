@@ -107,6 +107,8 @@ qint64 QMDKWidget::duration() const
 
 void QMDKWidget::prepreForPreview()
 {
+    player_->setActiveTracks(MediaType::Audio, {});
+    player_->setActiveTracks(MediaType::Subtitle, {});
     player_->setProperty("continue_at_end", "1");
     player_->setBufferRange(0);
     player_->prepare();
