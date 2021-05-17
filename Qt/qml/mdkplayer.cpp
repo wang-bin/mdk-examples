@@ -40,7 +40,7 @@ QQuickFramebufferObject::Renderer *QmlMDKPlayer::createRenderer() const
 
 void QmlMDKPlayer::play()
 {
-    internal_player->setState(PlaybackState::Playing);
+    internal_player->set(PlaybackState::Playing);
     internal_player->setRenderCallback([=](void *){
         QMetaObject::invokeMethod(this, "update");
     });

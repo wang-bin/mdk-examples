@@ -84,7 +84,7 @@ VideoTextureItem::VideoTextureItem()
 {
     setFlag(ItemHasContents, true);
     m_player = make_shared<Player>();
-    //m_player->setVideoDecoders({"VT", "MFT:d3d=11", "VAAPI", "FFmpeg"});
+    //m_player->setDecoders(MediaType::Video, ({"VT", "MFT:d3d=11", "VAAPI", "FFmpeg"});
     m_player->setRenderCallback([=](void *){
         QMetaObject::invokeMethod(this, "update");
     });
@@ -159,7 +159,7 @@ void VideoTextureItem::setAutoPlay(bool value)
 
 void VideoTextureItem::play()
 {
-    m_player->setState(PlaybackState::Playing);
+    m_player->set(PlaybackState::Playing);
 }
 
 VideoTextureNode::VideoTextureNode(VideoTextureItem *item)

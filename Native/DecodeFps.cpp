@@ -66,7 +66,7 @@ int main(int argc, const char** argv)
             pm.set_value(-1);
         return true;
     });
-    p.setState(State::Running);
+    p.set(State::Running);
     const auto ret = fut.get();
     printf("frame count: %d, render count: %d\n", count, rcount);
     return ret;

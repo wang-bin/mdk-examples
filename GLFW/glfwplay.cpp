@@ -96,7 +96,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         }
             break;
         case GLFW_KEY_SPACE:
-            p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
+            p->set(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
         case GLFW_KEY_RIGHT:
             p->seek(p->position()+gSeekStep, gSeekFlag); // Default if GLFW_REPEAT
@@ -137,7 +137,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->record("mdk-record.mkv");
             break;
         case GLFW_KEY_S:
-            p->setState(State::Stopped);
+            p->set(State::Stopped);
             break;
         case GLFW_KEY_A:
             p->setActiveTracks(MediaType::Audio, {++atrack % (int)p->mediaInfo().video.size()});
@@ -161,7 +161,7 @@ void showHelp(const char* argv0)
             "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
             "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
             "-logfile: save log to a given file\n"
-            "-loglevel: log level name or int value\n"
+            "-logLevel: log level name or int value\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
             "decoder properties(not supported by all): glva=0/1, hwdec_format=..., copy_frame=0/1/-1, hwdevice=...\n"
@@ -243,8 +243,8 @@ int main(int argc, char** argv)
     int from = 0;
     float wait = 0;
     float speed = 1.0f;
-    int64_t buf_min = 1000;
-    int64_t buf_max = 2000;
+    int64_t buf_min = -1;
+    int64_t buf_max = -1;
     int loop = -2;
     int64_t loop_a = -1;
     int64_t loop_b = 0;
@@ -420,7 +420,7 @@ int main(int argc, char** argv)
         player.setPlaybackRate(speed);
 //player.setProperty("continue_at_end", "1");
     //player.setProperty("video.avfilter", "format=pix_fmts=yuv420p10be");
-    if ((buf_min >= 0 && buf_max >= 0) || buf_drop)
+    if ((buf_min >= 0 || buf_max >= 0) || buf_drop)
         player.setBufferRange(buf_min, buf_max, buf_drop);
     player.currentMediaChanged([&]{
         std::printf("currentMediaChanged %d/%zu, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
@@ -497,7 +497,7 @@ int main(int argc, char** argv)
     glfwSetDropCallback(win, [](GLFWwindow* win, int count, const char** files){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         p->setNextMedia(nullptr);
-        p->setState(State::Stopped);
+        p->set(State::Stopped);
         urls.clear();
         for (int i = 0; i < count; ++i)
             urls.emplace_back(files[i]);
@@ -505,7 +505,7 @@ int main(int argc, char** argv)
         p->waitFor(State::Stopped);
         p->setMedia(nullptr); // 1st url may be the same as current url
         p->setMedia(urls[url_now].data());
-        p->setState(State::Playing);
+        p->set(State::Playing);
     });
     glfwShowWindow(win);
 #if defined(GLFW_EXPOSE_NATIVE_X11)
@@ -560,7 +560,7 @@ int main(int argc, char** argv)
     if (!cv.empty()) {
         std::regex re(",");
         std::sregex_token_iterator first{cv.begin(), cv.end(), re, -1}, last;
-        player.setVideoDecoders({first, last});
+        player.setDecoders(MediaType::Video, {first, last});
     }
     if (!ca.empty()) {
         std::regex re(",");
@@ -585,7 +585,7 @@ int main(int argc, char** argv)
             return true;
         });
         if (!pause)
-            player.setState(State::Playing);
+            player.set(State::Playing);
     }
 
     if (gfxthread) {

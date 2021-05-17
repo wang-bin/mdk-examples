@@ -40,7 +40,7 @@ int main(int argc, char** argv)
         if (strcmp(argv[i], "-win") == 0) {
             nb_win = atoi(argv[++i]);
         } else if (strcmp(argv[i], "-c:v") == 0) {
-            player.setVideoDecoders({argv[++i]});
+            player.setDecoders(MediaType::Video, {argv[++i]});
         } else if (strcmp(argv[i], "-fps") == 0) {
             wait = 1.0f/atoi(argv[++i]);
         } else if (strcmp(argv[i], "-share") == 0) {
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
             glfwPostEmptyEvent();
         });
     player.setMedia(argv[argc-1]);
-    player.setState(State::Playing);
+    player.set(State::Playing);
 
     const int dim = (int)ceil(sqrt(nb_win));
     const int w =  mode->width/dim, h =  mode->height/dim;

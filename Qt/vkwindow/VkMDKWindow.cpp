@@ -112,7 +112,7 @@ void VkMDKWindow::setDecoders(const QStringList &dec)
     foreach (QString d, dec) {
         v.push_back(d.toStdString());
     }
-    player_->setVideoDecoders(v);
+    player_->setDecoders(MediaType::Video, (v);
 }
 
 void VkMDKWindow::setMedia(const QString &url)
@@ -122,17 +122,17 @@ void VkMDKWindow::setMedia(const QString &url)
 
 void VkMDKWindow::play()
 {
-    player_->setState(State::Playing);
+    player_->set(State::Playing);
 }
 
 void VkMDKWindow::pause()
 {
-    player_->setState(State::Paused);
+    player_->set(State::Paused);
 }
 
 void VkMDKWindow::stop()
 {
-    player_->setState(State::Stopped);
+    player_->set(State::Stopped);
 }
 
 bool VkMDKWindow::isPaused() const

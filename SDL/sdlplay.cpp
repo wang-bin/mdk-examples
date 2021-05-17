@@ -80,9 +80,9 @@ while (true) {
         return true;
     });
 
-    player.setState(State::Playing);
+    player.set(State::Playing);
 //    player.waitFor(State::Playing);
-    //player.setState(State::Paused);
+    //player.set(State::Paused);
     printf("\n~~~~~~~~~~~~~~~state changes to playing~~~~~~~~~~~~~~~\n");
     int w = 1920, h = 1080;
     player.setVideoSurfaceSize(1920, 1080); // ensure surface size is valid when rendering 1st frame (expose event may be too late)
@@ -112,10 +112,10 @@ while (true) {
             if (event.key.keysym.sym == SDLK_SPACE) {
                 printf("~~~request state pause: %d\n", player.state() == State::Playing);
                 if (player.state() == State::Playing) {
-                    player.setState(State::Paused);
+                    player.set(State::Paused);
                     //player.waitFor(State::Paused);
                 } else if (player.state() == State::Paused) {
-                    player.setState(State::Playing);
+                    player.set(State::Playing);
                     //player.waitFor(State::Playing);
                 }
                 printf("~~~request state end~~~~~\n");
@@ -131,9 +131,9 @@ while (true) {
                 static int angle = 0;
                 player.rotate(angle+=90);
             } else if (event.key.keysym.sym == SDLK_s) {
-                player.setState(State::Stopped);
+                player.set(State::Stopped);
             } else if (event.key.keysym.sym == SDLK_p) {
-                player.setState(State::Playing);
+                player.set(State::Playing);
             } else if (event.key.keysym.sym == SDLK_q) {
                 goto loopend;
             } else if (event.key.keysym.sym == SDLK_RIGHT) {
@@ -163,11 +163,11 @@ while (true) {
             break;
         case SDL_DROPFILE:
             player.setNextMedia(nullptr);
-            player.setState(State::Stopped);
+            player.set(State::Stopped);
             player.waitFor(State::Stopped);
             player.setMedia(nullptr); // 1st url may be the same as current url
             player.setMedia(event.drop.file);
-            player.setState(State::Playing);
+            player.set(State::Playing);
         case update_event:
             player.renderVideo();
             SDL_GL_SwapWindow(window);

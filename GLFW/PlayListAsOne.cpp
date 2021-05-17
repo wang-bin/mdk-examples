@@ -51,7 +51,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 #endif
             };
             static int d = 0;
-            p->setVideoDecoders({decs[++d%std::size(decs)]});
+            p->setDecoders(MediaType::Video, {decs[++d%std::size(decs)]});
         }
             break;
         case GLFW_KEY_H: {
@@ -63,7 +63,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         }
             break;
         case GLFW_KEY_SPACE:
-            p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
+            p->set(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
         case GLFW_KEY_RIGHT:
             p->seek(p->position()+gSeekStep, gSeekFlag); // Default if GLFW_REPEAT
@@ -104,7 +104,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->record("mdk-record.mkv");
             break;
         case GLFW_KEY_S:
-            p->setState(State::Stopped);
+            p->set(State::Stopped);
             break;
         default:
             break;
@@ -150,11 +150,11 @@ void Seek(Player* player, const vector<PlaylistItem>& items, int64_t position)
     }
     item_now = distance(it, items.cbegin());
     player->setNextMedia(nullptr);
-    player->setState(State::Stopped);
+    player->set(State::Stopped);
     player->waitFor(State::Stopped);
     player->setMedia(it->url.data());
     player->prepare(offset);
-    player->setState(State::Paused);
+    player->set(State::Paused);
 }
 
 int main(int argc, const char** argv)
@@ -250,13 +250,13 @@ int main(int argc, const char** argv)
     glfwSetDropCallback(win, [](GLFWwindow* win, int count, const char** files){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         p->setNextMedia(nullptr);
-        p->setState(State::Stopped);
+        p->set(State::Stopped);
         gDuration = ItemsFromUrls(&items, files, count);
         item_now = 0;
         p->waitFor(State::Stopped);
         p->setMedia(nullptr); // 1st url may be the same as current url
         p->setMedia(items[item_now].url.data());
-        p->setState(State::Playing);
+        p->set(State::Playing);
     });
 
     glfwSetMouseButtonCallback(win, [](GLFWwindow* win, int button, int action, int mods){
@@ -310,7 +310,7 @@ int main(int argc, const char** argv)
     if (!cv.empty()) {
         std::regex re(",");
         std::sregex_token_iterator first{cv.begin(), cv.end(), re, -1}, last;
-        player.setVideoDecoders({first, last});
+        player.setDecoders(MediaType::Video, {first, last});
     }
     if (loop >= -1)
         player.setLoop(loop);
@@ -328,7 +328,7 @@ int main(int argc, const char** argv)
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
             return true;
         });
-        player.setState(State::Playing);
+        player.set(State::Playing);
     }
 
     while (!glfwWindowShouldClose(win)) {

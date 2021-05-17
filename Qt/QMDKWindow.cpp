@@ -16,7 +16,7 @@ QMDKWindow::QMDKWindow(QWindow *parent)
     : QOpenGLWindow(NoPartialUpdate, parent)
     , player_(std::make_shared<Player>())
 {
-    player_->setVideoDecoders({"VT", "VAAPI", "MFT:d3d=11", "DXVA", "MMAL", "AMediaCodec:java=1:copy=0:surface=1:async=0", "FFmpeg"});
+    player_->setDecoders(MediaType::Video, {"VT", "VAAPI", "MFT:d3d=11", "DXVA", "MMAL", "AMediaCodec:java=1:copy=0:surface=1:async=0", "FFmpeg"});
     player_->setRenderCallback([this](void*){
         QCoreApplication::instance()->postEvent(this, new QEvent(QEvent::UpdateRequest), INT_MAX);
     });
@@ -34,7 +34,7 @@ void QMDKWindow::setDecoders(const QStringList &dec)
     foreach (QString d, dec) {
         v.push_back(d.toStdString());
     }
-    player_->setVideoDecoders(v);
+    player_->setDecoders(MediaType::Video, v);
 }
 
 void QMDKWindow::setMedia(const QString &url)
@@ -44,17 +44,17 @@ void QMDKWindow::setMedia(const QString &url)
 
 void QMDKWindow::play()
 {
-    player_->setState(State::Playing);
+    player_->set(State::Playing);
 }
 
 void QMDKWindow::pause()
 {
-    player_->setState(State::Paused);
+    player_->set(State::Paused);
 }
 
 void QMDKWindow::stop()
 {
-    player_->setState(State::Stopped);
+    player_->set(State::Stopped);
 }
 
 bool QMDKWindow::isPaused() const
@@ -74,7 +74,7 @@ qint64 QMDKWindow::position() const
 
 void QMDKWindow::snapshot() {
     Player::SnapshotRequest sr{};
-    player_->snapshot(&sr, [](Player::SnapshotRequest *_sr, double frameTime) {
+    player_->snapshot(&sr, [](Player::SnapshotRequest */*_sr*/, double frameTime) {
         const QString path = QDir::toNativeSeparators(
             QString("%1/%2.png")
                 .arg(QCoreApplication::applicationDirPath())

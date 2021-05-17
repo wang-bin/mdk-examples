@@ -17,7 +17,7 @@ QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
     : QOpenGLWidget(parent, f)
     , player_(std::make_shared<Player>())
 {
-    player_->setVideoDecoders({"VT", "VAAPI", "MFT:d3d=11", "DXVA", "MMAL", "AMediaCodec:java=1:copy=0:surface=1:async=0", "FFmpeg"});
+    player_->setDecoders(MediaType::Video, {"VT", "VAAPI", "MFT:d3d=11", "DXVA", "MMAL", "AMediaCodec:java=1:copy=0:surface=1:async=0", "FFmpeg"});
     player_->setRenderCallback([this](void*){
         QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
     });
@@ -35,7 +35,7 @@ void QMDKWidget::setDecoders(const QStringList &dec)
     foreach (QString d, dec) {
         v.push_back(d.toStdString());
     }
-    player_->setVideoDecoders(v);
+    player_->setDecoders(MediaType::Video, v);
 }
 
 void QMDKWidget::setMedia(const QString &url)
@@ -45,17 +45,17 @@ void QMDKWidget::setMedia(const QString &url)
 
 void QMDKWidget::play()
 {
-    player_->setState(State::Playing);
+    player_->set(State::Playing);
 }
 
 void QMDKWidget::pause()
 {
-    player_->setState(State::Paused);
+    player_->set(State::Paused);
 }
 
 void QMDKWidget::stop()
 {
-    player_->setState(State::Stopped);
+    player_->set(State::Stopped);
 }
 
 bool QMDKWidget::isPaused() const
@@ -78,7 +78,7 @@ qint64 QMDKWidget::position() const
 
 void QMDKWidget::snapshot() {
     Player::SnapshotRequest sr{};
-    player_->snapshot(&sr, [](Player::SnapshotRequest *_sr, double frameTime) {
+    player_->snapshot(&sr, [](Player::SnapshotRequest * /*_sr*/, double frameTime) {
         const QString path = QDir::toNativeSeparators(
             QString("%1/%2.png")
                 .arg(QCoreApplication::applicationDirPath())
@@ -153,6 +153,13 @@ void QMDKWidget::keyPressEvent(QKeyEvent *e)
         if (QKeySequence(e->modifiers() | e->key()) == QKeySequence::Copy) {
             snapshot();
         }
+        break;
+    case Qt::Key_F: {
+        if (isFullScreen())
+            showNormal();
+        else
+            showFullScreen();
+    }
         break;
     default:
         break;

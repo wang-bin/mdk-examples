@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     if (!cv.empty()) {
         std::regex re(",");
         std::sregex_token_iterator first{cv.begin(), cv.end(), re, -1}, last;
-        p.setVideoDecoders({first, last});
+        p.setDecoders(MediaType::Video, {first, last});
     }
     p.onEvent([](const MediaEvent& e){
         std::clog << "***************************event: " << e.category << ", detail: " <<e.detail << std::endl;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
             std::cout << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             return true;
         });
-    p.setState(State::Playing);
+    p.set(State::Playing);
 #if 0//def _WIN32
     while (true) {
         if (glfwWindowShouldClose(win))

@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
         return true;
     });
 #endif
-    player.setState(State::Playing);
+    player.set(State::Playing);
     auto fut = p.get_future();
     fut.wait();
     return 0;

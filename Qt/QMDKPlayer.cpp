@@ -47,7 +47,7 @@ void QMDKPlayer::setDecoders(const QStringList &dec)
     foreach (QString d, dec) {
         v.push_back(d.toStdString());
     }
-    player_->setVideoDecoders(v);
+    player_->setDecoders(MediaType::Video, v);
 }
 
 void QMDKPlayer::setMedia(const QString &url)
@@ -57,17 +57,17 @@ void QMDKPlayer::setMedia(const QString &url)
 
 void QMDKPlayer::play()
 {
-    player_->setState(State::Playing);
+    player_->set(State::Playing);
 }
 
 void QMDKPlayer::pause()
 {
-    player_->setState(State::Paused);
+    player_->set(State::Paused);
 }
 
 void QMDKPlayer::stop()
 {
-    player_->setState(State::Stopped);
+    player_->set(State::Stopped);
 }
 
 bool QMDKPlayer::isPaused() const

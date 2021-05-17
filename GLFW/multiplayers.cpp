@@ -67,7 +67,7 @@ int main(int argc, char** argv)
         auto& player = players[i];
         player.reset(new Player());
         if (dec)
-            player->setVideoDecoders({dec});
+            player->setDecoders(MediaType::Video, {dec});
         if (wait <= 0)
             player->setRenderCallback([](void*){
                 glfwPostEmptyEvent();
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
         glfwShowWindow(win[i]);
     }
     for (auto& player : players)
-        player->setState(State::Playing);
+        player->set(State::Playing);
     while (true) {
         for (int i = 0; i < nb_win; ++i) {
             auto& w = win[i];

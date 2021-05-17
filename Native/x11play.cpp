@@ -7,6 +7,7 @@ extern "C" {
 #include<GL/glx.h>
 }
 #include "mdk/Player.h"
+using namespace MDK_NS;
 
 int main(int argc, char** argv)
 {
@@ -31,11 +32,11 @@ int main(int argc, char** argv)
 
     MDK_NS::Player player;
     if (cv)
-        player.setVideoDecoders({cv});
+        player.setDecoders(MediaType::Video, {cv});
     player.updateNativeSurface((void*)win, -1, -1, MDK_NS::Player::SurfaceType::X11);
     player.setVideoSurfaceSize(800, 450);
     player.setMedia(argv[argc-1]);
-    player.setState(MDK_NS::State::Playing);
+    player.set(MDK_NS::State::Playing);
     while (true) {
         XEvent xev;
         XNextEvent(dpy, &xev);
