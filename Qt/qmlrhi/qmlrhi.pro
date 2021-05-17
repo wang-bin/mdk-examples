@@ -1,13 +1,24 @@
 QT += qml quick
+
 CONFIG += c++17
 CONFIG += qmltypes
 CONFIG -= app_bundle
 QML_IMPORT_NAME = MDKTextureItem
 QML_IMPORT_MAJOR_VERSION = 1
 
-HEADERS += VideoTextureItem.h
-SOURCES += VideoTextureItem.cpp main.cpp
+HEADERS += VideoTextureItem.h \
+    VideoTextureNode.h
+SOURCES += VideoTextureItem.cpp main.cpp \
+    VideoTextureNode.cpp \
+    VideoTextureNodePub.cpp
 RESOURCES += mdktextureitem.qrc
+
+
+greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 14) {
+    QT += quick-private gui-private
+    SOURCES += VideoTextureNodePriv.cpp
+}
+
 
 macos|ios: LIBS += -framework Metal
 macos: LIBS += -framework AppKit
