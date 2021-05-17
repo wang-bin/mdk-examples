@@ -4,7 +4,7 @@ SUBDIRS = libqtmdk qtmultiwidgets qtmultiplayers qtpaintonvideo qmdkplay
 qtConfig(vulkan): SUBDIRS += vkwindow
 qtHaveModule(quick): {
     SUBDIRS += qmdkqmlplay
-    greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 7): SUBDIRS += qmlrhi
+    greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 9): SUBDIRS += qmlrhi qmlrhi0
 }
 
 libqtmdk.file = libqtmdk.pro
