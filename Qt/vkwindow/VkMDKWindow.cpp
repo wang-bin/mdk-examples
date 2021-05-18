@@ -112,7 +112,7 @@ void VkMDKWindow::setDecoders(const QStringList &dec)
     foreach (QString d, dec) {
         v.push_back(d.toStdString());
     }
-    player_->setDecoders(MediaType::Video, (v);
+    player_->setDecoders(MediaType::Video, v);
 }
 
 void VkMDKWindow::setMedia(const QString &url)
