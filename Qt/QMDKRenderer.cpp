@@ -5,7 +5,6 @@
 #include "QMDKPlayer.h"
 #include "mdk/Player.h"
 #include <QCoreApplication>
-#include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
@@ -37,14 +36,11 @@ void QMDKWindowRenderer::setSource(QMDKPlayer* player)
 void QMDKWindowRenderer::initializeGL()
 {
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
-    auto ctx = context();
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
-        QOffscreenSurface s;
-        s.create();
-        ctx->makeCurrent(&s);
+        makeCurrent();
         if (player_)
             player_->destroyGLContext(this); // it's better to cleanup gl renderer resources
-        ctx->doneCurrent();
+        doneCurrent();
     });
 }
 
@@ -76,7 +72,7 @@ QMDKWidgetRenderer::~QMDKWidgetRenderer() = default;
 
 void QMDKWidgetRenderer::setSource(QMDKPlayer* player)
 {
-    player->addRenderer(this);
+    player->addRenderer(this); // use QWidget* instead of QOpenGLContext* as vo_opaque must ensure context() will not change, e.g. no reparenting the widget via setParent()
     player_ = player;
     if (player) {
         // should skip rendering if player object is destroyed
@@ -91,14 +87,11 @@ void QMDKWidgetRenderer::setSource(QMDKPlayer* player)
 void QMDKWidgetRenderer::initializeGL()
 {
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
-    auto ctx = context();
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
-        QOffscreenSurface s;
-        s.create();
-        ctx->makeCurrent(&s);
+        makeCurrent();
         if (player_)
             player_->destroyGLContext(this); // it's better to cleanup gl renderer resources
-        ctx->doneCurrent();
+        doneCurrent();
     });
 }
 

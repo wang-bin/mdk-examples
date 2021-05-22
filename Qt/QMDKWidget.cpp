@@ -114,20 +114,35 @@ void QMDKWidget::prepreForPreview()
     player_->prepare();
 }
 
+void QMDKWidget::initializeGL()
+{
+    // context() may change(destroy old and create new) via setParent()
+    std::weak_ptr<mdk::Player> wp = player_;
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
+        auto sp = wp.lock();
+        if (!sp)
+            return;
+        makeCurrent();
+        if (sp)
+            sp->setVideoSurfaceSize(-1, -1, context()); // it's better to cleanup gl renderer resources as early as possible
+        doneCurrent();
+    });
+}
+
 void QMDKWidget::resizeGL(int w, int h)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     auto s = screen();
     qDebug("resizeGL>>>>>dpr: %f, logical dpi: (%f,%f), phy dpi: (%f,%f)", s->devicePixelRatio(), s->logicalDotsPerInchX(), s->logicalDotsPerInchY(), s->physicalDotsPerInchX(), s->physicalDotsPerInchY());
-    player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio());
+    player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio(), context());
 #else
-    player_->setVideoSurfaceSize(w, h);
+    player_->setVideoSurfaceSize(w, h, context());
 #endif
 }
 
 void QMDKWidget::paintGL()
 {
-    player_->renderVideo();
+    player_->renderVideo(context());
 }
 
 void QMDKWidget::keyPressEvent(QKeyEvent *e)
