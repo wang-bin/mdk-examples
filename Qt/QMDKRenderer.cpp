@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2021 WangBin <wbsecg1 at gmail.com>
  */
 #include "QMDKRenderer.h"
 #include "QMDKPlayer.h"
@@ -89,7 +89,7 @@ void QMDKWidgetRenderer::initializeGL()
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
         makeCurrent();
-        if (player_)
+        if (player_) // release and remove old gl resources with the same vo_opaque(this), then new resource will be created in resizeGL/paintGL
             player_->destroyGLContext(this); // it's better to cleanup gl renderer resources
         doneCurrent();
     });

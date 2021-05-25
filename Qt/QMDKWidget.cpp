@@ -17,7 +17,23 @@ QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
     : QOpenGLWidget(parent, f)
     , player_(std::make_shared<Player>())
 {
-    player_->setDecoders(MediaType::Video, {"VT", "VAAPI", "MFT:d3d=11", "DXVA", "MMAL", "AMediaCodec:java=1:copy=0:surface=1:async=0", "FFmpeg"});
+    player_->setDecoders(MediaType::Video, {
+#if (__APPLE__+0)
+        "VT",
+#elif (__ANDROID__+0)
+        "AMediaCodec:java=1:copy=0:surface=1:async=0",
+#elif (_WIN32+0)
+        "MFT:d3d=11",
+        "CUDA",
+        "D3D11",
+        "DXVA",
+#elif (__linux__+0)
+        "VAAPI",
+        "VDPAU",
+        "CUDA",
+        "MMAL",
+#endif
+        "FFmpeg"});
     player_->setRenderCallback([this](void*){
         QMetaObject::invokeMethod(this, "update", Qt::QueuedConnection);
     });
@@ -123,8 +139,8 @@ void QMDKWidget::initializeGL()
         if (!sp)
             return;
         makeCurrent();
-        if (sp)
-            sp->setVideoSurfaceSize(-1, -1, context()); // it's better to cleanup gl renderer resources as early as possible
+        if (sp) // release and remove old gl resources with the same vo_opaque(nullptr), then new resource will be created in resizeGL/paintGL
+            sp->setVideoSurfaceSize(-1, -1/*, context()*/); // it's better to cleanup gl renderer resources as early as possible
         doneCurrent();
     });
 }
@@ -134,15 +150,15 @@ void QMDKWidget::resizeGL(int w, int h)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     auto s = screen();
     qDebug("resizeGL>>>>>dpr: %f, logical dpi: (%f,%f), phy dpi: (%f,%f)", s->devicePixelRatio(), s->logicalDotsPerInchX(), s->logicalDotsPerInchY(), s->physicalDotsPerInchX(), s->physicalDotsPerInchY());
-    player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio(), context());
+    player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio()/*, context()*/);
 #else
-    player_->setVideoSurfaceSize(w, h, context());
+    player_->setVideoSurfaceSize(w, h/*, context()*/);
 #endif
 }
 
 void QMDKWidget::paintGL()
 {
-    player_->renderVideo(context());
+    player_->renderVideo(/*context()*/);
 }
 
 void QMDKWidget::keyPressEvent(QKeyEvent *e)
