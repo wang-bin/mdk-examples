@@ -140,7 +140,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->set(State::Stopped);
             break;
         case GLFW_KEY_A:
-            p->setActiveTracks(MediaType::Audio, {++atrack % (int)p->mediaInfo().video.size()});
+            p->setActiveTracks(MediaType::Audio, {++atrack % (int)p->mediaInfo().audio.size()});
             break;
         case GLFW_KEY_V:
             p->setActiveTracks(MediaType::Video, {++vtrack % (int)p->mediaInfo().video.size()});
@@ -253,7 +253,7 @@ int main(int argc, char** argv)
     const char* urla = nullptr;
     std::string ca, cv;
     Player player;
-    //player.setBackgroundColor(1, 0, 0, 1);
+    //player.setBackgroundColor(-1, 0, 0, 1);
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
 #endif
