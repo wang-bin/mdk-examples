@@ -134,7 +134,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             glfwSetWindowShouldClose(win, 1);
             break;
         case GLFW_KEY_R:
-            p->record("mdk-record.mkv");
+            p->record("mdk-record.mp4");
             break;
         case GLFW_KEY_S:
             p->set(State::Stopped);
@@ -238,7 +238,6 @@ int main(int argc, char** argv)
 {
     bool help = argc < 2;
     bool es = false;
-    bool gfxthread = false;
     bool autoclose = false;
     int from = 0;
     float wait = 0;
@@ -253,7 +252,7 @@ int main(int argc, char** argv)
     const char* urla = nullptr;
     std::string ca, cv;
     Player player;
-    //player.setBackgroundColor(-1, 0, 0, 1);
+    //player.setBackgroundColor(1, 0, 0, 1);
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
 #endif
@@ -280,7 +279,6 @@ int main(int argc, char** argv)
             vtrack = std::atoi(argv[++i]);
             player.setActiveTracks(MediaType::Video, {vtrack});
         } else if (strstr(argv[i], "-d3d11") == argv[i]) {
-            gfxthread = true;
 #ifdef _WIN32
             ra = &d3d11ra;
 # if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
@@ -297,7 +295,6 @@ int main(int argc, char** argv)
 # endif
 #endif
         } else if (strstr(argv[i], "-gl") == argv[i]) {
-            gfxthread = true;
 #if MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI)
             ra = &glra;
             parse_options(argv[i] + sizeof("-gl") - 1, [&glra](const char* name, const char* value){
@@ -323,7 +320,6 @@ int main(int argc, char** argv)
 #endif // MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
 
         } else if (strstr(argv[i], "-metal") == argv[i]) {
-            gfxthread = true;
 #if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI))
             ra = &mtlra;
             parse_options(argv[i] + sizeof("-metal") - 1, [&mtlra](const char* name, const char* value){
@@ -332,7 +328,6 @@ int main(int argc, char** argv)
             });
 #endif
         } else if (strstr(argv[i], "-vk") == argv[i]) {
-            gfxthread = true;
 #if (VK_VERSION_1_0+0) && (MDK_VERSION_CHECK(0, 10, 0) || defined(MDK_ABI))
             ra = &vkra;
             parse_options(argv[i] + sizeof("-vk") - 1, [&vkra](const char* name, const char* value){
@@ -424,8 +419,11 @@ int main(int argc, char** argv)
         player.setBufferRange(buf_min, buf_max, buf_drop);
     player.currentMediaChanged([&]{
         std::printf("currentMediaChanged %d/%zu, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
-        if (urls.size() > url_now+1) {
-            player.setNextMedia(urls[++url_now].data()); // safe to use ref to player
+        url_now++;
+        if (loop == -1)
+            url_now %= urls.size();
+        if (urls.size() > url_now) {
+            player.setNextMedia(urls[url_now].data()); // safe to use ref to player
             // alternatively, you can create a custom event
         }
     });
@@ -443,7 +441,7 @@ int main(int argc, char** argv)
         printf("++++++++++++++onLoop: %d......\n", count);
         return false;
     });
-    if (!gfxthread && wait <= 0)
+    if (!ra && wait <= 0)
         player.setRenderCallback([](void*){
             glfwPostEmptyEvent(); // FIXME: some events are lost on macOS. glfw bug?
         });
@@ -454,12 +452,12 @@ int main(int argc, char** argv)
     if (!glfwInit())
         exit(EXIT_FAILURE);
     //glfwWindowHint(GLFW_SCALE_TO_MONITOR, 1);
-    if (es && !gfxthread) {
+    if (es && !ra) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
     }
-    if (gfxthread) { // we create gl context ourself, glfw should provide a clean window.
+    if (ra) { // we create gl context ourself, glfw should provide a clean window.
         // default is GLFW_OPENGL_API + GLFW_NATIVE_CONTEXT_API which may affect our context(macOS)
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     }
@@ -568,7 +566,7 @@ int main(int argc, char** argv)
         player.setDecoders(MediaType::Audio, {first, last});
     }
 
-    if (loop >= -1)
+    if (loop >= -1 && urls.size() == 1)
         player.setLoop(loop);
     if (loop_a >= 0 || loop_b != 0) {
         if (loop_a < 0)
@@ -588,7 +586,7 @@ int main(int argc, char** argv)
             player.set(State::Playing);
     }
 
-    if (gfxthread) {
+    if (ra) {
         auto surface_type = MDK_NS::Player::SurfaceType::Auto;
 #if defined(_WIN32)
         auto hwnd = glfwGetWin32Window(win);
@@ -603,7 +601,7 @@ int main(int argc, char** argv)
         //exit(EXIT_SUCCESS);
     }
     while (!glfwWindowShouldClose(win)) {
-        if (!gfxthread) {
+        if (!ra) {
             glfwMakeContextCurrent(win);
             player.renderVideo();
             glfwSwapBuffers(win); // FIXME: old render buffer is displayed if render again after stopping by user. glfw bug?
@@ -615,7 +613,7 @@ int main(int argc, char** argv)
         else
             glfwWaitEvents();
     }
-    if (!gfxthread) // will release internally if use native surface
+    if (!ra) // will release internally if use native surface
         player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current foreign context
 }
     glfwTerminate();
