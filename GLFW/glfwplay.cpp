@@ -499,9 +499,9 @@ int main(int argc, char** argv)
         urls.clear();
         for (int i = 0; i < count; ++i)
             urls.emplace_back(files[i]);
-        url_now = 0;
         p->waitFor(State::Stopped);
         p->setMedia(nullptr); // 1st url may be the same as current url
+        url_now = 0;
         p->setMedia(urls[url_now].data());
         p->set(State::Playing);
     });
