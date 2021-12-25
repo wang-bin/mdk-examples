@@ -6,6 +6,8 @@ CONFIG -= app_bundle
 QML_IMPORT_NAME = MDKTextureItem
 QML_IMPORT_MAJOR_VERSION = 1
 
+INCLUDEPATH += $$(VULKAN_SDK)/include
+
 HEADERS += VideoTextureItem.h \
     VideoTextureNode.h
 SOURCES += VideoTextureItem.cpp main.cpp \

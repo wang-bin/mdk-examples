@@ -3,6 +3,8 @@ CONFIG += utf8_source
 CONFIG -= app_bundle
 TEMPLATE = app
 
+INCLUDEPATH += $$(VULKAN_SDK)/include
+
 MDK_SDK = $$PWD/../../mdk-sdk
 INCLUDEPATH += $$MDK_SDK/include
 contains(QT_ARCH, x.*64) {

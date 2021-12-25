@@ -167,6 +167,8 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         nativeLayout = m_texture->nativeTexture().layout;
         nativeObj = decltype(nativeObj)(ra.rt);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#else
+        qFatal("Rebuild with Vulkan!");
 #endif // (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     }
         break;

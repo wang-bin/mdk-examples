@@ -205,6 +205,8 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         if (m_texture_vk)
             return QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+# else
+        qFatal("Rebuild with Vulkan!");
 #endif // (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     }
         break;
