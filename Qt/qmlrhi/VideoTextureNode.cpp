@@ -26,7 +26,7 @@ VideoTextureNode::~VideoTextureNode()
     auto player = m_player.lock();
     if (!player)
         return;
-    player->setVideoSurfaceSize(-1, -1);
+    player->setVideoSurfaceSize(-1, -1, m_window);
     qDebug("renderer destroyed");
 }
 
@@ -54,7 +54,8 @@ void VideoTextureNode::sync()
     setTextureCoordinatesTransform(m_tx); // MUST set when texture() is available
     setFiltering(QSGTexture::Linear);
     setRect(0, 0, m_item->width(), m_item->height());
-    player->setVideoSurfaceSize(m_size.width(), m_size.height());
+    // if qsg render loop is threaded, a new render thread will be created when item's window changes, so mdk vo_opaque parameter must be bound to item window
+    player->setVideoSurfaceSize(m_size.width(), m_size.height(), m_window);
 }
 
 // This is hooked up to beforeRendering() so we can start our own render
@@ -67,5 +68,5 @@ void VideoTextureNode::render()
     auto player = m_player.lock();
     if (!player)
         return;
-    player->renderVideo();
+    player->renderVideo(m_window);
 }
