@@ -21,6 +21,7 @@
 #include <cstring>
 #include <iostream>
 #include <regex>
+#include <string>
 #include <GLFW/glfw3.h>
 #if _WIN32
 #include <windows.h>
@@ -155,7 +156,8 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 
 void showHelp(const char* argv0)
 {
-    printf("usage: %s [-d3d11] [-es] [-fps int_fps] [-c:v decoder] url1 [url2 ...]\n"
+    printf("usage: %s [-d3d11] [-es] [-refresh_rate int_fps] [-c:v decoder] url1 [url2 ...]\n"
+            "-bg: background color, 0xrrggbbaa, unorm (r, g, b, a)\n"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
             "-gl: use gl renderer. context is created by mdk instead of glfw\n"
             "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
@@ -252,7 +254,6 @@ int main(int argc, char** argv)
     const char* urla = nullptr;
     std::string ca, cv;
     Player player;
-    //player.setBackgroundColor(1, 0, 0, 1);
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
 #endif
@@ -268,7 +269,14 @@ int main(int argc, char** argv)
     RenderAPI *ra = nullptr;
     //player.setAspectRatio(-1.0);
     for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "-c:v") == 0) {
+        if (strcmp(argv[i], "-bg") == 0) {
+            auto c = std::stoll(argv[++i], nullptr, 16);
+            const auto r = c >> 24;
+            const auto g = (c >> 16) & 0xff;
+            const auto b = (c >> 8) & 0xff;
+            const auto a = c & 0xff;
+            player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
+        } else if (strcmp(argv[i], "-c:v") == 0) {
             cv = argv[++i];
         } else if (strcmp(argv[i], "-c:a") == 0) {
             ca = argv[++i];
@@ -361,6 +369,8 @@ int main(int argc, char** argv)
         } else if (std::strcmp(argv[i], "-ao") == 0) {
             player.setAudioBackends({argv[++i]});
         } else if (std::strcmp(argv[i], "-fps") == 0) {
+            player.setFrameRate(std::stof(argv[++i]));
+        } else if (std::strcmp(argv[i], "-refresh_rate") == 0) {
             wait = 1.0f/atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-url:a") == 0) {
             urla = argv[++i];
