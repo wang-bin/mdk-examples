@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #include "QMDKWidget.h"
@@ -141,6 +141,8 @@ void QMDKWidget::initializeGL()
         makeCurrent();
         if (sp) // release and remove old gl resources with the same vo_opaque(nullptr), then new resource will be created in resizeGL/paintGL
             sp->setVideoSurfaceSize(-1, -1/*, context()*/); // it's better to cleanup gl renderer resources as early as possible
+        else
+            Player::foreignGLContextDestroyed();
         doneCurrent();
     });
 }
