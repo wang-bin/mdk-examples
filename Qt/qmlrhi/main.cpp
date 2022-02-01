@@ -7,8 +7,12 @@
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
-    // env: QSG_RHI=1, QSG_RHI_BACKEND=metal, QSG_INFO=1
+    // env: QSG_RHI=1(qt5), QSG_RHI_BACKEND=opengl, QSG_INFO=1
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     //QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+#else
+    //QQuickWindow::setSceneGraphBackend(QSGRendererInterface::OpenGLRhi); // OpenGL
+#endif
 #ifndef QML_ELEMENT
     qmlRegisterType<VideoTextureItem>("MDKTextureItem", 1, 0, "VideoTextureItem");
 #endif

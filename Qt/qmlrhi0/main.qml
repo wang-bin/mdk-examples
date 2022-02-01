@@ -4,7 +4,7 @@ import QtQuick 2.8 // GraphicsInfo
 import MDKTextureItem 1.0
 //! [1]
 
-Rectangle {
+Item {
     property string url
 
     //! [2]
