@@ -135,14 +135,14 @@ void QMDKWidget::initializeGL()
     // context() may change(destroy old and create new) via setParent()
     std::weak_ptr<mdk::Player> wp = player_;
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
-        auto sp = wp.lock();
-        if (!sp)
-            return;
         makeCurrent();
+        auto sp = wp.lock();
+        if (!sp) {
+            Player::foreignGLContextDestroyed();
+            return;
+        }
         if (sp) // release and remove old gl resources with the same vo_opaque(nullptr), then new resource will be created in resizeGL/paintGL
             sp->setVideoSurfaceSize(-1, -1/*, context()*/); // it's better to cleanup gl renderer resources as early as possible
-        else
-            Player::foreignGLContextDestroyed();
         doneCurrent();
     });
 }
