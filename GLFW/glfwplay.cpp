@@ -282,10 +282,16 @@ int main(int argc, char** argv)
             ca = argv[++i];
         } else if (strcmp(argv[i], "-t:a") == 0) {
             atrack = std::atoi(argv[++i]);
-            player.setActiveTracks(MediaType::Audio, {atrack});
+            if (atrack >= 0)
+                player.setActiveTracks(MediaType::Audio, {atrack});
+            else
+                player.setActiveTracks(MediaType::Audio, {});
         } else if (strcmp(argv[i], "-t:v") == 0) {
             vtrack = std::atoi(argv[++i]);
-            player.setActiveTracks(MediaType::Video, {vtrack});
+            if (vtrack >= 0)
+                player.setActiveTracks(MediaType::Video, {vtrack});
+            else
+                player.setActiveTracks(MediaType::Video, {});
         } else if (strstr(argv[i], "-d3d11") == argv[i]) {
 #ifdef _WIN32
             ra = &d3d11ra;
