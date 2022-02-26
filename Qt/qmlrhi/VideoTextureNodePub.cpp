@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureNode.h"
@@ -97,7 +97,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         fbo_gl.reset(new QOpenGLFramebufferObject(size));
         GLRenderAPI ra;
         ra.fbo = fbo_gl->handle();
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
         auto tex = fbo_gl->texture();
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(tex);
@@ -123,7 +123,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         }
         D3D11RenderAPI ra;
         ra.rtv = m_texture_d3d11.Get();
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(m_texture_d3d11.Get());
 # else
@@ -152,7 +152,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         ra.texture = (__bridge void*)m_texture_mtl;
         ra.device = (__bridge void*)dev;
         ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(ra.texture);
 # else
@@ -200,7 +200,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
             auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
             return cmdBuf;
         };
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
 # if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
         if (m_texture_vk)
             return QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);

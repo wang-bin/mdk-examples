@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureNode.h"
@@ -89,7 +89,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         auto glrt = static_cast<QGles2TextureRenderTarget*>(m_rt);
         GLRenderAPI ra;
         ra.fbo = glrt->framebuffer;
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         auto tex = GLuint((quintptr)m_texture->nativeTexture().object);
         nativeObj = decltype(nativeObj)(tex);
@@ -113,7 +113,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         ra.texture = reinterpret_cast<const void*>(quintptr(m_texture->nativeTexture().object)); // 5.15+
         ra.device = dev;
         ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(ra.texture);
 # else
@@ -127,7 +127,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 #if (_WIN32+0)
         D3D11RenderAPI ra;
         ra.rtv = reinterpret_cast<ID3D11DeviceChild*>(quintptr(m_texture->nativeTexture().object));
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(ra.rtv);
 # else
@@ -159,7 +159,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
             auto cmdBuf = *static_cast<VkCommandBuffer *>(rif->getResource(node->m_window, QSGRendererInterface::CommandListResource));
             return cmdBuf;
         };
-        player->setRenderAPI(&ra, m_window);
+        player->setRenderAPI(&ra, this);
 # if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
         if (ra.rt)
             return QNativeInterface::QSGVulkanTexture::fromNative(ra.rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);

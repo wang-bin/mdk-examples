@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureNode.h"
@@ -26,7 +26,7 @@ VideoTextureNode::~VideoTextureNode()
     auto player = m_player.lock();
     if (!player)
         return;
-    player->setVideoSurfaceSize(-1, -1, m_window);
+    player->setVideoSurfaceSize(-1, -1, this);
     qDebug("renderer destroyed");
 }
 
@@ -55,7 +55,7 @@ void VideoTextureNode::sync()
     setFiltering(QSGTexture::Linear);
     setRect(0, 0, m_item->width(), m_item->height());
     // if qsg render loop is threaded, a new render thread will be created when item's window changes, so mdk vo_opaque parameter must be bound to item window
-    player->setVideoSurfaceSize(m_size.width(), m_size.height(), m_window);
+    player->setVideoSurfaceSize(m_size.width(), m_size.height(), this);
 }
 
 // This is hooked up to beforeRendering() so we can start our own render
@@ -68,5 +68,7 @@ void VideoTextureNode::render()
     auto player = m_player.lock();
     if (!player)
         return;
-    player->renderVideo(m_window);
+    //m_window->beginExternalCommands();
+    player->renderVideo(this);
+    //m_window->endExternalCommands();
 }
