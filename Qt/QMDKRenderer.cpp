@@ -18,6 +18,7 @@ QMDKWindowRenderer::~QMDKWindowRenderer() = default;
 
 void QMDKWindowRenderer::setSource(QMDKPlayer* player)
 {
+    setProperty("devicePixelRatio", devicePixelRatio());
     player->addRenderer(this);
     struct NoDeleter {
         void operator()(QMDKPlayer*) {}
@@ -49,7 +50,7 @@ void QMDKWindowRenderer::resizeGL(int w, int h)
     auto p = player_;
     if (!p)
         return;
-    p->addRenderer(this, w, h);
+    p->addRenderer(this, w*devicePixelRatio(), h*devicePixelRatio());
 }
 
 void QMDKWindowRenderer::paintGL()
@@ -72,6 +73,7 @@ QMDKWidgetRenderer::~QMDKWidgetRenderer() = default;
 
 void QMDKWidgetRenderer::setSource(QMDKPlayer* player)
 {
+    setProperty("devicePixelRatio", devicePixelRatio());
     player->addRenderer(this); // use QWidget* instead of QOpenGLContext* as vo_opaque must ensure context() will not change, e.g. no reparenting the widget via setParent()
     player_ = player;
     if (player) {
@@ -101,7 +103,7 @@ void QMDKWidgetRenderer::resizeGL(int w, int h)
 {
     if (!player_) // TODO: not safe. lock? but if player qobject is destroying, player dtor is finished. use true shared_ptr?
         return;
-    player_->addRenderer(this, w, h);
+    player_->addRenderer(this, w*devicePixelRatio(), h*devicePixelRatio());
 }
 
 void QMDKWidgetRenderer::paintGL()

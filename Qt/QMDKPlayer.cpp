@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKPlayer.h"
@@ -88,9 +88,9 @@ qint64 QMDKPlayer::position() const
 void QMDKPlayer::addRenderer(QObject* vo, int w, int h)
 {
     if (w <= 0)
-        w = vo->property("width").toInt();
+        w = vo->property("width").toInt() * qMax(vo->property("devicePixelRatio").toInt(), 1);
     if (h <= 0)
-        h = vo->property("height").toInt();
+        h = vo->property("height").toInt() * qMax(vo->property("devicePixelRatio").toInt(), 1);
     player_->setVideoSurfaceSize(w, h, vo); // call update cb
     connect(vo, &QObject::destroyed, this, [this](QObject* obj){
         player_->setVideoSurfaceSize(-1, -1, obj); // remove vo
