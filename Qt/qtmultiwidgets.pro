@@ -11,7 +11,8 @@ CONFIG(debug, debug|release) {
 }
 LIBS += -L$$OUT_PWD -lqtmdk
 
-SOURCES += qtmultiwidgets.cpp
+SOURCES += qtmultiwidgets.cpp videogroup.cpp
+HEADERS += videogroup.h
 
 mac {
   RPATHDIR *= @executable_path/Frameworks @loader_path $$MDK_SDK/lib

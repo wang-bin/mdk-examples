@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2018 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2022 WangBin <wbsecg1 at gmail.com>
  */
-#include "QMDKRenderer.h"
-#include "QMDKPlayer.h"
+#include "videogroup.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -16,17 +15,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     //a.setAttribute(Qt::AA_UseDesktopOpenGL);
     //a.setAttribute(Qt::AA_ShareOpenGLContexts);
-    QMDKPlayer player;
-    QMDKWidgetRenderer w[4];
-    for (auto& i : w) {
-        i.show();
-        i.setSource(&player);
-    }
-    int i = a.arguments().indexOf("-c:v");
-    if (i > 0)
-        player.setDecoders(a.arguments().at(i+1).split(","));
-    player.setMedia(a.arguments().last());
-    player.play();
+    VideoGroup wall;
+    wall.show();
+    wall.play(a.arguments().last());
 
     return a.exec();
 }

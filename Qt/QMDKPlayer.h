@@ -16,15 +16,13 @@ class Player;
 #endif
 class Q_MDK_API QMDKPlayer : public QObject
 {
+    Q_OBJECT
 public:
     QMDKPlayer(QObject *parent = nullptr);
     ~QMDKPlayer();
     // decoders: "VideoToolbox", "VAAPI", "VDPAU", "D3D11", "DXVA", "NVDEC", "CUDA", "MMAL"/"AVMMAL"(raspberry pi), "CedarX"(sunxi), "AMediaCodec"("MediaCodec"), "FFmpeg"
     void setDecoders(const QStringList& dec);
     void setMedia(const QString& url);
-    void play();
-    void pause();
-    void stop();
     bool isPaused() const;
     void seek(qint64 ms);
     qint64 position() const;
@@ -33,6 +31,12 @@ public:
     void renderVideo(QObject* vo = nullptr);
 
     void destroyGLContext(QObject* vo);
+
+public slots:
+    void play();
+    void pause(bool value = true);
+    void stop();
+
 private:
     std::unique_ptr<mdk::Player> player_;
 };

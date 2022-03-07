@@ -60,9 +60,12 @@ void QMDKPlayer::play()
     player_->set(State::Playing);
 }
 
-void QMDKPlayer::pause()
+void QMDKPlayer::pause(bool value)
 {
-    player_->set(State::Paused);
+    if (value)
+        player_->set(State::Paused);
+    else
+        play();
 }
 
 void QMDKPlayer::stop()
