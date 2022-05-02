@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2016-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -39,6 +39,9 @@
 # if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
 _Pragma("weak glfwSetWindowContentScaleCallback")
 _Pragma("weak glfwGetWindowContentScale")
+// libglfw3-wayland has no x11 symbols
+_Pragma("weak glfwGetX11Display")
+_Pragma("weak glfwGetX11Window")
 # endif
 #endif
 
@@ -523,7 +526,8 @@ int main(int argc, char** argv)
     });
     glfwShowWindow(win);
 #if defined(GLFW_EXPOSE_NATIVE_X11)
-    setNativeDisplay(glfwGetX11Display());
+    if (glfwGetX11Display)
+        setNativeDisplay(glfwGetX11Display());
 #endif
     player.onStateChanged([=](State s){
         if (s == State::Stopped && autoclose) {
@@ -609,7 +613,9 @@ int main(int argc, char** argv)
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
         auto hwnd = glfwGetCocoaWindow(win);
 #elif defined(GLFW_EXPOSE_NATIVE_X11)
-        auto hwnd = glfwGetX11Window(win);
+        Window hwnd = 0;
+        if (glfwGetX11Window)
+            hwnd = glfwGetX11Window(win);
         surface_type = MDK_NS::Player::SurfaceType::X11;
 #endif
         player.updateNativeSurface((void*)hwnd, -1, -1, surface_type);
