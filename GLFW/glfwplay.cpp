@@ -438,10 +438,11 @@ int main(int argc, char** argv)
         player.setBufferRange(buf_min, buf_max, buf_drop);
     player.currentMediaChanged([&]{
         std::printf("currentMediaChanged %d/%zu, now: %s\n", url_now, urls.size(), player.url());fflush(stdout);
+        const auto now_idx = url_now;
         url_now++;
         if (loop == -1)
             url_now %= urls.size();
-        if (urls.size() > url_now) {
+        if (urls.size() > url_now && now_idx != url_now) {
             player.setNextMedia(urls[url_now].data()); // safe to use ref to player
             // alternatively, you can create a custom event
         }
