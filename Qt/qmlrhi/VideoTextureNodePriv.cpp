@@ -99,7 +99,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 # else
         auto tex = GLuint(m_texture->nativeTexture().object);
         if (tex)
-            return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size);
+            return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // if QT_CONFIG(opengl)
     }
@@ -118,7 +118,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         nativeObj = decltype(nativeObj)(ra.texture);
 # else
         if (ra.texture)
-            return QNativeInterface::QSGMetalTexture::fromNative((__bridge id<MTLTexture>)ra.texture, m_window, size);
+            return QNativeInterface::QSGMetalTexture::fromNative((__bridge id<MTLTexture>)ra.texture, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (__APPLE__+0)
     }
@@ -132,7 +132,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         nativeObj = decltype(nativeObj)(ra.rtv);
 # else
         if (ra.rtv)
-            return QNativeInterface::QSGD3D11Texture::fromNative(ra.rtv, m_window, size);
+            return QNativeInterface::QSGD3D11Texture::fromNative(ra.rtv, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (_WIN32)
     }
@@ -162,7 +162,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         player->setRenderAPI(&ra, this);
 # if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
         if (ra.rt)
-            return QNativeInterface::QSGVulkanTexture::fromNative(ra.rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);
+            return QNativeInterface::QSGVulkanTexture::fromNative(ra.rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # else
         nativeLayout = m_texture->nativeTexture().layout;
         nativeObj = decltype(nativeObj)(ra.rt);
@@ -179,7 +179,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 # if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     if (nativeObj)
-        return m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, size);
+        return m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, size, QQuickWindow::TextureHasAlphaChannel);
 # endif
 #endif
     return nullptr;

@@ -106,7 +106,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
 #   endif // QT_VERSION <= QT_VERSION_CHECK(5, 14, 0)
 # else
         if (tex)
-            return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size);
+            return QNativeInterface::QSGOpenGLTexture::fromNative(tex, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // if QT_CONFIG(opengl)
     }
@@ -128,7 +128,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         nativeObj = decltype(nativeObj)(m_texture_d3d11.Get());
 # else
         if (m_texture_d3d11)
-            return QNativeInterface::QSGD3D11Texture::fromNative(m_texture_d3d11.Get(), m_window, size);
+            return QNativeInterface::QSGD3D11Texture::fromNative(m_texture_d3d11.Get(), m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (_WIN32)
     }
@@ -157,7 +157,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         nativeObj = decltype(nativeObj)(ra.texture);
 # else
         if (m_texture_mtl)
-            return QNativeInterface::QSGMetalTexture::fromNative(m_texture_mtl, m_window, size);
+            return QNativeInterface::QSGMetalTexture::fromNative(m_texture_mtl, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #endif // (__APPLE__+0)
     }
@@ -203,7 +203,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         player->setRenderAPI(&ra, this);
 # if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
         if (m_texture_vk)
-            return QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size);
+            return QNativeInterface::QSGVulkanTexture::fromNative(m_texture_vk, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 # else
         qFatal("Rebuild with Vulkan!");
@@ -217,7 +217,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 # if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     if (nativeObj)
-        return m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, size);
+        return m_window->createTextureFromNativeObject(QQuickWindow::NativeObjectTexture, &nativeObj, nativeLayout, size, QQuickWindow::TextureHasAlphaChannel);
 # endif
 #endif
     return nullptr;
