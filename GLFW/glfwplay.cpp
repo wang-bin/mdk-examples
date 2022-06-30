@@ -48,7 +48,7 @@ _Pragma("weak glfwGetX11Window")
 using namespace MDK_NS;
 
 int64_t gSeekStep = 10000LL;
-SeekFlag gSeekFlag = SeekFlag::Default;
+SeekFlag gSeekFlag = SeekFlag::FromStart|SeekFlag::InCache;
 int atrack = 0;
 int vtrack = 0;
 
@@ -103,10 +103,19 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->set(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
         case GLFW_KEY_RIGHT:
-            p->seek(p->position()+gSeekStep, gSeekFlag); // Default if GLFW_REPEAT
+            p->seek(p->position()+gSeekStep, gSeekFlag, [](int64_t pos) {
+            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        }); // Default if GLFW_REPEAT
+            break;
+        case GLFW_KEY_E:
+            p->seek(INT64_MAX, gSeekFlag, [](int64_t pos) {
+            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        }); // Default if GLFW_REPEAT
             break;
         case GLFW_KEY_LEFT:
-            p->seek(p->position()-gSeekStep, gSeekFlag);
+            p->seek(p->position()-gSeekStep, gSeekFlag, [](int64_t pos) {
+            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        });
             break;
         case GLFW_KEY_UP:
             p->setPlaybackRate(p->playbackRate() + 0.1f);
@@ -150,7 +159,14 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->setActiveTracks(MediaType::Video, {++vtrack % (int)p->mediaInfo().video.size()});
             break;
         case GLFW_KEY_PERIOD:
-            p->seek(1, SeekFlag::FromNow|SeekFlag::Frame);
+            p->seek(1, SeekFlag::FromNow|SeekFlag::Frame, [](int64_t pos) {
+            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        });
+            break;
+        case GLFW_KEY_COMMA:
+            p->seek(-1, SeekFlag::FromNow|SeekFlag::Frame, [](int64_t pos) {
+            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        });
             break;
         default:
             break;
@@ -414,6 +430,7 @@ int main(int argc, char** argv)
         } else if (argv[i][0] == '-' && (argv[i+1][0] == '-' || i == argc - 2)) {
             printf("Unknow option: %s\n", argv[i]);
         } else if (argv[i][0] == '-') {
+            printf("SetGlobalOption: %s=%s\n", argv[i]+1, argv[i+1]);
             SetGlobalOption(argv[i]+1, argv[i+1]);
             player.setProperty(argv[i]+1, argv[i+1]);
             ++i;
@@ -547,7 +564,9 @@ int main(int argc, char** argv)
             return;
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         auto duration = p->mediaInfo().duration;
-        p->seek(duration*int(x)/w, SeekFlag::FromStart); // duration*x/w crashes clang-cl-11/12 -Oz
+        p->seek(duration*int(x)/w, gSeekFlag, [](int64_t pos) {
+            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        }); // duration*x/w crashes clang-cl-11/12 -Oz
     });
     glfwSetCursorPosCallback(win, [](GLFWwindow* win, double x,double y){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
@@ -558,7 +577,9 @@ int main(int argc, char** argv)
         if (x > w || y > h)
             return;
         auto duration = p->mediaInfo().duration;
-        p->seek(duration*int(x)/w, SeekFlag::FromStart); // duration*x/w crashes clang-cl-11/12 -Oz
+        p->seek(duration*int(x)/w, gSeekFlag, [](int64_t pos) {
+            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        }); // duration*x/w crashes clang-cl-11/12 -Oz
     });
     player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
     float xscale = 1.0f, yscale = 1.0f;
