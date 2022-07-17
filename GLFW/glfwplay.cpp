@@ -158,6 +158,9 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_V:
             p->setActiveTracks(MediaType::Video, {++vtrack % (int)p->mediaInfo().video.size()});
             break;
+        case GLFW_KEY_X:
+            p->setActiveTracks(MediaType::Video, {});
+            break;
         case GLFW_KEY_PERIOD:
             p->seek(1, SeekFlag::FromNow|SeekFlag::Frame, [](int64_t pos) {
             printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
@@ -199,6 +202,8 @@ void showHelp(const char* argv0)
             "-seek_any: seek to any frame instead of key frame\n"
             "-seek_step: step length(in ms) of seeking forward/backward\n"
             "-autoclose: close when stopped\n" // TODO: check image or video
+            "-plugins: plugin names, 'name1:name2...'"
+            "-nosync: render video ASAP.\n"
             "Keys:\n"
             "space: pause/resume\n"
             "left/right: seek backward/forward (-/+10s)\n"
@@ -243,6 +248,8 @@ int url_now = 0;
 std::vector<std::string> urls;
 int main(int argc, char** argv)
 {
+    //setlocale(LC_ALL, "de_CH");
+
     FILE* log_file = stdout;
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "-logfile") == 0) {
@@ -270,8 +277,17 @@ int main(int argc, char** argv)
     int64_t loop_b = 0;
     bool buf_drop = false;
     bool pause = false;
+    bool nosync = false;
     const char* urla = nullptr;
     std::string ca, cv;
+    // some plugins must be loaded before creating player
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "-plugins") == 0) {
+            SetGlobalOption("plugins", argv[++i]);
+            break;
+        }
+    }
+
     Player player;
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
@@ -422,6 +438,8 @@ int main(int argc, char** argv)
             SetGlobalOption("plugins", argv[++i]);
         } else if (std::strcmp(argv[i], "-autoclose") == 0) {
             autoclose = true;
+        } else if (std::strcmp(argv[i], "-nosync") == 0) {
+            nosync = true;
         } else if (std::strcmp(argv[i], "-record") == 0) {
             player.record("record.mkv"); // FIXME: record before play is not supported yet
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
@@ -466,7 +484,7 @@ int main(int argc, char** argv)
     });
     player.onMediaStatusChanged([](MediaStatus s){
         //MediaStatus s = player.mediaStatus();
-        printf("************Media status: %#x, invalid: %#x, loading: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Invalid, s&MediaStatus::Loading, s&MediaStatus::Buffering, s&MediaStatus::Seeking, s&MediaStatus::Prepared, s&MediaStatus::End);
+        printf("************Media status: %#x, invalid: %#x, loading: %d, unloaded: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Invalid, s&MediaStatus::Loading, s&MediaStatus::Unloaded, s&MediaStatus::Buffering, s&MediaStatus::Seeking, s&MediaStatus::Prepared, s&MediaStatus::End);
         fflush(stdout);
         return true;
     });
@@ -478,6 +496,8 @@ int main(int argc, char** argv)
         printf("++++++++++++++onLoop: %d......\n", count);
         return false;
     });
+    if (nosync)
+        player.onSync([]{return DBL_MAX;});
     if (!ra && wait <= 0)
         player.setRenderCallback([](void*){
             glfwPostEmptyEvent(); // FIXME: some events are lost on macOS. glfw bug?
@@ -644,6 +664,8 @@ int main(int argc, char** argv)
         //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);
     }
+    //float vr[] = {0, 0, 0.5f, 0.5f};
+    //player.setPointMap(vr);
     while (!glfwWindowShouldClose(win)) {
         if (!ra) {
             glfwMakeContextCurrent(win);
@@ -656,6 +678,7 @@ int main(int argc, char** argv)
             glfwWaitEventsTimeout(wait);
         else
             glfwWaitEvents();
+
     }
     if (!ra) // will release internally if use native surface
         player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current foreign context
