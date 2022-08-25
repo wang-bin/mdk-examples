@@ -1,5 +1,6 @@
-#include "mdk/cpp/Player.h"
-#include "mdk/cpp/VideoFrame.h"
+#include "mdk/Player.h"
+#include "mdk/VideoFrame.h"
+#include "mdk/MediaInfo.h"
 #include <cstdlib>
 #include <cstring>
 #include <future>
@@ -75,6 +76,8 @@ int main(int argc, const char** argv)
     p.prepare(from, [&](int64_t pos, bool*){
         if (pos < 0)
             pm.set_value(-1);
+        if (p.mediaInfo().video.empty())
+            pm.set_value(-2);
         return true;
     });
     const auto ret = fut.get();
