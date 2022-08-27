@@ -74,9 +74,7 @@ int main(int argc, const char** argv)
         return 0;
     });
     p.prepare(from, [&](int64_t pos, bool*){
-        if (pos < 0)
-            pm.set_value(-1);
-        if (p.mediaInfo().video.empty())
+        if (pos < 0 || p.mediaInfo().video.empty())
             pm.set_value(-2);
         return true;
     });
