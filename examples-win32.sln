@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29201.188
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfwplay", "GLFW\glfwplay.vcxproj", "{60547FAB-D9DE-42FA-B4BF-FF96A3B72598}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mdkplay", "Native\mdkplay.vcxproj", "{71476985-DDC0-4F57-9979-81CB047B6E3F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "offscreen", "Native\offscreen.vcxproj", "{D801D50D-86F0-470C-AB36-2C407E96F657}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Thumbnail", "Native\Thumbnail.vcxproj", "{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,14 @@ Global
 		{D801D50D-86F0-470C-AB36-2C407E96F657}.Release|x64.Build.0 = Release|x64
 		{D801D50D-86F0-470C-AB36-2C407E96F657}.Release|x86.ActiveCfg = Release|Win32
 		{D801D50D-86F0-470C-AB36-2C407E96F657}.Release|x86.Build.0 = Release|Win32
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Debug|x64.ActiveCfg = Debug|x64
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Debug|x64.Build.0 = Debug|x64
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Debug|x86.ActiveCfg = Debug|Win32
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Debug|x86.Build.0 = Debug|Win32
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Release|x64.ActiveCfg = Release|x64
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Release|x64.Build.0 = Release|x64
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Release|x86.ActiveCfg = Release|Win32
+		{9FDE9985-6C50-48C6-92D9-6D5A5AC9A9E6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

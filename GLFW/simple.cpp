@@ -29,7 +29,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
     auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
     switch (key) {
         case GLFW_KEY_SPACE:
-            p->setState(p->state() == State::Playing ? State::Paused : State::Playing);
+            p->set(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
         case GLFW_KEY_RIGHT:
             p->seek(p->position()+10000);
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
     Player player;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-c:v") == 0) {
-            player.setVideoDecoders({argv[++i]});
+            player.setDecoders(MediaType::Video, {argv[++i]});
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
         std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
         return true;
     });
-    player.setState(State::Playing);
+    player.set(State::Playing);
 
     if (gfxthread) {
 #if defined(_WIN32)
