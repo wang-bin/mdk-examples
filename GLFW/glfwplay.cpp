@@ -47,7 +47,7 @@ _Pragma("weak glfwGetX11Window")
 
 using namespace MDK_NS;
 
-int64_t gSeekStep = 10000LL;
+int64_t gSeekStep = 5000LL;
 SeekFlag gSeekFlag = SeekFlag::FromStart|SeekFlag::InCache;
 int atrack = 0;
 int vtrack = 0;
@@ -71,6 +71,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
     switch (key) {
         case GLFW_KEY_C: {
             Player::SnapshotRequest req{};
+            //req.width = -1;
             p->snapshot(&req,
         [](Player::SnapshotRequest* ret, double frameTime){
             return std::to_string(frameTime).append(".jpg");
@@ -103,7 +104,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->set(p->state() == State::Playing ? State::Paused : State::Playing);
             break;
         case GLFW_KEY_RIGHT:
-            p->seek(p->position()+gSeekStep, gSeekFlag, [](int64_t pos) {
+            p->seek(p->position()+gSeekStep, gSeekFlag|SeekFlag::KeyFrame, [](int64_t pos) {
             printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
         }); // Default if GLFW_REPEAT
             break;
@@ -113,7 +114,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         }); // Default if GLFW_REPEAT
             break;
         case GLFW_KEY_LEFT:
-            p->seek(p->position()-gSeekStep, gSeekFlag, [](int64_t pos) {
+            p->seek(p->position()-gSeekStep, gSeekFlag|SeekFlag::KeyFrame, [](int64_t pos) {
             printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
         });
             break;
@@ -279,6 +280,7 @@ int main(int argc, char** argv)
     bool pause = false;
     bool nosync = false;
     const char* urla = nullptr;
+    string vendor;
     std::string ca, cv;
     // some plugins must be loaded before creating player
     for (int i = 1; i < argc; ++i) {
@@ -331,7 +333,7 @@ int main(int argc, char** argv)
 #ifdef _WIN32
             ra = &d3d11ra;
 # if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
-            parse_options(argv[i] + sizeof("-d3d11") - 1, [&d3d11ra](const char* name, const char* value){
+            parse_options(argv[i] + sizeof("-d3d11") - 1, [&](const char* name, const char* value){
                 if (strcmp(name, "debug") == 0)
                     d3d11ra.debug = std::atoi(value);
                 else if (strcmp(name, "buffers") == 0)
@@ -340,6 +342,11 @@ int main(int argc, char** argv)
                     d3d11ra.adapter = std::atoi(value);
                 else if (strcmp(name, "feature_level") == 0)
                     d3d11ra.feature_level = (float)std::atof(value);
+                else if (strcmp(name, "vendor") == 0) {
+                    vendor = value;
+                    d3d11ra.vendor = vendor.data();
+                    std::printf("argv vender: %s\n", vendor.data());fflush(0);
+                }
             });
 # endif
 #endif
