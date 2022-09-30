@@ -1,10 +1,10 @@
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 # see cmake/Tests/iOSNavApp
 if(NOT APPLE OR IOS)
   return()
 endif()
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9) # libc++
 
@@ -33,7 +33,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${RPATH_FLAGS} -Wl,-rpath,
 # assume mdk.framework is in current dir
 target_compile_options(${APP_NAME} PRIVATE -F${CMAKE_CURRENT_SOURCE_DIR}) # -fobjc-arc) # arc: _objc_retainAutoreleasedReturnValue is not defined in osx10.6 objc runtime. Using new libobjc on osx10.6 will result in CoreFoundation error
 # lflag -fobjc-arc/-fobjc-link-runtime: opensource clang missing libarclite_macosx.a, need link to system libarclite_macosx.a
-target_link_libraries(${APP_NAME} "-framework Cocoa" "-framework QuartzCore" "-framework OpenGL" -F${CMAKE_CURRENT_SOURCE_DIR} -F/usr/local/lib "-framework mdk") # AppKit or Cocoa. "-framework QuartzCore" for CAOpenGLLayer
+target_link_libraries(${APP_NAME} "-framework AppKit" "-framework QuartzCore" "-framework OpenGL" -F${CMAKE_CURRENT_SOURCE_DIR} mdk) # AppKit or Cocoa. "-framework QuartzCore" for CAOpenGLLayer
 if(APP_BUNDLE)
   target_compile_definitions(${APP_NAME} PRIVATE APP_BUNDLE)
   set_target_properties(${APP_NAME} PROPERTIES

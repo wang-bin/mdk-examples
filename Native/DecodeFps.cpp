@@ -4,12 +4,21 @@
 #include <cstring>
 #include <future>
 #include <queue>
+// FIXME: asan crash
 
 using namespace MDK_NS;
 using namespace std;
 int main(int argc, const char** argv)
 {
     printf("usage: %s [-c:v DecoderName] [-from milliseconds] file\n", argv[0]);
+
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "-plugins") == 0) {
+            SetGlobalOption("plugins", argv[++i]);
+            break;
+        }
+    }
+
     VideoFrame v;
     int64_t from = 0;
     bool decode1 = false;

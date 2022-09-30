@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with SDL OpenGL example
  */
 #include <mdk/Player.h>
@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     if (argc < 2)
         return print_help(argv[0]);
     SDL_Init(SDL_INIT_VIDEO);
+    //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 #if 0
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -46,8 +47,13 @@ int main(int argc, char *argv[])
         } else if (std::strcmp(argv[i], "-ao") == 0) {
             ao = argv[++i];
             url_index += 2;
-        } else if (argv[i][0] == '-') {
+        } else if (std::strcmp(argv[i], "-h") == 0) {
             return print_help(argv[0]);
+        } else if (argv[i][0] == '-') {
+            SetGlobalOption(argv[i]+1, argv[i+1]);
+            //player.setProperty(argv[i]+1, argv[i+1]);
+            i++;
+            url_index += 2;
         }
     }
 while (true) {
@@ -159,6 +165,12 @@ while (true) {
                 static const int nb_urls = argc - url_index;
                 if (nb_urls > 1)
                     player.switchBitrate(argv[(index++)%nb_urls + url_index]);
+            } else if (event.key.keysym.sym == SDLK_n) {
+                static int index = 1;
+                static const int nb_urls = argc - url_index;
+                static auto index0 = url_index;
+                url_index = (index++)%nb_urls + index0;
+                goto loopend;
             }
             break;
         case SDL_DROPFILE:

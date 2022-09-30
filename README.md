@@ -2,6 +2,9 @@ media player examples based on mdk sdk. runs on all platforms. [Download the lat
 
 About libmdk sdk: https://github.com/wang-bin/mdk-sdk
 
+## Flutter
+https://github.com/wang-bin/fvp
+
 ## GLFW
 ### glfwplay
 - has the most features

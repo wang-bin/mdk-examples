@@ -13,9 +13,13 @@ if(HAVE_SDL2_LIB)
     if(WIN32)
       target_link_libraries(${tgt} PRIVATE winmm imm32 ole32 version) # for static sdl
     elseif(APPLE)
-      target_link_libraries(${tgt} PRIVATE iconv "-framework CoreFoundation" "-framework CoreGraphics" "-framework Foundation" "-framework AppKit" "-framework IOKit" "-framework AudioToolbox" "-framework CoreAudio" "-framework ForceFeedback" "-framework Metal" "-framework CoreVideo" "-framework CoreServices" "-framework Carbon") # for static sdl
+      target_link_libraries(${tgt} PRIVATE iconv "-framework CoreFoundation" "-framework CoreGraphics" "-framework Foundation" "-framework AppKit" "-framework IOKit" "-framework AudioToolbox" "-framework CoreAudio" "-framework ForceFeedback" "-framework Metal" "-framework CoreVideo" "-framework CoreServices" "-framework Carbon"
+      "-weak_framework CoreHaptics" "-weak_framework GameController"
+      ) # for static sdl
     endif()
-    if(EXISTS /usr/local/include/SDL2)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/external/include/SDL2)
+      target_include_directories(${tgt} PRIVATE ${CMAKE_SOURCE_DIR}/external/include/SDL2)
+    elseif(EXISTS /usr/local/include/SDL2)
       target_include_directories(${tgt} PRIVATE /usr/local/include/SDL2)
     elseif(EXISTS /opt/homebrew/include/SDL2)
       target_include_directories(${tgt} PRIVATE /opt/homebrew/include/SDL2)
