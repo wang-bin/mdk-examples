@@ -172,6 +172,12 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
         });
             break;
+        case GLFW_KEY_P: {
+            const ColorSpace cs[] = {ColorSpaceUnknown, ColorSpaceBT709, ColorSpaceBT2100_PQ};
+            static int i = 0;
+            p->set(cs[i++%std::size(cs)]);
+        }
+            break;
         default:
             break;
     }
@@ -181,12 +187,13 @@ void showHelp(const char* argv0)
 {
     printf("usage: %s [-d3d11] [-es] [-refresh_rate int_fps] [-c:v decoder] url1 [url2 ...]\n"
             "-bg: background color, 0xrrggbbaa, unorm (r, g, b, a)\n"
+            "-colorspace: output color space. can be 'auto'(will enable hdr display on demond if possible), 'bt709', 'bt2100'"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
             "-gl: use gl renderer. context is created by mdk instead of glfw\n"
             "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
             "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
             "-logfile: save log to a given file\n"
-            "-logLevel: log level name or int value\n"
+            "-logLevel or -log: log level name or int value\n"
             "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
             "decoder properties(not supported by all): glva=0/1, hwdec_format=..., copy_frame=0/1/-1, hwdevice=...\n"
@@ -313,6 +320,15 @@ int main(int argc, char** argv)
             const auto b = (c >> 8) & 0xff;
             const auto a = c & 0xff;
             player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
+        } else if (strcmp(argv[i], "-colorspace") == 0) {
+            auto cs = argv[++i];
+            if (strcmp(cs, "auto") == 0) {
+                player.set(ColorSpaceUnknown);
+            } else if (strcmp(cs, "bt709") == 0) {
+                player.set(ColorSpaceBT709);
+            } else if (strcmp(cs, "bt2100") == 0) {
+                player.set(ColorSpaceBT2100_PQ);
+            }
         } else if (strcmp(argv[i], "-c:v") == 0) {
             cv = argv[++i];
         } else if (strcmp(argv[i], "-c:a") == 0) {
@@ -619,8 +635,9 @@ int main(int argc, char** argv)
     printf("************fb size %dx%d, requested size: %dx%d, scale= %fx%f***********\n", fw, fh, w, h, xscale, yscale);
     player.setVideoSurfaceSize(fw, fh);
     //player.setPlaybackRate(2.0f);
-    if (!urls.empty())
+    if (!urls.empty()) {
         player.setMedia(urls[url_now].data());
+    }
     if (urla) {
         player.setMedia(urla, MediaType::Audio);
     }
