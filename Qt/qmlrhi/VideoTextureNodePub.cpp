@@ -79,6 +79,11 @@ VideoTextureNode* createNode(VideoTextureItem* item)
 
 QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size)
 {
+    if (qgetenv("QSG_RHI_HDR") == "hdr10") {
+        player->set(ColorSpaceBT2100_PQ, this);
+    } else {
+        player->set(ColorSpaceBT709, this);
+    }
     QSGRendererInterface *rif = m_window->rendererInterface();
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     intmax_t nativeObj = 0;
