@@ -21,7 +21,7 @@ QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
 #if (__APPLE__+0)
         "VT",
 #elif (__ANDROID__+0)
-        "AMediaCodec:java=1:copy=0:surface=1:async=0",
+        "AMediaCodec:java=0:copy=0:surface=1:async=0",
 #elif (_WIN32+0)
         "MFT:d3d=11",
         "CUDA",
@@ -94,9 +94,9 @@ qint64 QMDKWidget::position() const
 
 void QMDKWidget::snapshot() {
     Player::SnapshotRequest sr{};
-    player_->snapshot(&sr, [](Player::SnapshotRequest * /*_sr*/, double frameTime) {
+    player_->snapshot(&sr, [](Player::SnapshotRequest * _sr, double frameTime) {
         const QString path = QDir::toNativeSeparators(
-            QString("%1/%2.png")
+            QString("%1/%2.jpg")
                 .arg(QCoreApplication::applicationDirPath())
                 .arg(frameTime));
         return path.toStdString();
@@ -112,7 +112,7 @@ void QMDKWidget::snapshot() {
         } else {
             qDebug() << "Snapshot failed.";
         }
-        return "";*/
+        return std::string();*/
     });
 }
 
@@ -125,7 +125,7 @@ void QMDKWidget::prepreForPreview()
 {
     player_->setActiveTracks(MediaType::Audio, {});
     player_->setActiveTracks(MediaType::Subtitle, {});
-    player_->setProperty("continue_at_end", "1");
+    player_->setProperty("continue_at_end", "1"); // not required by the latest sdk
     player_->setBufferRange(0);
     player_->prepare();
 }
@@ -167,7 +167,7 @@ void QMDKWidget::keyPressEvent(QKeyEvent *e)
 {
     switch (e->key()) {
     case Qt::Key_Space: {
-        if (isPaused())
+        if (player_->state() != State::Playing)
             play();
         else
             pause();

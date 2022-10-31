@@ -7,3 +7,6 @@
 [submodule "Apple/SwiftUiPlayer/Shared/mdkSwift"]
 	path = Apple/SwiftUiPlayer/Shared/mdkSwift
 	url = https://github.com/wang-bin/mdkSwift
+[submodule "android/mdk-android"]
+	path = android/mdk-android
+	url = https://github.com/wang-bin/mdk-android

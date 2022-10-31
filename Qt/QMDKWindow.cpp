@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2022 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKWindow.h"
@@ -20,7 +20,7 @@ QMDKWindow::QMDKWindow(QWindow *parent)
 #if (__APPLE__+0)
         "VT",
 #elif (__ANDROID__+0)
-        "AMediaCodec:java=1:copy=0:surface=1:async=0",
+        "AMediaCodec:java=0:copy=0:surface=1:async=0",
 #elif (_WIN32+0)
         "MFT:d3d=11",
         "CUDA",
