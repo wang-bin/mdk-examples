@@ -22,6 +22,9 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#ifdef _WIN32
+#include <filesystem>
+#endif
 #include <GLFW/glfw3.h>
 #if _WIN32
 #include <windows.h>
@@ -636,7 +639,12 @@ int main(int argc, char** argv)
     player.setVideoSurfaceSize(fw, fh);
     //player.setPlaybackRate(2.0f);
     if (!urls.empty()) {
+#ifdef _WIN32
+        filesystem::path p(urls[url_now].data());
+        player.setMedia(p.u8string().data());
+#else
         player.setMedia(urls[url_now].data());
+#endif
     }
     if (urla) {
         player.setMedia(urla, MediaType::Audio);
