@@ -48,7 +48,7 @@ QMDKWidget::~QMDKWidget()
 void QMDKWidget::setDecoders(const QStringList &dec)
 {
     std::vector<std::string> v;
-    foreach (QString d, dec) {
+    for (const auto& d : dec) {
         v.push_back(d.toStdString());
     }
     player_->setDecoders(MediaType::Video, v);
@@ -137,12 +137,10 @@ void QMDKWidget::initializeGL()
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
         makeCurrent();
         auto sp = wp.lock();
-        if (!sp) {
-            Player::foreignGLContextDestroyed();
-            return;
-        }
         if (sp) // release and remove old gl resources with the same vo_opaque(nullptr), then new resource will be created in resizeGL/paintGL
             sp->setVideoSurfaceSize(-1, -1/*, context()*/); // it's better to cleanup gl renderer resources as early as possible
+        else
+            Player::foreignGLContextDestroyed();
         doneCurrent();
     });
 }
