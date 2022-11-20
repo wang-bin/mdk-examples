@@ -78,6 +78,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
     int nativeLayout = 0;
 #endif
     QSGRendererInterface *rif = m_window->rendererInterface();
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 4, 0))
     auto sc = (QRhiSwapChain*)rif->getResource(m_window, QSGRendererInterface::RhiSwapchainResource);
     if (sc) {
         if (sc->format() == QRhiSwapChain::Format::HDR10) {
@@ -86,6 +87,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
             player->set(ColorSpaceBT709, this);
         }
     }
+#endif
     switch (rif->graphicsApi()) {
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     case QSGRendererInterface::OpenGL: // same as OpenGLRhi in qt6
