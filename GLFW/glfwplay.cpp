@@ -54,6 +54,7 @@ int64_t gSeekStep = 5000LL;
 SeekFlag gSeekFlag = SeekFlag::FromStart|SeekFlag::InCache;
 int atrack = 0;
 int vtrack = 0;
+int strack = 0;
 
 static void* sNativeDisp = nullptr;
 extern "C" MDK_EXPORT void* GetCurrentNativeDisplay() // required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
@@ -151,10 +152,13 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             glfwSetWindowShouldClose(win, 1);
             break;
         case GLFW_KEY_R:
-            p->record("mdk-record.mp4");
+            p->record("mdk-record.mov"); // mov supports raw yuv
+            break;
+        case GLFW_KEY_X:
+            p->set(State::Stopped);
             break;
         case GLFW_KEY_S:
-            p->set(State::Stopped);
+            p->setActiveTracks(MediaType::Subtitle, {++strack % (int)p->mediaInfo().subtitle.size()});
             break;
         case GLFW_KEY_A:
             p->setActiveTracks(MediaType::Audio, {++atrack % (int)p->mediaInfo().audio.size()});
@@ -162,7 +166,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_V:
             p->setActiveTracks(MediaType::Video, {++vtrack % (int)p->mediaInfo().video.size()});
             break;
-        case GLFW_KEY_X:
+        case GLFW_KEY_Z:
             p->setActiveTracks(MediaType::Video, {});
             break;
         case GLFW_KEY_PERIOD:
@@ -290,6 +294,7 @@ int main(int argc, char** argv)
     bool pause = false;
     bool nosync = false;
     const char* urla = nullptr;
+    const char* urlsub = nullptr;
     string vendor;
     std::string ca, cv;
     // some plugins must be loaded before creating player
@@ -348,6 +353,12 @@ int main(int argc, char** argv)
                 player.setActiveTracks(MediaType::Video, {vtrack});
             else
                 player.setActiveTracks(MediaType::Video, {});
+        } else if (strcmp(argv[i], "-t:s") == 0) {
+            strack = std::atoi(argv[++i]);
+            if (strack >= 0)
+                player.setActiveTracks(MediaType::Subtitle, {strack});
+            else
+                player.setActiveTracks(MediaType::Subtitle, {});
         } else if (strstr(argv[i], "-d3d11") == argv[i]) {
 #ifdef _WIN32
             ra = &d3d11ra;
@@ -441,6 +452,8 @@ int main(int argc, char** argv)
             wait = 1.0f/atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-url:a") == 0) {
             urla = argv[++i];
+        } else if (std::strcmp(argv[i], "-url:s") == 0) {
+            urlsub = argv[++i];
         } else if (std::strcmp(argv[i], "-buffer") == 0) {
             char *s = argv[++i];
             buf_min = strtoll(s, &s, 10);
@@ -648,6 +661,9 @@ int main(int argc, char** argv)
     }
     if (urla) {
         player.setMedia(urla, MediaType::Audio);
+    }
+    if (urlsub) {
+        player.setMedia(urlsub, MediaType::Subtitle);
     }
     if (!cv.empty()) {
         std::regex re(",");
