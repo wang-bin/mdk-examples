@@ -22,6 +22,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <vector>
 #ifdef _WIN32
 #include <filesystem>
 #endif
@@ -590,15 +591,36 @@ int main(int argc, char** argv)
     });
     glfwSetDropCallback(win, [](GLFWwindow* win, int count, const char** files){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        string subtitle;
+        urls.clear();
+        for (int i = 0; i < count; ++i) {
+            if (const auto dot = string_view(files[i]).find_last_of('.'); dot != string_view::npos) {
+                string ext = files[i] + dot + 1;
+                std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){
+                    return std::tolower(c);
+                });
+                if (ext == "ass" || ext == "ssa" || ext == "srt" || ext == "vtt" || ext == "txt" || ext == "sup" || ext == "sub" || ext == "lrc" || ext == "scc" || ext == "smi" || ext == "sami" || ext == "pjs" || ext == "mpl2") {
+                    subtitle = files[i];
+                } else {
+                    urls.emplace_back(files[i]);
+                }
+            }
+        }
+        if (urls.empty()) {
+            if (!subtitle.empty())
+                p->setMedia(subtitle.data(), MediaType::Subtitle);
+            return;
+        }
+
         p->setNextMedia(nullptr);
         p->set(State::Stopped);
-        urls.clear();
-        for (int i = 0; i < count; ++i)
-            urls.emplace_back(files[i]);
         p->waitFor(State::Stopped);
         p->setMedia(nullptr); // 1st url may be the same as current url
         url_now = 0;
         p->setMedia(urls[url_now].data());
+        if (!subtitle.empty())
+            p->setMedia(subtitle.data(), MediaType::Subtitle); // MUST be after setMedia(url) if url changed
+
         p->set(State::Playing);
     });
     glfwShowWindow(win);
