@@ -159,13 +159,13 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->set(State::Stopped);
             break;
         case GLFW_KEY_S:
-            p->setActiveTracks(MediaType::Subtitle, {++strack % (int)p->mediaInfo().subtitle.size()});
+            p->setActiveTracks(MediaType::Subtitle, {(strack++ % (int)(p->mediaInfo().subtitle.size() + 1)) -1});
             break;
         case GLFW_KEY_A:
-            p->setActiveTracks(MediaType::Audio, {++atrack % (int)p->mediaInfo().audio.size()});
+            p->setActiveTracks(MediaType::Audio, {(atrack++ % (int)(p->mediaInfo().audio.size() + 1)) - 1});
             break;
         case GLFW_KEY_V:
-            p->setActiveTracks(MediaType::Video, {++vtrack % (int)p->mediaInfo().video.size()});
+            p->setActiveTracks(MediaType::Video, {(vtrack++ % (int)(p->mediaInfo().video.size() + 1)) - 1});
             break;
         case GLFW_KEY_Z:
             p->setActiveTracks(MediaType::Video, {});
@@ -599,7 +599,7 @@ int main(int argc, char** argv)
                 std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){
                     return std::tolower(c);
                 });
-                if (ext == "ass" || ext == "ssa" || ext == "srt" || ext == "vtt" || ext == "txt" || ext == "sup" || ext == "sub" || ext == "lrc" || ext == "scc" || ext == "smi" || ext == "sami" || ext == "pjs" || ext == "mpl2") {
+                if (ext == "ass" || ext == "ssa" || ext == "srt" || ext == "vtt" || ext == "txt" || ext == "sup" || ext == "sub" || ext == "lrc" || ext == "scc" || ext == "smi" || ext == "sami" || ext == "pjs" || ext == "mpl2" || ext == "rt") {
                     subtitle = files[i];
                 } else {
                     urls.emplace_back(files[i]);
