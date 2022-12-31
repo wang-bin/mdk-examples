@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.0)
 # see cmake/Tests/iOSNavApp
-if(NOT APPLE OR IOS)
+if(NOT APPLE OR IOS OR MACCATALYST)
   return()
 endif()
 set(CMAKE_CXX_STANDARD 17)
