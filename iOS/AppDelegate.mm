@@ -11,22 +11,8 @@
 #include <vector>
 #include <mdk/Player.h>
 #include <mdk/RenderAPI.h>
-#import <OpenGLES/EAGLIOSurface.h>
 using namespace std;
 using namespace MDK_NS;
-
-
-@interface EAGLView : UIView
-@end
-
-@implementation EAGLView {
-}
-
-+ (Class) layerClass
-{
-    return [CAEAGLLayer class];
-}
-@end
 
 // http://www.cnblogs.com/smileEvday/archive/2012/11/16/UIWindow.html
 @implementation AppDelegate
@@ -61,12 +47,12 @@ using namespace MDK_NS;
     if (button == playButton) {
         pmp->updateNativeSurface((__bridge void* )view);
         if (pmp->state() == State::Playing)
-            pmp->setState(State::Paused);
+            pmp->set(State::Paused);
         else
-            pmp->setState(State::Playing);
+            pmp->set(State::Playing);
     } else if (button == stopButton) {
         pmp->updateNativeSurface(nullptr);
-        pmp->setState(State::Stopped);
+        pmp->set(State::Stopped);
         //fr->stop();
         pmp->setMedia(urls[++url_now%urls.size()].data());
     } else if (button == decButton) {
@@ -82,10 +68,10 @@ using namespace MDK_NS;
 {
     if (control == hwdecButton) {
         if (hwdecButton.on == YES) {
-            pmp->setVideoDecoders({"VT", "FFmpeg"});
+            pmp->setDecoders(MediaType::Video, {"VT", "FFmpeg"});
             //fr->setDecoders(MediaType::Video, {"VT", "FFmpeg"});
         } else {
-            pmp->setVideoDecoders({"FFmpeg"});
+            pmp->setDecoders(MediaType::Video, {"FFmpeg"});
             //fr->setDecoders(MediaType::Video, {"FFmpeg"});
         }
     }
@@ -132,7 +118,7 @@ using namespace MDK_NS;
     logView.lineBreakMode = NSLineBreakByWordWrapping;
     logView.numberOfLines = 0;
     [[vc view] addSubview:logView];
-    
+
     fpsView = [[[UILabel alloc] init] autorelease];
     const int kLogW = 88;
     const int kLogH = 26;
@@ -172,13 +158,13 @@ using namespace MDK_NS;
     [decButton setTitle:@"Decode" forState:UIControlStateNormal];
     [decButton addTarget:self action:@selector(buttonPressed:) forControlEvents: UIControlEventTouchUpInside];
     [[vc view] addSubview:decButton];
-    
+
     hwdecButton = [[UISwitch alloc] initWithFrame:CGRectMake(btnX, btnY, btnW, btnH)];
     btnX += btnW+10;
     hwdecButton.on = NO;
     [hwdecButton addTarget:self action:@selector(hwdecSwitched:) forControlEvents:UIControlEventValueChanged];
     [[vc view] addSubview:hwdecButton];
-    
+
     static std::once_flag init_flag;
 #if 0
     std::call_once(init_flag, [=]{
@@ -223,14 +209,16 @@ using namespace MDK_NS;
     url_now = -1;
     pmp = new Player();
     MetalRenderAPI ra;
+    //pmp->set(ColorSpaceUnknown); // FIXME: crash on macCatalyst
     pmp->setRenderAPI(&ra);
+    pmp->set(ColorSpaceUnknown);
     pmp->setLoop(-1);
     pmp->setAspectRatio(IgnoreAspectRatio);
     pmp->updateNativeSurface((__bridge void *)videoView);
     NSString *path = [[NSBundle mainBundle] pathForResource:@"Movie-1" ofType:@"mp4" inDirectory:nil];
     urls.push_back([[NSURL fileURLWithPath:path].path UTF8String]);
-    
-    
+
+#if 0 // not available in macCatalyst
     // Enumerate just the photos and videos by using ALAssetsGroupSavedPhotos
     ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
     [library enumerateGroupsWithTypes:ALAssetsGroupAll | ALAssetsGroupLibrary
@@ -256,7 +244,7 @@ using namespace MDK_NS;
         // If the user denied the authorization request
         NSLog(@"Authorization declined");
     }];
-    
+#endif
     //pmp->setMedia([[NSURL fileURLWithPath:path].path UTF8String]);
     //pmp->setState(PlayingState);
     //pmp->setVideoSurfaceSize(view.bounds.size.width, view.bounds.size.height);
@@ -269,7 +257,7 @@ using namespace MDK_NS;
         //std::cout << a.timestamp() << " got audio from " << track << ": " << a.format() << std::endl;
         return true;
     });
-    
+
     fr->onRead<VideoFrame>([=](const VideoFrame& v, int track){
         if (!v)
             return true;
@@ -313,7 +301,7 @@ using namespace MDK_NS;
 {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    pmp->setState(State::Paused);
+    pmp->set(State::Paused);
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application

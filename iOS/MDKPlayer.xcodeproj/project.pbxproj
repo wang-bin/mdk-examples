@@ -19,6 +19,8 @@
 		434F580013657A49004C98E6 /* iTunesArtwork in Resources */ = {isa = PBXBuildFile; fileRef = 434F57FA13657A49004C98E6 /* iTunesArtwork */; };
 		62071E8C1E977FF800F92D92 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 627006F21E20AA3A0060BB29 /* AVFoundation.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		6216CD36205D08CE00D4D5AC /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6216CD35205D08CE00D4D5AC /* Security.framework */; };
+		625B3B27296E84EF00B712BE /* mdk.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 625B3B26296E84EF00B712BE /* mdk.xcframework */; };
+		625B3B28296E84EF00B712BE /* mdk.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 625B3B26296E84EF00B712BE /* mdk.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		627006F91E20AB440060BB29 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 627006F81E20AB440060BB29 /* VideoToolbox.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		627006FC1E20AB670060BB29 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 627006FA1E20AB670060BB29 /* AudioToolbox.framework */; };
 		627007011E20AB980060BB29 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 627006FE1E20AB980060BB29 /* CoreVideo.framework */; };
@@ -31,19 +33,17 @@
 		6270070D1E20AF920060BB29 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6270070C1E20AF920060BB29 /* QuartzCore.framework */; };
 		627288101E6973D3009781BD /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6272880F1E6973D3009781BD /* AssetsLibrary.framework */; platformFilter = ios; };
 		62AB7F802479484F00FBF660 /* libxml2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62E3730324790753005D0213 /* libxml2.tbd */; };
-		62CA9F50254C38DD00519807 /* mdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62E372FE24790149005D0213 /* mdk.framework */; };
-		62CA9F58254C3AC800519807 /* mdk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 62CA9F57254C3AC800519807 /* mdk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		62E373022479024C005D0213 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62E373012479024B005D0213 /* Metal.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		62CA9F52254C38DD00519807 /* Embed Frameworks */ = {
+		625B3B25296E83D800B712BE /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				62CA9F58254C3AC800519807 /* mdk.framework in Embed Frameworks */,
+				625B3B28296E84EF00B712BE /* mdk.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -55,7 +55,6 @@
 		434F57BE13657024004C98E6 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		434F57C613657024004C98E6 /* MDKPlayer-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "MDKPlayer-Info.plist"; sourceTree = "<group>"; };
 		434F57C813657024004C98E6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		434F57CA13657024004C98E6 /* MDKPlayer-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MDKPlayer-Prefix.pch"; sourceTree = "<group>"; };
 		434F57CB13657024004C98E6 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		434F57CD13657024004C98E6 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		434F57CE13657024004C98E6 /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
@@ -69,6 +68,7 @@
 		434F580113657AAD004C98E6 /* MDKPlayer.ipa */ = {isa = PBXFileReference; lastKnownFileType = file; path = MDKPlayer.ipa; sourceTree = BUILT_PRODUCTS_DIR; };
 		6216CD35205D08CE00D4D5AC /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		6225A1D51ED91BC90099C7D3 /* MediaToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaToolbox.framework; path = System/Library/Frameworks/MediaToolbox.framework; sourceTree = SDKROOT; };
+		625B3B26296E84EF00B712BE /* mdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = mdk.xcframework; path = "mdk-sdk/lib/mdk.xcframework"; sourceTree = "<group>"; };
 		627006F21E20AA3A0060BB29 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		627006F61E20AB280060BB29 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		627006F81E20AB440060BB29 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
@@ -86,7 +86,6 @@
 		629C41741F8C72C200622B7B /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = System/Library/Frameworks/IOSurface.framework; sourceTree = SDKROOT; };
 		62CA9F57254C3AC800519807 /* mdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mdk.framework; path = "mdk-sdk/lib/mdk.framework"; sourceTree = "<group>"; };
 		62CF32CA1E92401A003043A9 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		62E372FE24790149005D0213 /* mdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mdk.framework; path = ../../multimedia/mdk/build/iOS.device/install/lib/mdk.framework; sourceTree = "<group>"; };
 		62E373012479024B005D0213 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		62E3730324790753005D0213 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -97,11 +96,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				6216CD36205D08CE00D4D5AC /* Security.framework in Frameworks */,
+				625B3B27296E84EF00B712BE /* mdk.xcframework in Frameworks */,
 				627007011E20AB980060BB29 /* CoreVideo.framework in Frameworks */,
 				62071E8C1E977FF800F92D92 /* AVFoundation.framework in Frameworks */,
 				627007061E20ABAE0060BB29 /* CoreMedia.framework in Frameworks */,
 				627288101E6973D3009781BD /* AssetsLibrary.framework in Frameworks */,
-				62CA9F50254C38DD00519807 /* mdk.framework in Frameworks */,
 				627006FC1E20AB670060BB29 /* AudioToolbox.framework in Frameworks */,
 				62E373022479024C005D0213 /* Metal.framework in Frameworks */,
 				6270070D1E20AF920060BB29 /* QuartzCore.framework in Frameworks */,
@@ -140,9 +139,9 @@
 		434F57BD13657024004C98E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				625B3B26296E84EF00B712BE /* mdk.xcframework */,
 				62E3730324790753005D0213 /* libxml2.tbd */,
 				62E373012479024B005D0213 /* Metal.framework */,
-				62E372FE24790149005D0213 /* mdk.framework */,
 				6216CD35205D08CE00D4D5AC /* Security.framework */,
 				629C41741F8C72C200622B7B /* IOSurface.framework */,
 				6225A1D51ED91BC90099C7D3 /* MediaToolbox.framework */,
@@ -182,7 +181,6 @@
 			children = (
 				434F57C613657024004C98E6 /* MDKPlayer-Info.plist */,
 				434F57C713657024004C98E6 /* InfoPlist.strings */,
-				434F57CA13657024004C98E6 /* MDKPlayer-Prefix.pch */,
 				434F57CB13657024004C98E6 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -220,8 +218,9 @@
 				434F57B613657024004C98E6 /* Sources */,
 				434F57B713657024004C98E6 /* Frameworks */,
 				434F57B813657024004C98E6 /* Resources */,
+				625B3B25296E83D800B712BE /* Embed Frameworks */,
+				62F10B1A296F07E800BBC46C /* ShellScript */,
 				434F57F3136579D2004C98E6 /* Create ipa */,
-				62CA9F52254C38DD00519807 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -297,6 +296,23 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ \"x${PLATFORM_NAME}\" == \"xiphoneos\" ] ; then\n    rm -fr ${BUILT_PRODUCTS_DIR}/Payload\n    mkdir -p ${BUILT_PRODUCTS_DIR}/Payload\n    cd ${BUILT_PRODUCTS_DIR}/Payload; ln -s ../${EXECUTABLE_FOLDER_PATH} .\n    cd ${BUILT_PRODUCTS_DIR}/Payload; ln -s ../${EXECUTABLE_FOLDER_PATH}/iTunesArtwork .\n    cd ${BUILT_PRODUCTS_DIR}; zip -r ${PROJECT_NAME}.ipa Payload\nfi\n";
 		};
+		62F10B1A296F07E800BBC46C /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "[ -n \"$CODE_SIGN_IDENTITY\" ] && find \"$BUILT_PRODUCTS_DIR\" -depth -name \"libffmpeg*.dylib\" -exec codesign -i mdk.framework.ffmpeg -f -vvvv -s\"${EXPANDED_CODE_SIGN_IDENTITY}\" ${OTHER_CODE_SIGN_FLAGS:-} --preserve-metadata=identifier,entitlements,flags {} \\;\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -340,6 +356,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
@@ -361,6 +378,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
@@ -384,7 +402,7 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MDKPlayer-Prefix.pch";
+				GCC_PREFIX_HEADER = "";
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "MDKPlayer-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -392,6 +410,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-stdlib=libc++",
@@ -422,7 +441,7 @@
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)/mdk-sdk/lib";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "MDKPlayer-Prefix.pch";
+				GCC_PREFIX_HEADER = "";
 				GCC_VERSION = "";
 				INFOPLIST_FILE = "MDKPlayer-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -431,6 +450,7 @@
 					"@executable_path/Frameworks",
 				);
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-stdlib=libc++",
