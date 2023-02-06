@@ -15,7 +15,7 @@ endif()
 if(WINDOWS_DESKTOP)# AND MSVC)
   set(GLFW_DEP gdi32 shell32 user32) # Gdi32.Lib, shell32.lib, User32.Lib. but cmake treates .Lib as .Lib.lib
 elseif(APPLE)
-  set(GLFW_DEP -L${CMAKE_CURRENT_SOURCE_DIR}/dep/lib "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo")
+  set(GLFW_DEP "-framework Cocoa" "-framework IOKit" "-framework CoreFoundation" "-framework CoreVideo")
 endif()
 list(PREPEND CMAKE_REQUIRED_LIBRARIES ${GLFW_DEP}) # find libglfw.tbd before libglfw.dylib(single arch) in /usr/local/lib
 check_library_exists(${GLFW_NAME} glfwInit "" HAVE_GLFW3)
