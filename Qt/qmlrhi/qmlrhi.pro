@@ -1,4 +1,5 @@
 QT += qml quick
+qtHaveModule(x11extras): QT += x11extras #libqt5x11extras5-dev
 
 CONFIG += c++17
 CONFIG += qmltypes
@@ -17,8 +18,10 @@ RESOURCES += mdktextureitem.qrc
 
 
 greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 14) {
-    QT += quick-private gui-private
-    SOURCES += VideoTextureNodePriv.cpp
+    qtHaveModule(quick-private) {
+        QT += quick-private gui-private
+        SOURCES += VideoTextureNodePriv.cpp
+    }
 }
 
 
@@ -45,6 +48,7 @@ contains(QT_ARCH, x.*64) {
   else:linux: MDK_ARCH = armhf
   else: MDK_ARCH = arm
 }
+!exists($$MDK_SDK/lib/$$MDK_ARCH): MDK_ARCH=  # mac or local build
 
 static|contains(CONFIG, staticlib) {
   DEFINES += Q_MDK_API

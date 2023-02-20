@@ -7,6 +7,10 @@
 #include <QGraphicsSceneEvent>
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
+#include <QGuiApplication>
+#if __has_include(<QX11Info>)
+#include <QX11Info>
+#endif
 
 using namespace std;
 using namespace MDK_NS;
@@ -15,6 +19,14 @@ GraphicsVideoItem::GraphicsVideoItem(QGraphicsItem * parent)
     : QGraphicsWidget(parent)
     , player_(make_shared<Player>())
 {
+#ifdef QX11INFO_X11_H
+    SetGlobalOption("X11Display", QX11Info::display());
+    qDebug("X11 display: %p", QX11Info::display());
+#elif (QT_FEATURE_xcb + 0 == 1) && (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
+    const auto xdisp = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display();
+    SetGlobalOption("X11Display", xdisp);
+    qDebug("X11 display: %p", xdisp);
+#endif
     setFlag(ItemIsFocusable); //receive key events
 
     player_->setDecoders(MediaType::Video, {

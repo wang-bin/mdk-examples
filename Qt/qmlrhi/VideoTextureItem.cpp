@@ -1,9 +1,13 @@
 /*
- * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureItem.h"
 #include <QtQuick/QQuickWindow>
+#include <QGuiApplication>
+#if __has_include(<QX11Info>)
+#include <QX11Info>
+#endif
 #include "VideoTextureNode.h" // TODO: remove
 #include "mdk/Player.h"
 using namespace std;
@@ -14,9 +18,17 @@ VideoTextureNode* createNodePriv(VideoTextureItem* item);
 
 VideoTextureItem::VideoTextureItem()
 {
+#ifdef QX11INFO_X11_H
+    SetGlobalOption("X11Display", QX11Info::display());
+    qDebug("X11 display: %p", QX11Info::display());
+#elif (QT_FEATURE_xcb + 0 == 1) && (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
+    const auto xdisp = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display();
+    SetGlobalOption("X11Display", xdisp);
+    qDebug("X11 display: %p", xdisp);
+#endif
     setFlag(ItemHasContents, true);
     m_player = make_shared<Player>();
-    //m_player->setDecoders(MediaType::Video, {"VT", "MFT:d3d=11", "VAAPI", "FFmpeg"});
+    m_player->setDecoders(MediaType::Video, {"VT", "MFT:d3d=11", "VAAPI", "FFmpeg"});
     m_player->setRenderCallback([=](void *){
         QMetaObject::invokeMethod(this, "update");
     });

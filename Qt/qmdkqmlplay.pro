@@ -19,6 +19,7 @@ contains(QT_ARCH, x.*64) {
   else:linux: MDK_ARCH = armhf
   else: MDK_ARCH = arm
 }
+!exists($$MDK_SDK/lib/$$MDK_ARCH): MDK_ARCH=  # mac or local build
 
 macx {
   LIBS += -F$$MDK_SDK/lib -F/usr/local/lib -framework mdk

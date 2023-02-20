@@ -1,22 +1,33 @@
 /*
- * Copyright (c) 2020-2022 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #include "QMDKWidget.h"
 #include "mdk/Player.h"
-#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QKeyEvent>
 #include <QOpenGLContext>
 #include <QStringList>
 #include <QScreen>
+#include <QGuiApplication>
+#if __has_include(<QX11Info>)
+#include <QX11Info>
+#endif
 
 using namespace MDK_NS;
 QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
     : QOpenGLWidget(parent, f)
     , player_(std::make_shared<Player>())
 {
+#ifdef QX11INFO_X11_H
+    SetGlobalOption("X11Display", QX11Info::display());
+    qDebug("X11 display: %p", QX11Info::display());
+#elif (QT_FEATURE_xcb + 0 == 1) && (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
+    const auto xdisp = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display();
+    SetGlobalOption("X11Display", xdisp);
+    qDebug("X11 display: %p", xdisp);
+#endif
     player_->setDecoders(MediaType::Video, {
 #if (__APPLE__+0)
         "VT",

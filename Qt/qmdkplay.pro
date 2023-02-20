@@ -1,5 +1,6 @@
 QT       += gui widgets
 greaterThan(QT_MAJOR_VERSION, 5): QT += opengl openglwidgets
+qtHaveModule(x11extras): QT += x11extras #libqt5x11extras5-dev
 
 CONFIG += c++17 utf8_source
 CONFIG -= app_bundle
@@ -21,6 +22,7 @@ contains(QT_ARCH, x.*64) {
   else:linux: MDK_ARCH = armhf
   else: MDK_ARCH = arm
 }
+!exists($$MDK_SDK/lib/$$MDK_ARCH): MDK_ARCH=  # mac or local build
 
 macx {
   LIBS += -F$$MDK_SDK/lib -F/usr/local/lib -framework mdk
