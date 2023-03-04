@@ -676,7 +676,7 @@ int main(int argc, char** argv)
     if (!urls.empty()) {
 #ifdef _WIN32
         filesystem::path p(urls[url_now].data());
-        player.setMedia(p.u8string().data());
+        player.setMedia((char*)p.u8string().data());
 #else
         player.setMedia(urls[url_now].data());
 #endif

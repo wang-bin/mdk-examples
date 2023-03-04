@@ -45,13 +45,13 @@ OpenGLESPage::OpenGLESPage() :
 
 OpenGLESPage::~OpenGLESPage()
 {
-	mPlayer->setState(State::Stopped);
+	mPlayer->set(State::Stopped);
 }
 
 void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
 	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(swapChainPanel_0));
-	mPlayer->setVideoDecoders({ "MFT:d3d=11", "D3D11", "FFmpeg" });
+	mPlayer->setDecoders(MediaType::Video, { "MFT:d3d=11", "D3D11", "FFmpeg" });
     //mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
     
     mPlayer->onMediaStatusChanged([=](auto s) {
@@ -65,9 +65,9 @@ void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::Rou
 void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
     if (args->Visible)
-        mPlayer->setState(State::Playing); //
+        mPlayer->set(State::Playing); //
     else
-        mPlayer->setState(State::Paused);
+        mPlayer->set(State::Paused);
 }
 
 void OpenGLESPage::OnPanelSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e)
@@ -103,12 +103,12 @@ void OpenGLESPage::OnSelectFiles(Platform::Object^ sender, Windows::UI::Xaml::Ro
       auto ptr = reinterpret_cast<IInspectable*>(mFile);
       OutputDebugStringA(filename.data());
       auto url = std::string("winrt:IStorageFile@").append(std::to_string((long long)ptr));
-      mPlayer->setState(State::Stopped);
+      mPlayer->set(State::Stopped);
       mPlayer->waitFor(State::Stopped);
       progress->IntermediateValue = 0;
       progress->Maximum = 0;
       mPlayer->setMedia(url.data());
-      mPlayer->setState(PlaybackState::Playing);
+      mPlayer->set(PlaybackState::Playing);
     }
   });
 }

@@ -3,6 +3,10 @@
 
 .vs/
 *.recipe
+Release/
+Debug/
+Generated Files/
+BundleArtifacts/
 mdk-sdk/
 mdk.framework/
 mdk.xcframework/
