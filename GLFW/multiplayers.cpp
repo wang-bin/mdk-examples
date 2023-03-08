@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK example of multiple players
  */
 
@@ -10,6 +10,7 @@
 # include <vulkan/vulkan_core.h>
 #endif
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstring>
@@ -17,6 +18,7 @@
 #include <vector>
 #include "mdk/RenderAPI.h"
 #include "mdk/Player.h"
+#include "prettylog.h"
 
 #if _WIN32
 #include <windows.h>
@@ -53,7 +55,7 @@ void parse_options(const char* opts, function<void(const char* opts, const char*
     }
 }
 
-int main(int argc, char** argv)
+int main(int argc, const char*  argv[])
 {
     printf("MDK + GLFW players\n");
     if (argc < 2) {
@@ -65,6 +67,13 @@ int main(int argc, char** argv)
         printf("-win: number of windows, applied if no -urls option, assume only 1 url\n"
             "-urls: the number of windows is url count\n");
         exit(EXIT_FAILURE);
+    }
+
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "-plugins") == 0) {
+            SetGlobalOption("plugins", argv[++i]);
+            break;
+        }
     }
     glfwSetErrorCallback([](int error, const char* description) {
         fprintf(stderr, "GLFW Error: %s\n", description);
@@ -80,7 +89,7 @@ int main(int argc, char** argv)
     bool share = false;
     bool es = false;
     const char* dec = nullptr;
-    char* const* urls = nullptr;
+    const char* const* urls = nullptr;
     int urls_idx = 0;
     float sync = 1.0f;
     const char* ao = nullptr;
@@ -205,8 +214,10 @@ int main(int argc, char** argv)
     for (int i = 0; i < nb_win; i++) {
         auto& player = players[i];
         player.reset(new Player());
+        //player->setPlaybackRate(2.0f);
         if (dec)
             player->setDecoders(MediaType::Video, {dec});
+        //player->setActiveTracks(MediaType::Audio, {});
         if (sync != 1.0f)
             player->onSync([&]{
                 return duration_cast<milliseconds>(steady_clock::now() - now).count() * sync / 1000.0;
@@ -220,6 +231,7 @@ int main(int argc, char** argv)
         player->setMedia(urls[nb_urls > 1 ? i : 0]);
         if (ao)
             player->setAudioBackends({ao});
+        player->setLoop(-1);
         player->prepare();
 #if 0
 // test different context profiles and versions
@@ -283,13 +295,23 @@ int main(int argc, char** argv)
             if (!w)
                 continue;
             auto& player = players[i];
+            if (!player)
+                continue;
             if (!ra) {
                 glfwMakeContextCurrent(w);
                 player->renderVideo();
                 glfwSwapBuffers(w);
             }
-            if (glfwWindowShouldClose(w))
-                goto loopend;
+
+            if (glfwWindowShouldClose(w)) {
+                glfwMakeContextCurrent(w);
+                player->setVideoSurfaceSize(-1, -1);
+                player.reset();
+
+                const auto remaining = std::count_if(players.begin(), players.end(), [](const auto& p) { return p.get(); });
+                if (!remaining)
+                    goto end;
+            }
         }
         if (wait > 0)
             glfwWaitEventsTimeout(wait);

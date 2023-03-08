@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2022 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with SDL OpenGL example
  */
 #include <mdk/Player.h>
@@ -14,7 +14,7 @@ int print_help(const char* app) {
     return printf("usage: %s [-from seconds] [-ao audio_renderer] [-c:v video_decoder] url1 [url2 url3 ...]\n", app);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
     if (argc < 2)
         return print_help(argv[0]);

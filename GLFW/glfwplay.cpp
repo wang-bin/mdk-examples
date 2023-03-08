@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2016-2022 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -56,6 +56,7 @@ SeekFlag gSeekFlag = SeekFlag::FromStart|SeekFlag::InCache;
 int atrack = 0;
 int vtrack = 0;
 int strack = 0;
+int program = -1;
 
 static void* sNativeDisp = nullptr;
 extern "C" MDK_EXPORT void* GetCurrentNativeDisplay() // required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
@@ -186,6 +187,16 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->set(cs[i++%std::size(cs)]);
         }
             break;
+        case GLFW_KEY_Y: {
+            static int cc = 1;
+            p->setProperty("cc", to_string(++cc % 2));
+        }
+            break;
+        case GLFW_KEY_U: {
+            static int s = 1;
+            p->setProperty("subtitle", to_string(++s % 2));
+        }
+            break;
         default:
             break;
     }
@@ -208,6 +219,7 @@ void showHelp(const char* argv0)
             "-c:a: audio decoder names separated by ','. can be FFmpeg, MediaCodec. Properties: hwaccel=avcodec_codec_name_suffix(for example at,fixed)\n"
             "-ao: audio renderer. OpenAL, DSound, XAudio2, ALSA, AudioQueue\n"
             "-url:a: individual audio track url.\n"
+            "-url:s: individual subtitle track url.\n"
             "-from: start from given seconds\n"
             "-pause: pause at the 1st frame\n"
             "-buffer: buffer duration range in milliseconds, can be 'minMs', 'minMs+maxMs', e.g. -buffer 1000, or -buffer 1000+2000\n"
@@ -220,6 +232,10 @@ void showHelp(const char* argv0)
             "-autoclose: close when stopped\n" // TODO: check image or video
             "-plugins: plugin names, 'name1:name2...'"
             "-nosync: render video ASAP.\n"
+            "-t:a: audio track number. default 0\n"
+            "-t:v: video track number. default 0\n"
+            "-t:s: subtitle track number. default 0\n"
+            "-program: program number(for medias contain multiple programs)\n"
             "Keys:\n"
             "space: pause/resume\n"
             "left/right: seek backward/forward (-/+10s)\n"
@@ -262,7 +278,7 @@ void parse_options(const char* opts, function<void(const char* opts, const char*
 
 int url_now = 0;
 std::vector<std::string> urls;
-int main(int argc, char** argv)
+int main(int argc, const char** argv)
 {
     //setlocale(LC_ALL, "de_CH");
 
@@ -456,7 +472,7 @@ int main(int argc, char** argv)
         } else if (std::strcmp(argv[i], "-url:s") == 0) {
             urlsub = argv[++i];
         } else if (std::strcmp(argv[i], "-buffer") == 0) {
-            char *s = argv[++i];
+            char *s = (char *)argv[++i];
             buf_min = strtoll(s, &s, 10);
             if (s[0])
                 buf_max = strtoll(s, nullptr, 10);
@@ -668,6 +684,8 @@ int main(int argc, char** argv)
     if (glfwGetWindowContentScale)
         glfwGetWindowContentScale(win, &xscale, &yscale);
 #endif
+// setDecoders before setMedia(), setNextMedia() in currentMediaChanged() callback may load immediately
+
     int fw = 0, fh = 0;
     glfwGetFramebufferSize(win, &fw, &fh);
     printf("************fb size %dx%d, requested size: %dx%d, scale= %fx%f***********\n", fw, fh, w, h, xscale, yscale);
