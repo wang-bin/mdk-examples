@@ -159,6 +159,10 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_X:
             p->set(State::Stopped);
             break;
+        case GLFW_KEY_G: {
+            p->setActiveTracks(MediaType::Unknown, {++program % (int)p->mediaInfo().program.size()});
+        }
+            break;
         case GLFW_KEY_S:
             p->setActiveTracks(MediaType::Subtitle, {(strack++ % (int)(p->mediaInfo().subtitle.size() + 1)) -1});
             break;
@@ -376,6 +380,10 @@ int main(int argc, const char** argv)
                 player.setActiveTracks(MediaType::Subtitle, {strack});
             else
                 player.setActiveTracks(MediaType::Subtitle, {});
+        } else if (strcmp(argv[i], "-program") == 0) {
+            program = std::atoi(argv[++i]);
+            if (program)
+                player.setActiveTracks(MediaType::Unknown, {program});
         } else if (strstr(argv[i], "-d3d11") == argv[i]) {
 #ifdef _WIN32
             ra = &d3d11ra;
