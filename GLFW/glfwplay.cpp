@@ -319,9 +319,9 @@ int main(int argc, const char** argv)
     string vendor;
     std::string ca, cv;
     // some plugins must be loaded before creating player
-    for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "-plugins") == 0) {
-            SetGlobalOption("plugins", argv[++i]);
+    for (int i = 1; i < argc; ++i) { // "plugins_dir" and "plugins" MUST be set before player constructed
+        if (std::strncmp(argv[i], "-plugins", strlen("-plugins")) == 0) {
+            SetGlobalOption(argv[i] + 1, (const char*)argv[++i]);
             break;
         }
     }
