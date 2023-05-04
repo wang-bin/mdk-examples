@@ -8,6 +8,7 @@
 #endif
 #ifdef _WIN32
 #include <d3d11.h>
+#include <d3d12.h>
 #endif
 #if __has_include(<vulkan/vulkan_core.h>) // FIXME: -I
 # include <vulkan/vulkan_core.h>
@@ -208,10 +209,11 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 
 void showHelp(const char* argv0)
 {
-    printf("usage: %s [-d3d11] [-es] [-refresh_rate int_fps] [-c:v decoder] url1 [url2 ...]\n"
+    printf("usage: %s [-d3d11][-d3d12] [-es] [-refresh_rate int_fps] [-c:v decoder] url1 [url2 ...]\n"
             "-bg: background color, 0xrrggbbaa, unorm (r, g, b, a)\n"
             "-colorspace: output color space. can be 'auto'(will enable hdr display on demond if possible), 'bt709', 'bt2100'"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
+            "-d3d12: d3d12 renderer. support additiona options: -d3d12:feature_level=12.0:debug=1:vendor=nv:buffers=2 \n"
             "-gl: use gl renderer. context is created by mdk instead of glfw\n"
             "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
             "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
@@ -329,6 +331,7 @@ int main(int argc, const char** argv)
     Player player;
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
+    D3D12RenderAPI d3d12ra{};
 #endif
 #if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI))
     MetalRenderAPI mtlra;
@@ -404,6 +407,25 @@ int main(int argc, const char** argv)
                 }
             });
 # endif
+#endif
+        } else if (strstr(argv[i], "-d3d12") == argv[i]) {
+#ifdef _WIN32
+            ra = &d3d12ra;
+            parse_options(argv[i] + sizeof("-d3d12") - 1, [&](const char* name, const char* value){
+                if (strcmp(name, "debug") == 0)
+                    d3d12ra.debug = std::atoi(value);
+                else if (strcmp(name, "buffers") == 0)
+                    d3d12ra.buffers = std::atoi(value);
+                else if (strcmp(name, "adapter") == 0)
+                    d3d12ra.adapter = std::atoi(value);
+                else if (strcmp(name, "feature_level") == 0)
+                    d3d12ra.feature_level = (float)std::atof(value);
+                else if (strcmp(name, "vendor") == 0) {
+                    vendor = value;
+                    d3d12ra.vendor = vendor.data();
+                    std::printf("argv vender: %s\n", vendor.data());fflush(0);
+                }
+            });
 #endif
         } else if (strstr(argv[i], "-gl") == argv[i]) {
 #if MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI)
