@@ -9,6 +9,7 @@
 #endif
 #if (_WIN32+0)
 #include <d3d11.h>
+#include <d3d12.h>
 #include <wrl/client.h>
 using namespace Microsoft::WRL; //ComPtr
 #endif
@@ -58,6 +59,7 @@ private:
 #endif
 #if (_WIN32+0)
     ComPtr<ID3D11Texture2D> m_texture_d3d11;
+    ComPtr<ID3D12Resource> m_texture_d3d12;
 #endif
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     bool buildTexture(const QSize &size);
@@ -116,9 +118,9 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
 #endif // if QT_CONFIG(opengl)
     }
         break;
+#if (_WIN32)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     case QSGRendererInterface::Direct3D11Rhi: {
-#if (_WIN32)
         auto dev = (ID3D11Device*)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
         D3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, size.width(), size.height(), 1, 1
                                                           , D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_RENDER_TARGET
@@ -135,9 +137,35 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
         if (m_texture_d3d11)
             return QNativeInterface::QSGD3D11Texture::fromNative(m_texture_d3d11.Get(), m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#endif // (_WIN32)
     }
         break;
+# if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    case QSGRendererInterface::Direct3D12: {
+        auto dev = (ID3D12Device*)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
+        D3D12_RESOURCE_DESC desc{};
+        desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        desc.Width = size.width();
+        desc.Height = size.height();
+        desc.DepthOrArraySize = 1;
+        desc.MipLevels = 1;
+        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+        desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+        D3D12_HEAP_PROPERTIES prop{};
+        prop.Type = D3D12_HEAP_TYPE_DEFAULT;
+        if (HRESULT hr = dev->CreateCommittedResource(&prop, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&m_texture_d3d12)); FAILED(hr)) {
+            break;
+        }
+        D3D12RenderAPI ra{};
+        ra.cmdQueue = reinterpret_cast<ID3D12CommandQueue*>(rif->getResource(m_window, QSGRendererInterface::CommandQueueResource));
+        ra.rt = m_texture_d3d12.Get();
+        player->setRenderAPI(&ra, this);
+        return QNativeInterface::QSGD3D12Texture::fromNative(ra.rt, D3D12_RESOURCE_STATE_COMMON, m_window, size, QQuickWindow::TextureHasAlphaChannel);
+    }
+    break;
+# endif
+#endif // (_WIN32)
     case QSGRendererInterface::MetalRhi: {
 #if (__APPLE__+0)
         auto dev = (__bridge id<MTLDevice>)rif->getResource(m_window, QSGRendererInterface::DeviceResource);

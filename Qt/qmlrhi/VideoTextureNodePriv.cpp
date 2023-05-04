@@ -9,6 +9,7 @@
 #include <private/qrhigles2_p_p.h>
 #if (_WIN32+0)
 #include <d3d11.h>
+#include <d3d12.h>
 #endif
 #include "mdk/Player.h"
 #include "mdk/RenderAPI.h"
@@ -133,8 +134,8 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 #endif // (__APPLE__+0)
     }
         break;
-    case QSGRendererInterface::Direct3D11Rhi: {
 #if (_WIN32+0)
+    case QSGRendererInterface::Direct3D11Rhi: {
         D3D11RenderAPI ra;
         ra.rtv = reinterpret_cast<ID3D11DeviceChild*>(quintptr(m_texture->nativeTexture().object));
         player->setRenderAPI(&ra, this);
@@ -144,10 +145,19 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         if (ra.rtv)
             return QNativeInterface::QSGD3D11Texture::fromNative(ra.rtv, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#endif // (_WIN32)
     }
         break;
-
+# if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    case QSGRendererInterface::Direct3D12: {
+        D3D12RenderAPI ra;
+        ra.cmdQueue = reinterpret_cast<ID3D12CommandQueue*>(rif->getResource(m_window, QSGRendererInterface::CommandQueueResource));
+        ra.rt = reinterpret_cast<ID3D12Resource*>(quintptr(m_texture->nativeTexture().object));
+        player->setRenderAPI(&ra, this);
+        return QNativeInterface::QSGD3D12Texture::fromNative(ra.rt, m_texture->nativeTexture().layout, m_window, size, QQuickWindow::TextureHasAlphaChannel);
+    }
+        break;
+# endif
+#endif // (_WIN32)
     case QSGRendererInterface::VulkanRhi: {
 #if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
         VulkanRenderAPI ra{};
