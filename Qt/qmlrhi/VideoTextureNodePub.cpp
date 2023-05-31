@@ -27,7 +27,7 @@ using namespace std;
 #define VK_ENSURE(x, ...) VK_RUN_CHECK(x, return __VA_ARGS__)
 #define VK_WARN(x, ...) VK_RUN_CHECK(x)
 #define VK_RUN_CHECK(x, ...) do { \
-        VkResult __vkret__ = x; \
+        const VkResult __vkret__ = x; \
         if (__vkret__ != VK_SUCCESS) { \
           qDebug() << #x " ERROR: " << __vkret__ << " @" << __LINE__ << __func__; \
           __VA_ARGS__; \
@@ -118,8 +118,8 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
 #endif // if QT_CONFIG(opengl)
     }
         break;
-#if (_WIN32)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+#if (_WIN32)
     case QSGRendererInterface::Direct3D11Rhi: {
         auto dev = (ID3D11Device*)rif->getResource(m_window, QSGRendererInterface::DeviceResource);
         D3D11_TEXTURE2D_DESC desc = CD3D11_TEXTURE2D_DESC(DXGI_FORMAT_R8G8B8A8_UNORM, size.width(), size.height(), 1, 1
