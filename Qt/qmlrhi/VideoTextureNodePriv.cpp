@@ -5,8 +5,13 @@
 #include "VideoTextureNode.h"
 #include <QQuickWindow>
 #include <private/qquickitem_p.h>
-#include <private/qrhi_p.h>
-#include <private/qrhigles2_p_p.h>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+# include <rhi/qrhi.h>
+# include <private/qrhigles2_p.h>
+#else
+# include <private/qrhi_p.h>
+# include <private/qrhigles2_p_p.h>
+#endif
 #if (_WIN32+0)
 #include <d3d11.h>
 #include <d3d12.h>
