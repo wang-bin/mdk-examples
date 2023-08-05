@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16)
 # see cmake/Tests/iOSNavApp
 if(NOT APPLE OR IOS OR MACCATALYST)
   return()

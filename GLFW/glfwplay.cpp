@@ -59,16 +59,6 @@ int vtrack = 0;
 int strack = 0;
 int program = -1;
 
-static void* sNativeDisp = nullptr;
-extern "C" MDK_EXPORT void* GetCurrentNativeDisplay() // required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
-{
-    return sNativeDisp;
-}
-
-void setNativeDisplay(void* disp)
-{
-    sNativeDisp = disp;
-}
 
 static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
@@ -90,7 +80,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 #if defined(__APPLE__)
                 "VT", "VideoToolbox",
 #elif defined(_WIN32)
-                "MFT:d3d=11", "MFT:d3d=9", "MFT", "D3D11", "DXVA", "CUDA", "NVDEC"
+                "MFT:d3d=11", "D3D11", "DXVA", "CUDA", "NVDEC"
 #elif defined(__linux__)
                 "VAAPI", "VDPAU", "CUDA", "NVDEC"
 #endif
@@ -210,6 +200,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 void showHelp(const char* argv0)
 {
     printf("usage: %s [-d3d11][-d3d12] [-es] [-refresh_rate int_fps] [-c:v decoder] url1 [url2 ...]\n"
+            "-size: width[xheight]\n"
             "-bg: background color, 0xrrggbbaa, unorm (r, g, b, a)\n"
             "-colorspace: output color space. can be 'auto'(will enable hdr display on demond if possible), 'bt709', 'bt2100'"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
@@ -320,6 +311,8 @@ int main(int argc, const char** argv)
     const char* urlsub = nullptr;
     string vendor;
     std::string ca, cv;
+    int w = 640;
+    int h = 480;
     // some plugins must be loaded before creating player
     for (int i = 1; i < argc; ++i) { // "plugins_dir" and "plugins" MUST be set before player constructed
         if (std::strncmp(argv[i], "-plugins", strlen("-plugins")) == 0) {
@@ -329,6 +322,7 @@ int main(int argc, const char** argv)
     }
 
     Player player;
+    player.set(ColorSpaceUnknown);
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
     D3D12RenderAPI d3d12ra{};
@@ -352,6 +346,11 @@ int main(int argc, const char** argv)
             const auto b = (c >> 8) & 0xff;
             const auto a = c & 0xff;
             player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
+        } else if (strcmp(argv[i], "-size") == 0) {
+            char *s = (char *)argv[++i];
+            w = strtoll(s, &s, 10);
+            if (s[0])
+                h = strtoll(&s[1], nullptr, 10);
         } else if (strcmp(argv[i], "-colorspace") == 0) {
             auto cs = argv[++i];
             if (strcmp(cs, "auto") == 0) {
@@ -539,8 +538,9 @@ int main(int argc, const char** argv)
             player.setProperty(argv[i]+1, argv[i+1]);
             ++i;
         } else {
-            for (int j = i; j < argc; ++j)
+            for (int j = i; j < argc; ++j) {
                 urls.emplace_back(argv[j]);
+            }
             break;
         }
     }
@@ -604,7 +604,6 @@ int main(int argc, const char** argv)
         // default is GLFW_OPENGL_API + GLFW_NATIVE_CONTEXT_API which may affect our context(macOS)
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     }
-    const int w = 640, h = 480;
     GLFWwindow *win = glfwCreateWindow(w, h, "MDK + GLFW. Drop videos here", nullptr, nullptr);
     if (!win) {
         glfwTerminate();
@@ -671,8 +670,10 @@ int main(int argc, const char** argv)
     });
     glfwShowWindow(win);
 #if defined(GLFW_EXPOSE_NATIVE_X11)
-    if (glfwGetX11Display)
-        setNativeDisplay(glfwGetX11Display());
+    if (glfwGetX11Display) {
+// required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
+        SetGlobalOption("X11Display", glfwGetX11Display());
+    }
 #endif
     player.onStateChanged([=](State s){
         if (s == State::Stopped && autoclose) {

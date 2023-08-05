@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.16)
 project(mdk-examples  VERSION 0.0.0)
 
 if(POLICY CMP0063) # visibility. since 3.3
@@ -37,3 +37,6 @@ message("MDK_LIBRARIES:${MDK_LIBRARIES}")
 add_subdirectory(GLFW)
 add_subdirectory(Native)
 add_subdirectory(SDL)
+if(APPLE AND NOT IOS)
+    add_subdirectory(macOS)
+endif()
