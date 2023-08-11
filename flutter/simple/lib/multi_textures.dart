@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fvp/mdk.dart' as mdk;
+import 'package:fvp/mdk.dart';
 
 void main(List<String> args) async {
   runApp(const SinglePlayerMultipleVideoWidget());
@@ -14,7 +14,7 @@ class SinglePlayerMultipleVideoWidget extends StatefulWidget {
 
 class _SinglePlayerMultipleVideoWidgetState
     extends State<SinglePlayerMultipleVideoWidget> {
-  late final player = mdk.Player();
+  late final player = Player();
 
   @override
   void initState() {
@@ -22,7 +22,7 @@ class _SinglePlayerMultipleVideoWidgetState
 
     player.media = 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
     player.loop = -1;
-    player.state = mdk.State.playing;
+    player.state = PlaybackState.playing;
     player.updateTexture();
   }
 
