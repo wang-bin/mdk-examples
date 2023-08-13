@@ -1,4 +1,4 @@
-//  Copyright © 2017-2019 wangbin. All rights reserved.
+//  Copyright © 2017-2023 wangbin. All rights reserved.
 
 #import "AppDelegate.h"
 #include "mdk/Player.h"
@@ -31,7 +31,7 @@ using namespace MDK_NS;
 - (void)drawInCGLContext:(CGLContextObj)ctx pixelFormat:(CGLPixelFormatObj)pf
         forLayerTime:(CFTimeInterval)t displayTime:(const CVTimeStamp *)ts
 {
-    if (!draw_cb) 
+    if (!draw_cb)
         return;
     draw_cb();
     CGLFlushDrawable(ctx);
@@ -108,16 +108,16 @@ using namespace MDK_NS;
 // called before openFile
 - (void)applicationWillFinishLaunching:(NSNotification *)notification {
     player = new Player();
-    player->setVideoDecoders({"VideoToolbox", "FFmpeg"});
+    player->setDecoders(MediaType::Video, {"VideoToolbox", "FFmpeg"});
 }
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
     player->setMedia([filename UTF8String]);
     // stop previous playback
-    player->setState(State::Stopped);
+    player->set(State::Stopped);
     // setState() is async, wait until it's really stopped
     player->waitFor(State::Stopped);
-    player->setState(State::Playing);
+    player->set(State::Playing);
     return YES;
 }
 
@@ -127,7 +127,7 @@ using namespace MDK_NS;
     for (auto i = 0; i < argc; ++i) {
         std::string v([[args objectAtIndex:i] UTF8String]);
         if (v == "-c:v")
-            player->setVideoDecoders({[[args objectAtIndex:(i+1)] UTF8String]});
+            player->setDecoders(MediaType::Video, {[[args objectAtIndex:(i+1)] UTF8String]});
     }
 #ifdef APP_BUNDLE
     self->w = self.window;
@@ -162,11 +162,11 @@ using namespace MDK_NS;
     if (argc > 1) {
         player->setMedia([[args lastObject] UTF8String]);
     }
-    player->setState(State::Playing);
+    player->set(State::Playing);
 }
 
-- (void) quit { 
-    [[NSApplication sharedApplication] terminate:nil]; 
+- (void) quit {
+    [[NSApplication sharedApplication] terminate:nil];
 }
 
 - (void)resizeSurface {
@@ -179,7 +179,7 @@ using namespace MDK_NS;
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
-    player->setState(State::Stopped);
+    player->set(State::Stopped);
     delete player;
     player = nullptr;
 }
@@ -193,9 +193,9 @@ using namespace MDK_NS;
     NSModalResponse ret = [panel runModal];
     if (ret == NSModalResponseCancel)
         return;
-    player->setState(State::Stopped);
+    player->set(State::Stopped);
     player->waitFor(State::Stopped);
     player->setMedia([[[[panel URLs] objectAtIndex:0] absoluteString] UTF8String]);
-    player->setState(State::Playing);
+    player->set(State::Playing);
 }
 @end
