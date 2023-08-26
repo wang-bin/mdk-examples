@@ -11,10 +11,19 @@
 #if __has_include(<QX11Info>)
 #include <QX11Info>
 #endif
+#if defined(Q_OS_ANDROID)
+# if __has_include(<QAndroidJniEnvironment>)
+#   include <QAndroidJniEnvironment>
+# endif
+# if __has_include(<QtCore/QJniEnvironment>)
+#   include <QtCore/QJniEnvironment>
+# endif
+#endif
+#include <mutex>
 
 using namespace mdk;
-QMDKWindowRenderer::QMDKWindowRenderer(QWindow *parent)
-    : QOpenGLWindow(NoPartialUpdate, parent)
+
+static void InitEnv()
 {
 #ifdef QX11INFO_X11_H
     SetGlobalOption("X11Display", QX11Info::display());
@@ -24,6 +33,19 @@ QMDKWindowRenderer::QMDKWindowRenderer(QWindow *parent)
     SetGlobalOption("X11Display", xdisp);
     qDebug("X11 display: %p", xdisp);
 #endif
+#ifdef QJNI_ENVIRONMENT_H
+    SetGlobalOption("JavaVM", QJniEnvironment::javaVM());
+#endif
+#ifdef QANDROIDJNIENVIRONMENT_H
+    SetGlobalOption("JavaVM", QAndroidJniEnvironment::javaVM());
+#endif
+}
+
+QMDKWindowRenderer::QMDKWindowRenderer(QWindow *parent)
+    : QOpenGLWindow(NoPartialUpdate, parent)
+{
+    static std::once_flag initFlag;
+    std::call_once(initFlag, InitEnv);
 }
 
 QMDKWindowRenderer::~QMDKWindowRenderer() = default;

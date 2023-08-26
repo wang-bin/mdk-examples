@@ -1,5 +1,6 @@
 QT += qml quick
 qtHaveModule(x11extras): QT += x11extras #libqt5x11extras5-dev
+qtHaveModule(androidextras): QT += androidextras
 
 CONFIG += c++17
 CONFIG += qmltypes

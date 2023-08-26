@@ -8,15 +8,23 @@
 #if __has_include(<QX11Info>)
 #include <QX11Info>
 #endif
+#if defined(Q_OS_ANDROID)
+# if __has_include(<QAndroidJniEnvironment>)
+#   include <QAndroidJniEnvironment>
+# endif
+# if __has_include(<QtCore/QJniEnvironment>)
+#   include <QtCore/QJniEnvironment>
+# endif
+#endif
 #include "VideoTextureNode.h" // TODO: remove
 #include "mdk/Player.h"
+#include <mutex>
 using namespace std;
-
 
 VideoTextureNode* createNode(VideoTextureItem* item);
 VideoTextureNode* createNodePriv(VideoTextureItem* item);
 
-VideoTextureItem::VideoTextureItem()
+static void InitEnv()
 {
 #ifdef QX11INFO_X11_H
     SetGlobalOption("X11Display", QX11Info::display());
@@ -26,6 +34,19 @@ VideoTextureItem::VideoTextureItem()
     SetGlobalOption("X11Display", xdisp);
     qDebug("X11 display: %p", xdisp);
 #endif
+#ifdef QJNI_ENVIRONMENT_H
+    SetGlobalOption("JavaVM", QJniEnvironment::javaVM());
+#endif
+#ifdef QANDROIDJNIENVIRONMENT_H
+    SetGlobalOption("JavaVM", QAndroidJniEnvironment::javaVM());
+#endif
+}
+
+VideoTextureItem::VideoTextureItem()
+{
+    static once_flag initFlag;
+    call_once(initFlag, InitEnv);
+
     setFlag(ItemHasContents, true);
     m_player = make_shared<Player>();
     m_player->setDecoders(MediaType::Video, {"VT", "MFT:d3d=11", "VAAPI", "FFmpeg"});
