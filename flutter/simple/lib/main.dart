@@ -15,11 +15,17 @@ import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:fvp/fvp.dart';
 import 'package:logging/logging.dart';
-
 String? source;
 
 void main(List<String> args) async {
-  final opts = <String, dynamic>{};
+// set logger before registerWith()
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    print('${record.loggerName}.${record.level.name}: ${record.time}: ${record.message}');
+  });
+
+  final opts = <String, Object>{};
+  final globalOpts = <String, Object>{};
   int i = 0;
   for (; i < args.length; i++) {
     if (args[i] == '-c:v') {
@@ -28,19 +34,21 @@ void main(List<String> args) async {
       final size = args[++i].split('x');
       opts['maxWidth'] = int.parse(size[0]);
       opts['maxHeight'] = int.parse(size[1]);
+    } else if (args[i].startsWith('-')) {
+      globalOpts[args[i].substring(1)] = args[++i];
     } else {
       break;
     }
+  }
+  if (globalOpts.isNotEmpty) {
+    opts['global'] = globalOpts;
   }
 
   if (i <= args.length - 1) source = args[args.length - 1];
   source ??= await getStartFile();
 
-  MdkVideoPlayer.registerWith(options: opts);
-  Logger.root.level = Level.ALL;
-  Logger.root.onRecord.listen((record) {
-    print('${record.loggerName}.${record.level.name}: ${record.time}: ${record.message}');
-  });
+  registerWith(options: opts);
+
   runApp(const VideoApp());
 }
 
