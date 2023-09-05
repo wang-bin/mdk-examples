@@ -210,7 +210,7 @@ void showHelp(const char* argv0)
             "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
             "-logfile: save log to a given file\n"
             "-logLevel or -log: log level name or int value\n"
-            "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi), MediaCodec\n"
+            "-c:v: video decoder names separated by ','. can be FFmpeg, VideoToolbox, MFT, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, AMediaCodec\n"
             "a decoder can set property in format 'name:key1=value1:key2=value2'. for example, VideoToolbox:glva=1:hwdec_format=nv12, MFT:d3d=11:pool=1\n"
             "decoder properties(not supported by all): glva=0/1, hwdec_format=..., copy_frame=0/1/-1, hwdevice=...\n"
             "-c:a: audio decoder names separated by ','. can be FFmpeg, MediaCodec. Properties: hwaccel=avcodec_codec_name_suffix(for example at,fixed)\n"
@@ -228,7 +228,7 @@ void showHelp(const char* argv0)
             "-seek_step: step length(in ms) of seeking forward/backward\n"
             "-autoclose: close when stopped\n" // TODO: check image or video
             "-plugins: plugin names, 'name1:name2...'"
-            "-nosync: render video ASAP.\n"
+            "-nosync: render video ASAP. Better to add -t:a -1 to ignore audio\n"
             "-t:a: audio track number. default 0\n"
             "-t:v: video track number. default 0\n"
             "-t:s: subtitle track number. default 0\n"
@@ -782,6 +782,11 @@ int main(int argc, const char** argv)
         player.updateNativeSurface((void*)hwnd, -1, -1, surface_type);
         //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);
+    } else {
+        if (nosync) {
+           glfwMakeContextCurrent(win);
+           glfwSwapInterval(0);
+        }
     }
     //float vr[] = {0, 0, 0.5f, 0.5f};
     //player.setPointMap(vr);
