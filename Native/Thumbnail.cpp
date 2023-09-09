@@ -9,9 +9,9 @@ using namespace MDK_NS;
 using namespace std;
 int main(int argc, const char** argv)
 {
-    printf("usage: %s [-c:v DecoderName] [-from milliseconds] [-size widthxheight] [-scale value] [-raw] file\n", argv[0]);
-    VideoFrame v;
+    printf("usage: %s [-c:v DecoderName] [-from milliseconds/percent_in_float] [-size widthxheight] [-scale value] [-raw] file\n", argv[0]);
     int64_t from = 0;
+    float from_percent = 0;
     int width = -1;
     int height = -1;
     float scale = 1.0f;
@@ -20,9 +20,13 @@ int main(int argc, const char** argv)
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "-c:v") == 0)
             p.setDecoders(MediaType::Video, {argv[++i]});
-        else if (std::strcmp(argv[i], "-from") == 0)
-            from = std::atoi(argv[++i]);
-        else if (std::strcmp(argv[i], "-size") == 0) {
+        else if (std::strcmp(argv[i], "-from") == 0) {
+            auto f = argv[++i];
+            if (strchr(f, '.'))
+                from_percent = std::atof(f);
+            else
+                from = std::atoi(f);
+        } else if (std::strcmp(argv[i], "-size") == 0) {
             auto s = (char*)argv[++i];
             width = strtol(s, &s, 10);
             height = strtol(s+1, nullptr, 10);
@@ -42,15 +46,12 @@ int main(int argc, const char** argv)
     p.onFrame<VideoFrame>([&](VideoFrame& v, int){
         if (decoded)
             return 0;
-        decoded = true;
-        if (!v || v.timestamp() == TimestampEOS) { // AOT frame(1st frame, seek end 1st frame) is not valid, but format is valid. eof frame format is invalid
-            printf("invalid frame. eof?\n");
-            pm.set_value(0);
+        if (!v) { // an invalid frame is sent before/after seek, and before the 1st frame
             return 0;
         }
-        if (!v.format()) {
-            printf("unsupported format in c api!\n");
-            pm.set_value(-2);
+        decoded = true;
+        if (v.timestamp() == TimestampEOS) { // eof frame format is invalid
+            pm.set_value(0);
             return 0;
         }
         // convert and/or copy frame
@@ -76,6 +77,8 @@ int main(int argc, const char** argv)
     p.prepare(from, [&](int64_t pos, bool*){
         if (pos < 0 || p.mediaInfo().video.empty())
             pm.set_value(-2);
+        else if (from_percent > 0 && from_percent <= 1.0)
+            p.seek(p.mediaInfo().duration * from_percent);
         return true;
     });
     const auto ret = fut.get();

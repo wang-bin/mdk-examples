@@ -50,7 +50,7 @@ int main(int argc, const char** argv)
     p.onFrame<VideoFrame>([&](VideoFrame& v, int){
         if (!v || v.timestamp() == TimestampEOS) { // AOT frame(1st frame, seek end 1st frame) is not valid, but format is valid. eof frame format is invalid
             printf("decoded: %d, elapsed: %" PRId64 ", fps: %.1f/%.1f\n", count, elapsed, count*1000.0/elapsed, fps);
-            l += v && v.timestamp() == TimestampEOS;
+            l += v.timestamp() == TimestampEOS;
             printf("invalid frame %d. eof? loop=%d/%d\n", v.isValid(), l, loop);
             if (loop >= 0 && l > loop) {
                 pm.set_value(0);
