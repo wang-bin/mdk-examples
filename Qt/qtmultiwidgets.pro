@@ -9,7 +9,8 @@ CONFIG(debug, debug|release) {
 } else {
     LIBS += -L$$OUT_PWD/release
 }
-LIBS += -L$$OUT_PWD -lqtmdk
+android: LIB_SUFFIX=_$$ANDROID_TARGET_ARCH
+LIBS += -L$$OUT_PWD -lqtmdk$$LIB_SUFFIX
 
 SOURCES += qtmultiwidgets.cpp videogroup.cpp
 HEADERS += videogroup.h

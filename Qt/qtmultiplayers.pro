@@ -9,15 +9,7 @@ CONFIG(debug, debug|release) {
 } else {
     LIBS += -L$$OUT_PWD/release
 }
-LIBS += -L$$OUT_PWD -lqtmdk
+android: LIB_SUFFIX=_$$ANDROID_TARGET_ARCH
+LIBS += -L$$OUT_PWD -lqtmdk$$LIB_SUFFIX
 
 SOURCES += qtmultiplayers.cpp
-
-mac {
-  RPATHDIR *= @executable_path/Frameworks @loader_path $$MDK_SDK/lib
-  QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
-  isEmpty(QMAKE_LFLAGS_RPATH): QMAKE_LFLAGS_RPATH=-Wl,-rpath,
-  for(R,RPATHDIR) {
-    QMAKE_LFLAGS *= \'$${QMAKE_LFLAGS_RPATH}$$R\'
-  }
-}
