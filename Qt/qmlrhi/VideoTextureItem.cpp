@@ -79,7 +79,7 @@ QSGNode *VideoTextureItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
         return nullptr;
 
     if (!n) {
-        m_node = createNode(this);
+        m_node = createNodePriv(this);
         n = m_node;
     }
 
