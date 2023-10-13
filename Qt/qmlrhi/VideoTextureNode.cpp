@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureNode.h"
@@ -21,13 +21,13 @@ VideoTextureNode::VideoTextureNode(VideoTextureItem *item)
 
 VideoTextureNode::~VideoTextureNode()
 {
-    delete texture();
     // when device lost occurs
     auto player = m_player.lock();
     if (!player)
         return;
     player->setVideoSurfaceSize(-1, -1, this);
     qDebug("renderer destroyed");
+    delete texture();
 }
 
 QSGTexture *VideoTextureNode::texture() const
