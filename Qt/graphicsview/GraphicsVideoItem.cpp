@@ -23,9 +23,12 @@ GraphicsVideoItem::GraphicsVideoItem(QGraphicsItem * parent)
     SetGlobalOption("X11Display", QX11Info::display());
     qDebug("X11 display: %p", QX11Info::display());
 #elif (QT_FEATURE_xcb + 0 == 1) && (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
-    const auto xdisp = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display();
-    SetGlobalOption("X11Display", xdisp);
-    qDebug("X11 display: %p", xdisp);
+    const auto x = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+    if (x) {
+        const auto xdisp = x->display();
+        SetGlobalOption("X11Display", xdisp);
+        qDebug("X11 display: %p", xdisp);
+    }
 #endif
     setFlag(ItemIsFocusable); //receive key events
 

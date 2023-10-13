@@ -29,9 +29,12 @@ static void InitEnv()
     SetGlobalOption("X11Display", QX11Info::display());
     qDebug("X11 display: %p", QX11Info::display());
 #elif (QT_FEATURE_xcb + 0 == 1) && (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
-    const auto xdisp = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display();
-    SetGlobalOption("X11Display", xdisp);
-    qDebug("X11 display: %p", xdisp);
+    const auto x = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+    if (x) {
+        const auto xdisp = x->display();
+        SetGlobalOption("X11Display", xdisp);
+        qDebug("X11 display: %p", xdisp);
+    }
 #endif
 #ifdef QJNI_ENVIRONMENT_H
     SetGlobalOption("JavaVM", QJniEnvironment::javaVM());
@@ -41,10 +44,11 @@ static void InitEnv()
 #endif
 }
 
+static std::once_flag initFlag;
+
 QMDKWindowRenderer::QMDKWindowRenderer(QWindow *parent)
     : QOpenGLWindow(NoPartialUpdate, parent)
 {
-    static std::once_flag initFlag;
     std::call_once(initFlag, InitEnv);
 }
 
@@ -93,7 +97,7 @@ void QMDKWindowRenderer::paintGL()
     if (!p)
         return;
     beforeGL();
-    p->renderVideo(this);
+    player_->renderVideo(this);
     afterGL();
 }
 
@@ -101,14 +105,7 @@ void QMDKWindowRenderer::paintGL()
 QMDKWidgetRenderer::QMDKWidgetRenderer(QWidget *parent)
     : QOpenGLWidget(parent)
 {
-#ifdef QX11INFO_X11_H
-    SetGlobalOption("X11Display", QX11Info::display());
-    qDebug("X11 display: %p", QX11Info::display());
-#elif (QT_FEATURE_xcb + 0 == 1) && (QT_VERSION >= QT_VERSION_CHECK(6, 2, 0))
-    const auto xdisp = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->display();
-    SetGlobalOption("X11Display", xdisp);
-    qDebug("X11 display: %p", xdisp);
-#endif
+    std::call_once(initFlag, InitEnv);
 }
 
 QMDKWidgetRenderer::~QMDKWidgetRenderer() = default;
