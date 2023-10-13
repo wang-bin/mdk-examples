@@ -291,7 +291,6 @@ int main(int argc, const char** argv)
         print_log_msg(level_name[level], msg, log_file);
     });
     //setLogLevel(LogLevel::Error);
-    SetGlobalOption("MDK_KEY", "92178446AF0885458A93CDF446E3B9160A5FC865796E9FCFF262D534389866D04BD4FA52EFECF1BF7E14B0D73A5E8C493A06876FF5BEDC6F801A46B42E7873026DE87BB9AF087ABA756C320BB91C46E94A5FC0021508E8BF9E03ACD25AB0539D4EA194B0D543B5179056FC62441CB248878AF87D3B72ACF6B9F753BA59187A02");
 {
     bool help = argc < 2;
     bool es = false;
@@ -359,6 +358,8 @@ int main(int argc, const char** argv)
                 player.set(ColorSpaceBT709);
             } else if (strcmp(cs, "bt2100") == 0) {
                 player.set(ColorSpaceBT2100_PQ);
+            } else if (strcmp(cs, "scrgb") == 0) {
+                player.set(ColorSpaceSCRGB);
             }
         } else if (strcmp(argv[i], "-c:v") == 0) {
             cv = argv[++i];
@@ -544,6 +545,7 @@ int main(int argc, const char** argv)
             break;
         }
     }
+    SetGlobalOption("MDK_KEY", "92178446AF0885458A93CDF446E3B9160A5FC865796E9FCFF262D534389866D04BD4FA52EFECF1BF7E14B0D73A5E8C493A06876FF5BEDC6F801A46B42E7873026DE87BB9AF087ABA756C320BB91C46E94A5FC0021508E8BF9E03ACD25AB0539D4EA194B0D543B5179056FC62441CB248878AF87D3B72ACF6B9F753BA59187A02");
     //SetGlobalOption("videoout.clear_on_stop", 0);
     //auto libavformat = dlopen("libavformat.58.dylib", RTLD_LOCAL);
     //SetGlobalOption("avformat", libavformat);
