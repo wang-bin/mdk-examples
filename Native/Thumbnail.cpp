@@ -78,7 +78,12 @@ int main(int argc, const char** argv)
         if (pos < 0 || p.mediaInfo().video.empty())
             pm.set_value(-2);
         else if (from_percent > 0 && from_percent <= 1.0)
-            p.seek(p.mediaInfo().duration * from_percent);
+            p.seek(p.mediaInfo().duration * from_percent
+                , SeekFlag::FromStart|SeekFlag::KeyFrame|SeekFlag::Backward // KeyFrame: thumbnail should be fast. backward: avoid EPERM error
+                , [&pm](int64_t pos) {
+                    if (pos < 0)
+                        pm.set_value(-3);
+                });
         return true;
     });
     const auto ret = fut.get();
