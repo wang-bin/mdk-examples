@@ -50,11 +50,11 @@ int main(int argc, const char** argv)
     p.onFrame<VideoFrame>([&](VideoFrame& v, int){
         if (decoded)
             return 0;
-        if (!v) { // an invalid frame is sent before/after seek, and before the 1st frame
-            return 0;
-        }
         if (v.timestamp() == TimestampEOS) { // eof frame format is invalid
             pm.set_value(decoded ? 0 : -1);
+            return 0;
+        }
+        if (!v) { // an invalid frame is sent before/after seek, and before the 1st frame
             return 0;
         }
         decoded = true;
