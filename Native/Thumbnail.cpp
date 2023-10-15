@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <future>
+#include <regex>
 
 using namespace MDK_NS;
 using namespace std;
@@ -18,9 +19,12 @@ int main(int argc, const char** argv)
     bool raw = false;
     Player p;
     for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "-c:v") == 0)
-            p.setDecoders(MediaType::Video, {argv[++i]});
-        else if (std::strcmp(argv[i], "-from") == 0) {
+        if (std::strcmp(argv[i], "-c:v") == 0) {
+            string cv = argv[++i];
+            std::regex re(",");
+            std::sregex_token_iterator first{cv.begin(), cv.end(), re, -1}, last;
+            p.setDecoders(MediaType::Video, {first, last});
+        } else if (std::strcmp(argv[i], "-from") == 0) {
             auto f = argv[++i];
             if (strchr(f, '.'))
                 from_percent = std::atof(f);
@@ -49,11 +53,11 @@ int main(int argc, const char** argv)
         if (!v) { // an invalid frame is sent before/after seek, and before the 1st frame
             return 0;
         }
-        decoded = true;
         if (v.timestamp() == TimestampEOS) { // eof frame format is invalid
-            pm.set_value(0);
+            pm.set_value(decoded ? 0 : -1);
             return 0;
         }
+        decoded = true;
         // convert and/or copy frame
 
         if (scale != 1.0 && width == -1) {
@@ -75,18 +79,21 @@ int main(int argc, const char** argv)
         return 0;
     });
     p.prepare(from, [&](int64_t pos, bool*){
-        if (pos < 0 || p.mediaInfo().video.empty())
+        if ((pos < 0 || p.mediaInfo().video.empty()) && test_flag(p.mediaStatus(), MediaStatus::Loaded)) {
             pm.set_value(-2);
-        else if (from_percent > 0 && from_percent <= 1.0)
+        } else if (from_percent > 0 && from_percent <= 1.0) {
             p.seek(p.mediaInfo().duration * from_percent
                 , SeekFlag::FromStart|SeekFlag::KeyFrame|SeekFlag::Backward // KeyFrame: thumbnail should be fast. backward: avoid EPERM error
-                , [&pm](int64_t pos) {
-                    if (pos < 0)
+                , [&](int64_t pos) {
+                    if (pos < 0 && test_flag(p.mediaStatus(), MediaStatus::Loaded)) { // check loaded: unfinished seek callback
                         pm.set_value(-3);
+                    }
                 });
+        }
         return true;
     });
     const auto ret = fut.get();
+    p.onFrame<VideoFrame>(nullptr); // EOS frame in player dtor
     printf("ret: %d\n", ret);
     return 0;
 }
