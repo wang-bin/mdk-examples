@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #pragma once
@@ -16,6 +16,8 @@ class VideoTextureItem : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(bool autoPlay READ autoPlay WRITE setAutoPlay NOTIFY autoPlayChanged)
+    // autoHDR: for macOS/iOS, only work with HDRExtendedSrgbLinear (QSG_RHI_HDR=scrgb) swapchain format
+    Q_PROPERTY(bool autoHDR READ autoHDR WRITE setAutoHDR NOTIFY autoHDRChanged FINAL)
 #ifdef QML_ELEMENT
     QML_ELEMENT // no need to call qmlRegisterType
 #endif
@@ -29,11 +31,15 @@ public:
     bool autoPlay() const { return m_autoPlay; }
     void setAutoPlay(bool value);
 
+    bool autoHDR() const { return m_autoHDR;}
+    void setAutoHDR(bool value);
+
     Q_INVOKABLE void play();
 
 signals:
     void sourceChanged();
     void autoPlayChanged();
+    void autoHDRChanged();
 
 protected:
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
@@ -52,6 +58,7 @@ private:
     friend class VideoTextureNode; // TODO: QSGNode
     VideoTextureNode *m_node = nullptr;
     bool m_autoPlay = true;
+    bool m_autoHDR = false;
     QString m_source;
     std::shared_ptr<Player> m_player;
 };

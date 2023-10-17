@@ -72,3 +72,28 @@ void VideoTextureNode::render()
     player->renderVideo(this);
     //m_window->endExternalCommands();
 }
+
+void VideoTextureNode::csReset()
+{
+    // metal colorspace reset in resize
+    auto sp = m_player.lock();
+    if (!sp)
+        return;
+    sp->set(ColorSpaceBT709, this);
+    sp->set(ColorSpaceUnknown, this);
+}
+
+void VideoTextureNode::csResetHack(const char* csName)
+{
+    if (!autoHDR())
+        return;
+    auto player = m_player.lock();
+    if (!player)
+        return;
+#if (__APPLE__ + 0)
+    SetGlobalOption("sdr.colorspace", csName);
+    player->set(ColorSpaceUnknown, this);
+    connect(m_window, &QWindow::widthChanged, this, &VideoTextureNode::csReset);
+    connect(m_window, &QWindow::heightChanged, this, &VideoTextureNode::csReset);
+#endif
+}

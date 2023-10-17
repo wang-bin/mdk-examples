@@ -58,8 +58,15 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
             player->set(ColorSpaceBT2100_PQ, this);
             //format = QRhiTexture::RGB10A2; // rgba8 works fine on windows
         } else if (sc->format() == QRhiSwapChain::Format::HDRExtendedSrgbLinear) {
-            player->set(ColorSpaceSCRGB, this); // rgba16f
             format = QRhiTexture::RGBA16F;
+            player->set(ColorSpaceSCRGB, this);
+            csResetHack("scrgb");
+# if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)) // p3
+        } else if (sc->format() == QRhiSwapChain::Format::HDRExtendedDisplayP3Linear) {
+            format = QRhiTexture::RGBA16F;
+            player->set(ColorSpaceExtendedLinearDisplayP3, this);
+            csResetHack("p3");
+# endif
         } else {
             player->set(ColorSpaceBT709, this);
         }
@@ -134,6 +141,10 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         ra.texture = reinterpret_cast<const void*>(quintptr(m_texture->nativeTexture().object)); // 5.15+
         ra.device = dev;
         ra.cmdQueue = rif->getResource(m_window, QSGRendererInterface::CommandQueueResource);
+# if (QT_VERSION >= QT_VERSION_CHECK(6, 6, 0))
+        auto sc = (QRhiSwapChain*)rif->getResource(m_window, QSGRendererInterface::RhiSwapchainResource);
+        ra.layer = sc->proxyData().reserved[0];
+# endif
         player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeObj = decltype(nativeObj)(ra.texture);

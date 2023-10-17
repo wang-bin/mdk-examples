@@ -8,13 +8,17 @@ Item {
     property string url
 
     //! [2]
+    /*Repeater{
+            id:rep
+            model:1*/
     VideoTextureItem {
         id: renderer
         anchors.fill: parent
         anchors.margins: 10
         source: url
+        autoHDR: true
     }
-
+    //}
     Rectangle {
         id: labelFrame
         anchors.margins: -10

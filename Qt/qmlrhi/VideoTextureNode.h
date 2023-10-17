@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #pragma once
@@ -24,6 +24,9 @@ public:
     QSGTexture *texture() const override;
 
     void sync();
+
+    void setAutoHDR(bool value) { m_autoHDR = value; }
+    bool autoHDR() const { return m_autoHDR;}
 private:
     void render();
     virtual QSGTexture* ensureTexture(Player* player, const QSize& size) = 0;
@@ -33,6 +36,10 @@ protected:
     QQuickWindow *m_window;
     QQuickItem *m_item;
     QSize m_size;
+    void csResetHack(const char* csName);
 private:
+    void csReset();
+
     std::weak_ptr<Player> m_player;
+    bool m_autoHDR = false;
 };

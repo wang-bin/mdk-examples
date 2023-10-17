@@ -84,6 +84,7 @@ QSGNode *VideoTextureItem::updatePaintNode(QSGNode *node, UpdatePaintNodeData *)
     if (!n) {
         m_node = createNodePriv(this);
         n = m_node;
+        n->setAutoHDR(m_autoHDR);
     }
 
     m_node->sync();
@@ -124,6 +125,14 @@ void VideoTextureItem::setAutoPlay(bool value)
         return;
     m_autoPlay = value;
     emit autoPlayChanged();
+}
+
+void VideoTextureItem::setAutoHDR(bool value)
+{
+    if (m_autoHDR == value)
+        return;
+    m_autoHDR = value;
+    emit autoHDRChanged();
 }
 
 void VideoTextureItem::play()
