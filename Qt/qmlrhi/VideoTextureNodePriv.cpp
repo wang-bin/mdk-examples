@@ -47,6 +47,7 @@ VideoTextureNode* createNodePriv(VideoTextureItem* item)
 
 QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& size)
 {
+    SetGlobalOption("sdr.white", 100.0f);
     auto sgrc = QQuickItemPrivate::get(m_item)->sceneGraphRenderContext();
     auto rhi = sgrc->rhi();
     auto format = QRhiTexture::RGBA8;
