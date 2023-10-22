@@ -3,7 +3,6 @@
 #include "mdk/MediaInfo.h"
 #include <cstdlib>
 #include <cstring>
-#include <future>
 #include <regex>
 
 using namespace MDK_NS;
@@ -17,6 +16,7 @@ int main(int argc, const char** argv)
     int height = -1;
     float scale = 1.0f;
     bool raw = false;
+    int ret = 0; // before player object, destroyed later than player, ret may be accessed(in callback) in player dtor
     Player p;
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "-c:v") == 0) {
@@ -42,16 +42,18 @@ int main(int argc, const char** argv)
     }
     p.setMedia(argv[argc-1]);
     // only the 1st video track will be decoded
-    p.setDecoders(MediaType::Audio, {});
+    p.setActiveTracks(MediaType::Audio, {});
+    p.setActiveTracks(MediaType::Subtitle, {});
     p.onSync([]{return DBL_MAX;}); // do not sync to present time
-    promise<int> pm;
-    auto fut = pm.get_future();
     bool decoded = false;
     p.onFrame<VideoFrame>([&](VideoFrame& v, int){
         if (decoded)
             return 0;
         if (v.timestamp() == TimestampEOS) { // eof frame format is invalid
-            pm.set_value(decoded ? 0 : -1);
+            if (ret == 0) { // -3: seek error
+                ret = decoded ? 0 : -1;
+            }
+            p.set(State::Stopped);
             return 0;
         }
         if (!v) { // an invalid frame is sent before/after seek, and before the 1st frame
@@ -65,7 +67,7 @@ int main(int argc, const char** argv)
             height = v.height() * scale;
         }
         if (raw) {
-            printf("decoded @%f. out size: %dx%d, stride: %d, scale: %f\n", v.timestamp(), width, height, v.bytesPerLine(), scale);
+            printf("decoded @%f. out size: %dx%d, stride: %d, scale: %f. save raw\n", v.timestamp(), width, height, v.bytesPerLine(), scale);
             v.save("thumbnail");
         } else if (scale == 1.0f) {
             printf("decoded @%f. out size: %dx%d, stride: %d, scale: %f\n", v.timestamp(), width, height, v.bytesPerLine(), scale);
@@ -75,25 +77,27 @@ int main(int argc, const char** argv)
             printf("decoded @%f. out size: %dx%d, stride: %d, scale: %f\n", v.timestamp(), width, height, rgb.bytesPerLine(), scale);
             rgb.save("thumbnail.png");
         }
-        pm.set_value(v.timestamp() * 1000.0);
+        ret = v.timestamp() * 1000.0;
+        p.set(State::Stopped);
         return 0;
     });
     p.prepare(from, [&](int64_t pos, bool*){
-        if ((pos < 0 || p.mediaInfo().video.empty()) && test_flag(p.mediaStatus(), MediaStatus::Loaded)) {
-            pm.set_value(-2);
+        if ((pos < 0 || p.mediaInfo().video.empty())) {
+            ret = -2;
         } else if (from_percent > 0 && from_percent <= 1.0) {
             p.seek(p.mediaInfo().duration * from_percent
                 , SeekFlag::FromStart|SeekFlag::KeyFrame|SeekFlag::Backward // KeyFrame: thumbnail should be fast. backward: avoid EPERM error
                 , [&](int64_t pos) {
-                    if (pos < 0 && test_flag(p.mediaStatus(), MediaStatus::Loaded)) { // check loaded: unfinished seek callback
-                        pm.set_value(-3);
+                    if (pos < 0 ) {
+                        ret = -3;
+                        p.set(State::Stopped);
                     }
                 });
         }
         return true;
     });
-    const auto ret = fut.get();
-    p.onFrame<VideoFrame>(nullptr); // EOS frame in player dtor
+    p.waitFor(State::Paused); // initial state is Stopped
+    p.waitFor(State::Stopped);
     printf("ret: %d\n", ret);
     return 0;
 }
