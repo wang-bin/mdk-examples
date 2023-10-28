@@ -57,7 +57,9 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
     if (sc) {
         if (sc->format() == QRhiSwapChain::Format::HDR10) {
             player->set(ColorSpaceBT2100_PQ, this);
-            //format = QRhiTexture::RGB10A2; // rgba8 works fine on windows
+# if (QT_VERSION >= QT_VERSION_CHECK(6, 6, 0))
+            format = QRhiTexture::RGB10A2; // rgba8 works on windows
+# endif
         } else if (sc->format() == QRhiSwapChain::Format::HDRExtendedSrgbLinear) {
             format = QRhiTexture::RGBA16F;
             player->set(ColorSpaceSCRGB, this);

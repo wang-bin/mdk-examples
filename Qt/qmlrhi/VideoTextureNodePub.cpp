@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureNode.h"
@@ -83,6 +83,7 @@ QSGTexture* VideoTextureNodePub::ensureTexture(Player* player, const QSize& size
 {
     if (qgetenv("QSG_RHI_HDR") == "hdr10") {
         player->set(ColorSpaceBT2100_PQ, this);
+        // qsg texture fromNative() only supports rgba8, fortunately works fine with hdr10 on windows
     } else {
         player->set(ColorSpaceBT709, this);
     }
