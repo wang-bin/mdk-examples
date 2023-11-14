@@ -177,7 +177,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         });
             break;
         case GLFW_KEY_P: {
-            const ColorSpace cs[] = {ColorSpaceUnknown, ColorSpaceBT709, ColorSpaceBT2100_PQ};
+            const ColorSpace cs[] = {ColorSpaceUnknown, ColorSpaceBT709, ColorSpaceBT2100_PQ, ColorSpaceSCRGB, ColorSpaceExtendedLinearDisplayP3, ColorSpaceExtendedSRGB};
             static int i = 0;
             p->set(cs[i++%std::size(cs)]);
         }
@@ -360,6 +360,10 @@ int main(int argc, const char** argv)
                 player.set(ColorSpaceBT2100_PQ);
             } else if (strcmp(cs, "scrgb") == 0) {
                 player.set(ColorSpaceSCRGB);
+            } else if (strcmp(cs, "srgbf") == 0) {
+                player.set(ColorSpaceExtendedSRGB);
+            } else if (strcmp(cs, "p3") == 0) {
+                player.set(ColorSpaceExtendedLinearDisplayP3);
             }
         } else if (strcmp(argv[i], "-c:v") == 0) {
             cv = argv[++i];
