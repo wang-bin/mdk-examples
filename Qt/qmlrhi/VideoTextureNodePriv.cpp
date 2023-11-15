@@ -62,7 +62,20 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 # endif
         } else if (sc->format() == QRhiSwapChain::Format::HDRExtendedSrgbLinear) {
             format = QRhiTexture::RGBA16F;
+            // You can also use ColorSpaceExtendedSRGB and apply a linearize effect on the whole scene
+# if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0))
+            if (sc->hdrInfo().luminanceBehavior == QRhiSwapChainHdrInfo::SceneReferred) {
+                player->set(ColorSpaceSCRGB, this);
+            } else {
+                player->set(ColorSpaceExtendedLinearSRGB, this);
+            }
+# else
+#   if (__APPLE__+0)
+            player->set(ColorSpaceExtendedLinearSRGB, this);
+#   else
             player->set(ColorSpaceSCRGB, this);
+#   endif
+# endif
             csResetHack("scrgb");
 # if (QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)) // p3
         } else if (sc->format() == QRhiSwapChain::Format::HDRExtendedDisplayP3Linear) {
