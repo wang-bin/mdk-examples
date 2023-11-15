@@ -360,6 +360,8 @@ int main(int argc, const char** argv)
                 player.set(ColorSpaceBT2100_PQ);
             } else if (strcmp(cs, "scrgb") == 0) {
                 player.set(ColorSpaceSCRGB);
+            } else if (strcmp(cs, "srgbl") == 0) {
+                player.set(ColorSpaceExtendedLinearSRGB);
             } else if (strcmp(cs, "srgbf") == 0) {
                 player.set(ColorSpaceExtendedSRGB);
             } else if (strcmp(cs, "p3") == 0) {
