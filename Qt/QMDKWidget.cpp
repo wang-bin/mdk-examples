@@ -57,14 +57,17 @@ QMDKWidget::QMDKWidget(QWidget *parent, Qt::WindowFlags f)
     player_->setDecoders(MediaType::Video, {
 #if (__APPLE__+0)
         "VT",
+        "hap",
 #elif (__ANDROID__+0)
         "AMediaCodec:java=0:copy=0:surface=1:async=0",
 #elif (_WIN32+0)
         "MFT:d3d=11",
         "CUDA",
+        "hap", // before any ffmpeg based decoders
         "D3D11",
         "DXVA",
 #elif (__linux__+0)
+        "hap",
         "VAAPI",
         "VDPAU",
         "CUDA",
