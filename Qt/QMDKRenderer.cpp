@@ -72,6 +72,11 @@ void QMDKWindowRenderer::setSource(QMDKPlayer* player)
     }
 }
 
+void QMDKWindowRenderer::setROI(const float* videoRoi, const float* viewportRoi)
+{
+    player_->setROI(this, videoRoi, viewportRoi);
+}
+
 void QMDKWindowRenderer::initializeGL()
 {
     // instance is destroyed before aboutToBeDestroyed(), and no current context in aboutToBeDestroyed()
@@ -123,6 +128,11 @@ void QMDKWidgetRenderer::setSource(QMDKPlayer* player)
                 player_ = nullptr;
         });
     }
+}
+
+void QMDKWidgetRenderer::setROI(const float* videoRoi, const float* viewportRoi)
+{
+    player_->setROI(this, videoRoi, viewportRoi);
 }
 
 void QMDKWidgetRenderer::initializeGL()

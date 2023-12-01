@@ -1,6 +1,6 @@
 /******************************************************************************
     VideoGroup:  this file is part of QtAV examples
-    Copyright (C) 2012-2022 Wang Bin <wbsecg1@gmail.com>
+    Copyright (C) 2012-2023 Wang Bin <wbsecg1@gmail.com>
 
 *   This file is part of QtAV
 
@@ -116,8 +116,8 @@ void VideoGroup::setSingleWindow(bool s)
         view->setLayout(layout);
 
         for (int i = 0; i < mRenderers.size(); ++i) {
-            int x = i/c;
-            int y = i%c;
+            int x = i/c; // row
+            int y = i%c; // col
             ((QGridLayout*)view->layout())->addWidget(mRenderers.at(i), x, y);
         }
         view->show();
@@ -229,16 +229,16 @@ void VideoGroup::updateROI()
         return;
     if (!m1Frame) {
         for (auto v : mRenderers) {
-            // full roi
+            qobject_cast<QMDKWidgetRenderer*>(v)->setROI(nullptr);
         }
         return;
     }
-    int W = view ? view->frameGeometry().width() : qApp->primaryScreen()->size().width();
-    int H = view ? view->frameGeometry().height() : qApp->primaryScreen()->size().height();
-    int w = W / c;
-    int h = H / r;
+
     for (int i = 0; i < mRenderers.size(); ++i) {
         auto v = mRenderers.at(i);
-        // roi: (qreal((i%c)*w)/qreal(W), qreal((i/c)*h)/qreal(H), qreal(w)/qreal(W), qreal(h)/qreal(H));
+        int x = i/c; // row
+        int y = i%c; // col
+        float videoRoi[] = { float(y)/float(c), float(x)/float(r), float(y + 1)/float(c), float(x + 1)/float(r) };
+        qobject_cast<QMDKWidgetRenderer*>(v)->setROI(videoRoi);
     }
 }

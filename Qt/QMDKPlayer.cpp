@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2022 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKPlayer.h"
@@ -108,4 +108,10 @@ void QMDKPlayer::renderVideo(QObject* vo)
 void QMDKPlayer::destroyGLContext(QObject* vo)
 {
     player_->setVideoSurfaceSize(-1, -1, vo); // it's better to cleanup gl renderer resources
+}
+
+void QMDKPlayer::setROI(QObject* vo, const float* videoRoi, const float* viewportRoi)
+{
+    player_->setPointMap(videoRoi, viewportRoi, 2, vo);
+
 }

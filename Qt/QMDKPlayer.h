@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2023 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #ifndef QMDKPlayer_H
@@ -14,13 +14,14 @@ class Player;
 #ifndef Q_MDK_API
 #define Q_MDK_API Q_DECL_IMPORT
 #endif
+
 class Q_MDK_API QMDKPlayer : public QObject
 {
     Q_OBJECT
 public:
     QMDKPlayer(QObject *parent = nullptr);
     ~QMDKPlayer();
-    // decoders: "VideoToolbox", "VAAPI", "VDPAU", "D3D11", "DXVA", "NVDEC", "CUDA", "MMAL"/"AVMMAL"(raspberry pi), "CedarX"(sunxi), "AMediaCodec"("MediaCodec"), "FFmpeg"
+    // decoders: "VideoToolbox", "VAAPI", "VDPAU", "D3D11", "DXVA", "NVDEC", "CUDA", "CedarX"(sunxi), "AMediaCodec", "FFmpeg"
     void setDecoders(const QStringList& dec);
     void setMedia(const QString& url);
     bool isPaused() const;
@@ -31,7 +32,7 @@ public:
     void renderVideo(QObject* vo = nullptr);
 
     void destroyGLContext(QObject* vo);
-
+    void setROI(QObject* vo, const float* videoRoi, const float* viewportRoi = nullptr);
 public slots:
     void play();
     void pause(bool value = true);
