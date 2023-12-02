@@ -171,6 +171,13 @@ void QMDKWidget::prepreForPreview()
 
 void QMDKWidget::initializeGL()
 {
+    GLRenderAPI ra;
+    ra.getProcAddress = +[](const char* name, void* opaque) {
+        Q_UNUSED(opaque); // ((QOpenGLContext*)opaque)->getProcAddress(name));
+        return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
+    };
+    ra.opaque = context();
+    player_->setRenderAPI(&ra);
     // context() may change(destroy old and create new) via setParent()
     std::weak_ptr<mdk::Player> wp = player_;
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{

@@ -205,6 +205,8 @@ void showHelp(const char* argv0)
             "-colorspace: output color space. can be 'auto'(will enable hdr display on demond if possible), 'bt709', 'bt2100'"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
             "-d3d12: d3d12 renderer. support additiona options: -d3d12:feature_level=12.0:debug=1:vendor=nv:buffers=2 \n"
+            "-gpa_glfw: use glfwGetProcAddr to load opengl functions if context is created by glfw\n"
+            "-es: use opengl es context created by glfw. on windows, libEGL.dll and libGLESv2.dll are required\n"
             "-gl: use gl renderer. context is created by mdk instead of glfw\n"
             "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
             "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
@@ -293,6 +295,7 @@ int main(int argc, const char** argv)
     //setLogLevel(LogLevel::Error);
 {
     bool help = argc < 2;
+    bool gpa_glfw = false;
     bool es = false;
     bool autoclose = false;
     int from = 0;
@@ -491,6 +494,8 @@ int main(int argc, const char** argv)
                 printf("vkra.graphics_family: %d, vkra.max_version: %u\n", vkra.graphics_family, vkra.max_version);
             });
 #endif
+        } else if (strcmp(argv[i], "-gpa_glfw") == 0) {
+            gpa_glfw = true;
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
@@ -557,8 +562,14 @@ int main(int argc, const char** argv)
     //SetGlobalOption("avformat", libavformat);
     if (help)
         showHelp(argv[0]);
-    if (ra)
+    if (ra) {
         player.setRenderAPI(ra);
+    } else if (gpa_glfw) {
+        glra.getProcAddress = [](const char* name, void*) {
+            return (void*)glfwGetProcAddress(name); // requres a valid context
+        };
+        player.setRenderAPI(&glra);
+    }
     if (speed != 1.0f)
         player.setPlaybackRate(speed);
 //player.setProperty("continue_at_end", "1");
