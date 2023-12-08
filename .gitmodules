@@ -10,3 +10,6 @@
 [submodule "android/mdk-android"]
 	path = android/mdk-android
 	url = https://github.com/wang-bin/mdk-android
+[submodule "Avalonia/MDK.SDK.NET"]
+	path = Avalonia/MDK.SDK.NET
+	url = https://github.com/axojhf/MDK.SDK.NET

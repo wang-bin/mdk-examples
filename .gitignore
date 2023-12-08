@@ -181,3 +181,7 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 CTestTestfile.cmake
+
+Avalonia/*/obj
+Avalonia/*/bin
+Avalonia/*/.idea

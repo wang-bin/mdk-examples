@@ -66,3 +66,7 @@ UWP example, supports D3D11, and ANGLE GLES2
 ### XamlCx
 - Use `Windows::UI::Xaml::Controls::SwapChainPanel` as platform dependent surface to create render loop and gl context internally
 - Switch between 2 render targets
+
+## Avalonia
+
+use gl to render, (Only test on Windows x64).
