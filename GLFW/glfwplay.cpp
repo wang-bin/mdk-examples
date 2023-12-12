@@ -201,12 +201,13 @@ void showHelp(const char* argv0)
 {
     printf("usage: %s [-d3d11][-d3d12] [-es] [-refresh_rate int_fps] [-c:v decoder] url1 [url2 ...]\n"
             "-size: width[xheight]\n"
+            "-ar: aspect ratio. float value\n"
             "-bg: background color, 0xrrggbbaa, unorm (r, g, b, a)\n"
             "-colorspace: output color space. can be 'auto'(will enable hdr display on demond if possible), 'bt709', 'bt2100'"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
             "-d3d12: d3d12 renderer. support additiona options: -d3d12:feature_level=12.0:debug=1:vendor=nv:buffers=2 \n"
             "-gpa_glfw: use glfwGetProcAddr to load opengl functions if context is created by glfw\n"
-            "-es: use opengl es context created by glfw. on windows, libEGL.dll and libGLESv2.dll are required\n"
+            "-es: use opengl es context created by glfw. on windows, libEGL.dll and libGLESv2.dll are required by glfw\n"
             "-gl: use gl renderer. context is created by mdk instead of glfw\n"
             "-metal: metal renderer. support additiona options: -metal:device_index=0 \n"
             "-vk: vulkan renderer. support additiona options: -vk:device_index=0 \n"
@@ -235,6 +236,8 @@ void showHelp(const char* argv0)
             "-t:v: video track number. default 0\n"
             "-t:s: subtitle track number. default 0\n"
             "-program: program number(for medias contain multiple programs)\n"
+            "-record: record video to a file or a network stream\n"
+            "-record_format: record format, e.g. flv, mov\n"
             "Keys:\n"
             "space: pause/resume\n"
             "left/right: seek backward/forward (-/+10s)\n"
@@ -311,6 +314,8 @@ int main(int argc, const char** argv)
     bool nosync = false;
     const char* urla = nullptr;
     const char* urlsub = nullptr;
+    const char* record_url = nullptr;
+    const char* record_fmt = nullptr;
     string vendor;
     std::string ca, cv;
     int w = 640;
@@ -339,7 +344,6 @@ int main(int argc, const char** argv)
     VulkanRenderAPI vkra{};
 #endif
     RenderAPI *ra = nullptr;
-    //player.setAspectRatio(-1.0);
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "-bg") == 0) {
             auto c = std::stoll(argv[++i], nullptr, 16);
@@ -348,6 +352,8 @@ int main(int argc, const char** argv)
             const auto b = (c >> 8) & 0xff;
             const auto a = c & 0xff;
             player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
+        } else if (strcmp(argv[i], "-ar") == 0) {
+            player.setAspectRatio(std::atof(argv[++i]));
         } else if (strcmp(argv[i], "-size") == 0) {
             char *s = (char *)argv[++i];
             w = strtoll(s, &s, 10);
@@ -538,7 +544,9 @@ int main(int argc, const char** argv)
         } else if (std::strcmp(argv[i], "-nosync") == 0) {
             nosync = true;
         } else if (std::strcmp(argv[i], "-record") == 0) {
-            player.record("record.mkv"); // FIXME: record before play is not supported yet
+            record_url = argv[++i];
+        } else if (std::strcmp(argv[i], "-record_format") == 0) {
+            record_fmt = argv[++i];
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
             help = true;
             break;
@@ -562,6 +570,8 @@ int main(int argc, const char** argv)
     //SetGlobalOption("avformat", libavformat);
     if (help)
         showHelp(argv[0]);
+    if (record_url)
+        player.record(record_url, record_fmt);
     if (ra) {
         player.setRenderAPI(ra);
     } else if (gpa_glfw) {
