@@ -62,16 +62,17 @@ using namespace MDK_NS;
         t = queue<int64_t>();
         //fr->start();
     }
+    pmp->setLoop(-1);
 }
 
 - (void)hwdecSwitched:(UIControl *)control
 {
     if (control == hwdecButton) {
         if (hwdecButton.on == YES) {
-            pmp->setDecoders(MediaType::Video, {"VT", "FFmpeg"});
+            pmp->setDecoders(MediaType::Video, {"VT", "BRAW:gpu=auto:scale=1080", "FFmpeg"});
             //fr->setDecoders(MediaType::Video, {"VT", "FFmpeg"});
         } else {
-            pmp->setDecoders(MediaType::Video, {"FFmpeg"});
+            pmp->setDecoders(MediaType::Video, {"BRAW:gpu=no:scale=1080", "FFmpeg"});
             //fr->setDecoders(MediaType::Video, {"FFmpeg"});
         }
     }
@@ -176,6 +177,7 @@ using namespace MDK_NS;
     });
 #endif
     log = @"MDK log:\n";
+#if 0
     setLogHandler([=](LogLevel level, const char* msg){
         @autoreleasepool {
         NSString *s = [NSString stringWithUTF8String: msg];
@@ -204,18 +206,19 @@ using namespace MDK_NS;
             });
         }
     });
+#endif
     NSLog(@"size: %fx%f", videoView.frame.size.width, videoView.frame.size.height),
     view = videoView;
     url_now = -1;
     pmp = new Player();
     MetalRenderAPI ra;
     //pmp->set(ColorSpaceUnknown); // FIXME: crash on macCatalyst
-    pmp->setRenderAPI(&ra);
+    pmp->setRenderAPI(&ra,(__bridge void *)videoView);
     pmp->set(ColorSpaceUnknown);
     pmp->setLoop(-1);
     pmp->setAspectRatio(IgnoreAspectRatio);
     pmp->updateNativeSurface((__bridge void *)videoView);
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"Movie-1" ofType:@"mp4" inDirectory:nil];
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"sample" ofType:@"mp4" inDirectory:nil];
     urls.push_back([[NSURL fileURLWithPath:path].path UTF8String]);
 
 #if 0 // not available in macCatalyst

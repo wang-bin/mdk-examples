@@ -17,7 +17,7 @@ int main(int argc, char** argv)
             "-es: use OpenGL ES2+ instead of OpenGL\n"
             "-share: shared OpenGL/ES contexts\n"
             "-win: number of windows\n"
-            "-c:v: video decoder. can be FFmpeg, VideoToolbox, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi)\n"
+            "-c:v: video decoder. can be FFmpeg, VideoToolbox, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI\n"
         , argv[0]);
         exit(EXIT_FAILURE);
     }

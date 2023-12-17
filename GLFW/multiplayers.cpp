@@ -62,7 +62,7 @@ int main(int argc, const char*  argv[])
         printf("usage: %s [-es] [-share] [-fps int_fps] [-win win_count] [-c:v decoder] [-urls] video_urls\n"
             "-es: use OpenGL ES2+ instead of OpenGL\n"
             "-share: shared OpenGL/ES contexts\n"
-            "-c:v: video decoder. can be FFmpeg, VideoToolbox, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI, MMAL(raspberry pi), CedarX(sunxi)\n"
+            "-c:v: video decoder. can be FFmpeg, VideoToolbox, D3D11, DXVA, NVDEC, CUDA, VDPAU, VAAPI\n"
         , argv[0]);
         printf("-win: number of windows, applied if no -urls option, assume only 1 url\n"
             "-urls: the number of windows is url count\n");
@@ -222,8 +222,6 @@ int main(int argc, const char*  argv[])
             player->onSync([&]{
                 return duration_cast<milliseconds>(steady_clock::now() - now).count() * sync / 1000.0;
             });
-        if (ra)
-            player->setRenderAPI(ra);
         if (!ra && wait <= 0)
             player->setRenderCallback([](void*){
                 glfwPostEmptyEvent();
@@ -281,6 +279,7 @@ int main(int argc, const char*  argv[])
             auto hwnd = glfwGetX11Window(win[0]);
             surface_type = MDK_NS::Player::SurfaceType::X11;
 #endif
+            player->setRenderAPI(ra, (void*)hwnd);
             player->updateNativeSurface((void*)hwnd, -1, -1, surface_type);
             //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
             //exit(EXIT_SUCCESS);

@@ -573,7 +573,7 @@ int main(int argc, const char** argv)
     if (record_url)
         player.record(record_url, record_fmt);
     if (ra) {
-        player.setRenderAPI(ra);
+        //player.setRenderAPI(ra); // must set vo_opaque=surface if use updateNativeSurface(), except opengl
     } else if (gpa_glfw) {
         glra.getProcAddress = [](const char* name, void*) {
             return (void*)glfwGetProcAddress(name); // requres a valid context
@@ -808,6 +808,7 @@ int main(int argc, const char** argv)
             hwnd = glfwGetX11Window(win);
         surface_type = MDK_NS::Player::SurfaceType::X11;
 #endif
+        player.setRenderAPI(ra, (void*)hwnd);
         player.updateNativeSurface((void*)hwnd, -1, -1, surface_type);
         //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);

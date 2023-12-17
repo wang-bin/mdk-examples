@@ -26,8 +26,6 @@ static struct init {
 OpenGLESPage::OpenGLESPage() :
     mPlayer(make_unique<Player>())
 {
-    MDK_NS::D3D11RenderAPI ra;
-    mPlayer->setRenderAPI(&ra);
     InitializeComponent();
 
 	Windows::UI::Core::CoreWindow^ window = Windows::UI::Xaml::Window::Current->CoreWindow;
@@ -50,10 +48,13 @@ OpenGLESPage::~OpenGLESPage()
 
 void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(swapChainPanel_0));
+    auto vid = reinterpret_cast<IInspectable*>(swapChainPanel_0);
+    MDK_NS::D3D11RenderAPI ra;
+    mPlayer->setRenderAPI(&ra, vid);
+	mPlayer->updateNativeSurface(vid);
 	mPlayer->setDecoders(MediaType::Video, { "MFT:d3d=11", "D3D11", "FFmpeg" });
     //mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
-    
+
     mPlayer->onMediaStatusChanged([=](auto s) {
       if (s & MediaStatus::Loaded) {
         //progress->Maximum = mPlayer->mediaInfo().duration / 1000; // ui thread
@@ -73,7 +74,10 @@ void OpenGLESPage::OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Wi
 void OpenGLESPage::OnPanelSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e)
 {
 	auto panel = safe_cast<Windows::UI::Xaml::Controls::SwapChainPanel^>(sender);
-	mPlayer->updateNativeSurface(reinterpret_cast<IInspectable*>(panel));
+    auto vid = reinterpret_cast<IInspectable*>(panel);
+    MDK_NS::D3D11RenderAPI ra;
+    mPlayer->setRenderAPI(&ra, vid);
+	mPlayer->updateNativeSurface(vid);
 }
 
 void OpenGLESPage::OnModeSelected(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e)

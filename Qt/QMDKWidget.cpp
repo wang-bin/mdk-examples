@@ -177,7 +177,7 @@ void QMDKWidget::initializeGL()
         return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
     };
     ra.opaque = context();
-    player_->setRenderAPI(&ra);
+    player_->setRenderAPI(&ra/*, this*/);
     // context() may change(destroy old and create new) via setParent()
     std::weak_ptr<mdk::Player> wp = player_;
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, [=]{
@@ -196,15 +196,15 @@ void QMDKWidget::resizeGL(int w, int h)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     auto s = screen();
     qDebug("resizeGL>>>>>dpr: %f, logical dpi: (%f,%f), phy dpi: (%f,%f)", s->devicePixelRatio(), s->logicalDotsPerInchX(), s->logicalDotsPerInchY(), s->physicalDotsPerInchX(), s->physicalDotsPerInchY());
-    player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio()/*, context()*/);
+    player_->setVideoSurfaceSize(w*devicePixelRatio(), h*devicePixelRatio()/*, this*/);
 #else
-    player_->setVideoSurfaceSize(w, h/*, context()*/);
+    player_->setVideoSurfaceSize(w, h/*, this*/);
 #endif
 }
 
 void QMDKWidget::paintGL()
 {
-    player_->renderVideo(/*context()*/);
+    player_->renderVideo(/*this*/);
 }
 
 void QMDKWidget::keyPressEvent(QKeyEvent *e)
