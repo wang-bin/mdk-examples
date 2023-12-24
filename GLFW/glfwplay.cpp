@@ -646,6 +646,7 @@ int main(int argc, const char** argv)
             printf("************window scale changed: %fx%f***********\n", xscale, yscale);
         });
 #endif
+    if (!ra)
     glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         float xscale = 1.0f, yscale = 1.0f;
@@ -749,7 +750,8 @@ int main(int argc, const char** argv)
     int fw = 0, fh = 0;
     glfwGetFramebufferSize(win, &fw, &fh);
     printf("************fb size %dx%d, requested size: %dx%d, scale= %fx%f***********\n", fw, fh, w, h, xscale, yscale);
-    player.setVideoSurfaceSize(fw, fh);
+    if (!ra)
+        player.setVideoSurfaceSize(fw, fh);
     //player.setPlaybackRate(2.0f);
     if (!urls.empty()) {
 #ifdef _WIN32
