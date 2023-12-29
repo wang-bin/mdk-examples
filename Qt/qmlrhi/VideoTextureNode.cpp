@@ -12,6 +12,7 @@ VideoTextureNode::VideoTextureNode(VideoTextureItem *item)
     : m_item(item)
     , m_player(item->m_player)
 {
+    setOwnsTexture(true);
     m_window = m_item->window();
     connect(m_window, &QQuickWindow::beforeRendering, this, &VideoTextureNode::render);
     connect(m_window, &QQuickWindow::screenChanged, this, [this]() {
@@ -27,7 +28,6 @@ VideoTextureNode::~VideoTextureNode()
         return;
     player->setVideoSurfaceSize(-1, -1, this);
     qDebug("renderer destroyed");
-    delete texture();
 }
 
 QSGTexture *VideoTextureNode::texture() const
@@ -49,7 +49,6 @@ void VideoTextureNode::sync()
     auto tex = ensureTexture(player.get(), m_size);
     if (!tex)
         return;
-    delete texture();
     setTexture(tex);
     setTextureCoordinatesTransform(m_tx); // MUST set when texture() is available
     setFiltering(QSGTexture::Linear);

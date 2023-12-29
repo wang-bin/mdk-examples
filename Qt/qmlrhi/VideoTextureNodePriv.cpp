@@ -24,19 +24,12 @@ class VideoTextureNodePriv final: public VideoTextureNode
 {
 public:
     VideoTextureNodePriv(VideoTextureItem *item): VideoTextureNode(item) {}
-
-    ~VideoTextureNodePriv() override {
-        // release gfx resources
-        releaseResources();
-    }
 private:
     QSGTexture* ensureTexture(Player* player, const QSize& size) override;
 
-    void releaseResources();
-
     QRhiTexture* m_texture = nullptr;
-    QRhiTextureRenderTarget* m_rt = nullptr;
-    QRhiRenderPassDescriptor* m_rtRp = nullptr;
+    unique_ptr<QRhiTextureRenderTarget> m_rt;
+    unique_ptr<QRhiRenderPassDescriptor> m_rtRp;
 };
 
 VideoTextureNode* createNodePriv(VideoTextureItem* item)
@@ -95,27 +88,24 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 #else
     if (!m_texture->build()) {
 #endif
-        releaseResources();
+        delete m_texture;
         return nullptr;
     }
     QRhiColorAttachment color0(m_texture);
-    m_rt = rhi->newTextureRenderTarget({color0});
+    m_rt.reset(rhi->newTextureRenderTarget({color0}));
     if (!m_rt) {
-        releaseResources();
         return nullptr;
     }
-    m_rtRp = m_rt->newCompatibleRenderPassDescriptor();
+    m_rtRp.reset(m_rt->newCompatibleRenderPassDescriptor());
     if (!m_rtRp) {
-        releaseResources();
         return nullptr;
     }
-    m_rt->setRenderPassDescriptor(m_rtRp);
+    m_rt->setRenderPassDescriptor(m_rtRp.get());
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if (!m_rt->create()) {
 #else
     if (!m_rt->build()) {
 #endif
-        releaseResources();
         return nullptr;
     }
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -130,7 +120,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
     {
 #if QT_CONFIG(opengl)
         m_tx = TextureCoordinatesTransformFlag::MirrorVertically;
-        auto glrt = static_cast<QGles2TextureRenderTarget*>(m_rt);
+        auto glrt = static_cast<QGles2TextureRenderTarget*>(m_rt.get());
         GLRenderAPI ra;
         ra.fbo = glrt->framebuffer;
         player->setRenderAPI(&ra, this);
@@ -244,18 +234,4 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 # endif
 #endif
     return nullptr;
-}
-
-void VideoTextureNodePriv::releaseResources()
-{
-    delete m_rt;
-    m_rt = nullptr;
-
-    if (m_rtRp) {
-        delete m_rtRp;
-        m_rtRp = nullptr;
-    }
-
-    delete m_texture;
-    m_texture = nullptr;
 }
