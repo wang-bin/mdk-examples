@@ -203,9 +203,10 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         ra.rt = VkImage(m_texture->nativeTexture().object);
         ra.renderTargetInfo = [](void* opaque, int* w, int* h, VkFormat* fmt, VkImageLayout* layout) {
             auto node = static_cast<VideoTextureNodePriv*>(opaque);
+            const auto tf = node->m_texture->format();
             *w = node->m_size.width();
             *h = node->m_size.height();
-            *fmt = VK_FORMAT_R8G8B8A8_UNORM;
+            *fmt = tf == QRhiTexture::RGBA16F ? VK_FORMAT_R16G16B16A16_SFLOAT : tf == QRhiTexture::RGB10A2 ? VK_FORMAT_A2B10G10R10_UNORM_PACK32 : VK_FORMAT_R8G8B8A8_UNORM;
             *layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             return 1;
         };
@@ -216,12 +217,12 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
             return cmdBuf;
         };
         player->setRenderAPI(&ra, this);
-# if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-        if (ra.rt)
-            return QNativeInterface::QSGVulkanTexture::fromNative(ra.rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size, QQuickWindow::TextureHasAlphaChannel);
-# elif (QT_VERSION < QT_VERSION_CHECK(6, 6, 0))
+# if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         nativeLayout = m_texture->nativeTexture().layout;
         nativeObj = decltype(nativeObj)(ra.rt);
+# elif (QT_VERSION < QT_VERSION_CHECK(6, 6, 0))
+        if (ra.rt)
+            return QNativeInterface::QSGVulkanTexture::fromNative(ra.rt, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_window, size, QQuickWindow::TextureHasAlphaChannel);
 # endif // (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #else
         qFatal("Rebuild with Vulkan!");
