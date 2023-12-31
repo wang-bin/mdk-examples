@@ -58,7 +58,7 @@ int atrack = 0;
 int vtrack = 0;
 int strack = 0;
 int program = -1;
-
+void* vid = nullptr;
 
 static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
@@ -72,7 +72,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->snapshot(&req,
         [](Player::SnapshotRequest* ret, double frameTime){
             return std::to_string(frameTime).append(".jpg");
-            });
+            }, vid);
         }
             break;
         case GLFW_KEY_D: {
@@ -810,8 +810,9 @@ int main(int argc, const char** argv)
             hwnd = glfwGetX11Window(win);
         surface_type = MDK_NS::Player::SurfaceType::X11;
 #endif
-        player.setRenderAPI(ra, (void*)hwnd);
-        player.updateNativeSurface((void*)hwnd, -1, -1, surface_type);
+        vid = (void*)hwnd;
+        player.setRenderAPI(ra, vid);
+        player.updateNativeSurface(vid, -1, -1, surface_type);
         //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);
     } else {
