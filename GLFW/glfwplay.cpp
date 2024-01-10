@@ -402,7 +402,7 @@ int main(int argc, const char** argv)
             program = std::atoi(argv[++i]);
             if (program)
                 player.setActiveTracks(MediaType::Unknown, {program});
-        } else if (strstr(argv[i], "-d3d11") == argv[i]) {
+        } else if (strstr(argv[i], "-d3d11") == argv[i] && (argv[i][6] == 0 || argv[i][6] == ':')) {
 #ifdef _WIN32
             ra = &d3d11ra;
 # if MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
@@ -423,7 +423,7 @@ int main(int argc, const char** argv)
             });
 # endif
 #endif
-        } else if (strstr(argv[i], "-d3d12") == argv[i]) {
+        } else if (strstr(argv[i], "-d3d12") == argv[i] && (argv[i][6] == 0 || argv[i][6] == ':')) {
 #ifdef _WIN32
             ra = &d3d12ra;
             parse_options(argv[i] + sizeof("-d3d12") - 1, [&](const char* name, const char* value){
@@ -442,7 +442,7 @@ int main(int argc, const char** argv)
                 }
             });
 #endif
-        } else if (strstr(argv[i], "-gl") == argv[i]) {
+        } else if (strstr(argv[i], "-gl") == argv[i] && (argv[i][3] == 0 || argv[i][3] == ':')) {
 #if MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI)
             ra = &glra;
             parse_options(argv[i] + sizeof("-gl") - 1, [&glra](const char* name, const char* value){
@@ -467,7 +467,7 @@ int main(int argc, const char** argv)
             });
 #endif // MDK_VERSION_CHECK(0, 8, 1) || defined(MDK_ABI)
 
-        } else if (strstr(argv[i], "-metal") == argv[i]) {
+        } else if (strstr(argv[i], "-metal") == argv[i] && (argv[i][6] == 0 || argv[i][6] == ':')) {
 #if (__APPLE__+0) && (MDK_VERSION_CHECK(0, 8, 2) || defined(MDK_ABI))
             ra = &mtlra;
             parse_options(argv[i] + sizeof("-metal") - 1, [&mtlra](const char* name, const char* value){
@@ -475,7 +475,7 @@ int main(int argc, const char** argv)
                     mtlra.device_index = std::atoi(value);
             });
 #endif
-        } else if (strstr(argv[i], "-vk") == argv[i]) {
+        } else if (strstr(argv[i], "-vk") == argv[i] && (argv[i][3] == 0 || argv[i][3] == ':')) {
 #if (VK_VERSION_1_0+0) && (MDK_VERSION_CHECK(0, 10, 0) || defined(MDK_ABI))
             ra = &vkra;
             parse_options(argv[i] + sizeof("-vk") - 1, [&vkra](const char* name, const char* value){
