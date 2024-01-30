@@ -5,7 +5,7 @@ project(mdk-examples  VERSION 0.0.0)
 if(POLICY CMP0063) # visibility. since 3.3
   cmake_policy(SET CMP0063 NEW)
 endif()
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(EXTRA_LIB_DIRS_FLAG)
@@ -34,6 +34,10 @@ list(APPEND CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/mdk-sdk/lib/cmake)
   include(${CMAKE_SOURCE_DIR}/mdk-sdk/lib/cmake/FindMDK.cmake)
 endif()
 message("MDK_LIBRARIES:${MDK_LIBRARIES}")
+
+if(TARGET cppcompat) # requires https://github.com/wang-bin/cppcompat
+  link_libraries(cppcompat)
+endif()
 add_subdirectory(GLFW)
 add_subdirectory(Native)
 add_subdirectory(SDL)
