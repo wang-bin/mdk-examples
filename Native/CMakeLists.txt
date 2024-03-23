@@ -1,17 +1,15 @@
-if(NOT IOS AND NOT CMAKE_SYSTEM_NAME STREQUAL "tvOS")
-  foreach(tgt mdkplay offscreen DecodeFps
-    MediaInfoReader
-    Thumbnail
-  )
-    add_executable(${tgt} ${APPTYPE} ${tgt}.cpp)
-    target_link_libraries(${tgt} PRIVATE mdk)
-  endforeach()
-  install(TARGETS
+foreach(tgt mdkplay offscreen DecodeFps
+  MediaInfoReader
+  Thumbnail
+)
+  add_executable(${tgt} ${APPTYPE} ${tgt}.cpp)
+  target_link_libraries(${tgt} PRIVATE mdk)
+endforeach()
+install(TARGETS
     DecodeFps
     Thumbnail
 #    mdkplay
     RUNTIME DESTINATION bin)
-endif()
 
 #set(OpenGL_GL_PREFERENCE GLVND)
 include(FindOpenGL)
