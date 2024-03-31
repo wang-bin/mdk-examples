@@ -1,14 +1,14 @@
 //
-//  SwiftAppApp.swift
-//  Shared
+//  SwiftUIPlayerApp.swift
+//  SwiftUIPlayer
 //
-//  Created by WangBin on 2020/11/16.
+//  Created by WangBin on 2024/3/31.
 //
 
 import SwiftUI
 
 @main
-struct SwiftAppApp: App {
+struct SwiftUIPlayerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
