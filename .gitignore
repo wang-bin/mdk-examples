@@ -77,6 +77,8 @@ Thumbs.db
 *.rc
 /.qmake.cache
 /.qmake.stash
+# flutter
+!Runner.rc
 
 # qtcreator generated files
 *.pro.user*
