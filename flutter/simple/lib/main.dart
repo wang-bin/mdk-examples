@@ -15,25 +15,34 @@ import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:fvp/fvp.dart';
 import 'package:logging/logging.dart';
+import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
+
 String? source;
 
 void main(List<String> args) async {
 // set logger before registerWith()
   Logger.root.level = Level.ALL;
+  final df = DateFormat("HH:mm:ss.SSS");
   Logger.root.onRecord.listen((record) {
-    print('${record.loggerName}.${record.level.name}: ${record.time}: ${record.message}');
+    print(
+        '${record.loggerName}.${record.level.name}: ${df.format(record.time)}: ${record.message}');
   });
 
   final opts = <String, Object>{};
   final globalOpts = <String, Object>{};
   int i = 0;
+  bool useFvp = true;
   for (; i < args.length; i++) {
     if (args[i] == '-c:v') {
       opts['video.decoders'] = [args[++i]];
-    } else if (args[i] == '-maxSize') { // ${w}x${h}
+    } else if (args[i] == '-maxSize') {
+      // ${w}x${h}
       final size = args[++i].split('x');
       opts['maxWidth'] = int.parse(size[0]);
       opts['maxHeight'] = int.parse(size[1]);
+    } else if (args[i] == '-fvp') {
+      useFvp = int.parse(args[++i]) > 0;
     } else if (args[i].startsWith('-')) {
       globalOpts[args[i].substring(1)] = args[++i];
     } else {
@@ -43,13 +52,22 @@ void main(List<String> args) async {
   if (globalOpts.isNotEmpty) {
     opts['global'] = globalOpts;
   }
+  opts['lowLatency'] = 0;
 
   if (i <= args.length - 1) source = args[args.length - 1];
   source ??= await getStartFile();
 
-  registerWith(options: opts);
+  if (useFvp) {
+    registerWith(options: opts);
+  }
 
-  runApp(const VideoApp());
+  runApp(const MaterialApp(
+      localizationsDelegates: [
+        DefaultMaterialLocalizations.delegate
+      ],
+      title: 'Video Demo',
+      home: VideoApp())
+      );
 }
 
 Future<String?> getStartFile() async {
@@ -59,6 +77,58 @@ Future<String?> getStartFile() async {
     return await hostApi.invokeMethod("getCurrentFile");
   }
   return null;
+}
+
+Future<String?> showURIPicker(BuildContext context) async {
+  final key = GlobalKey<FormState>();
+  final src = TextEditingController();
+  String? uri;
+  await showModalBottomSheet(
+    context: context,
+    builder: (context) => Container(
+      alignment: Alignment.center,
+      child: Form(
+        key: key,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              TextFormField(
+                controller: src,
+                style: const TextStyle(fontSize: 14.0),
+                decoration: const InputDecoration(
+                  border: UnderlineInputBorder(),
+                  labelText: 'Video URI',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a URI';
+                  }
+                  return null;
+                },
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (key.currentState!.validate()) {
+                      uri = src.text;
+                      Navigator.of(context).maybePop();
+                    }
+                  },
+                  child: const Text('Play'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+  return uri;
 }
 
 /// Stateful widget to fetch and then display video content.
@@ -77,14 +147,29 @@ class _VideoAppState extends State<VideoApp> {
     super.initState();
     if (source != null) {
       if (File(source!).existsSync()) {
-        _controller = VideoPlayerController.file(File(source!));
+        playFile(source!);
       } else {
-        _controller = VideoPlayerController.network(source!);
+        playUri(source!);
       }
     } else {
-      _controller = VideoPlayerController.network('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4');
-
+      playUri('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4');
     }
+  }
+
+  void playFile(String path) {
+    _controller = VideoPlayerController.file(File(path));
+    _controller.addListener(() {
+      setState(() {});
+    });
+    _controller.initialize().then((_) {
+      // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+      setState(() {});
+      _controller.play();
+    });
+  }
+
+  void playUri(String uri) {
+    _controller = VideoPlayerController.network(uri);
     _controller.addListener(() {
       setState(() {});
     });
@@ -97,9 +182,37 @@ class _VideoAppState extends State<VideoApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Video Demo',
-      home: Scaffold(
+    return Scaffold(
+        floatingActionButton:
+        Row(children: [
+          FloatingActionButton(
+            heroTag: 'file',
+            tooltip: 'Open [File]',
+            onPressed: () async {
+              final result = await FilePicker.platform.pickFiles(
+                type: FileType.any,
+              );
+              if (result?.files.isNotEmpty ?? false) {
+                playFile(result!.files.first.path!);
+              }
+            },
+            child: const Icon(Icons.file_open),
+          ),
+          const SizedBox(width: 16.0),
+          FloatingActionButton(
+            heroTag: 'uri',
+            tooltip: 'Open [Uri]',
+            onPressed: () {
+              showURIPicker(context).then((value) {
+                if (value != null) {
+                  playUri(value);
+                }
+              });
+            },
+            child: const Icon(Icons.link),
+          ),
+        ],
+        ),
         body: Center(
           child: _controller.value.isInitialized
               ? AspectRatio(
@@ -115,7 +228,6 @@ class _VideoAppState extends State<VideoApp> {
                 )
               : Container(),
         ),
-      ),
     );
   }
 
