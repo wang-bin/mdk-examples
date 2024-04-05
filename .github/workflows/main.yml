@@ -57,6 +57,7 @@ jobs:
         mv build/windows/x64/runner/Release .
         cmake -E tar cvf flutter_example_windows-${{ matrix.channel }}.7z --format=7zip Release
       working-directory: flutter/simple
+    - uses: seanmiddleditch/gha-setup-ninja@master
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
@@ -93,11 +94,22 @@ jobs:
         mv build/linux/x64/release/bundle .
         cmake -E tar Jcvf flutter_example_linux-${{ matrix.channel }}-${{ matrix.version }}.tar.xz bundle
       working-directory: flutter/simple
+    - uses: seanmiddleditch/gha-setup-ninja@master
+    - name: Build CMake Projects
+      run: |
+        ls ~/.pub-cache/hosted/pub.dev/fvp*/linux
+        cp ~/.pub-cache/hosted/pub.dev/fvp*/linux/mdk-sdk-linux.tar.xz .
+        tar xvf mdk-sdk-linux.tar.xz
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -S ${{ github.workspace }} -DCMAKE_INSTALL_PREFIX=install
+        cmake --build build --config RelWithDebInfo
+        cmake --install build
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: example-linux-${{ matrix.channel }}-${{ matrix.version }}
-        path: flutter/simple/flutter_example_linux*.tar.xz
+        path: |
+            flutter/simple/flutter_example_linux*.tar.xz
+            install
 
   Android:
     runs-on: ${{ matrix.host }}-latest

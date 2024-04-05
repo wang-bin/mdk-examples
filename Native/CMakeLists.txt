@@ -15,6 +15,7 @@ install(TARGETS
 include(FindOpenGL)
 if(OpenGL_GLX_FOUND)
   add_executable(x11play x11play.cpp)
+  include(FindX11)
   target_include_directories(x11play PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${X11_X11_INCLUDE_PATH})
   target_link_libraries(x11play mdk ${X11_X11_LIB} ${CMAKE_LIBRARY_PATH_FLAG}${X11_X11_LIB}/.. GL)
   install(TARGETS x11play RUNTIME DESTINATION bin)
