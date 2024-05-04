@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2016-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2024 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -16,7 +16,9 @@
 #include "mdk/MediaInfo.h"
 #include "mdk/RenderAPI.h"
 #include "mdk/Player.h"
-
+#ifdef TEST_DRAW_FRAME
+#include "mdk/VideoFrame.h"
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -94,7 +96,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             h += 0.1f;
             if (h > 1.0)
                 h = -1.0f;
-            p->set(VideoEffect::Hue, h);
+            p->set(VideoEffect::Hue, h, vid);
         }
             break;
         case GLFW_KEY_SPACE:
@@ -108,6 +110,11 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_E:
             p->seek(INT64_MAX, gSeekFlag, [](int64_t pos) {
             printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+        }); // Default if GLFW_REPEAT
+            break;
+        case GLFW_KEY_0:
+            p->seek(0, gSeekFlag, [](int64_t pos) {
+            printf(">>>>>>>>>>seek 0 ret: %lld<<<<<<<<<<<<<<\n", pos);
         }); // Default if GLFW_REPEAT
             break;
         case GLFW_KEY_LEFT:
@@ -179,7 +186,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
         case GLFW_KEY_P: {
             const ColorSpace cs[] = {ColorSpaceUnknown, ColorSpaceBT709, ColorSpaceBT2100_PQ, ColorSpaceSCRGB, ColorSpaceExtendedLinearDisplayP3, ColorSpaceExtendedSRGB};
             static int i = 0;
-            p->set(cs[i++%std::size(cs)]);
+            p->set(cs[i++%std::size(cs)], vid);
         }
             break;
         case GLFW_KEY_Y: {
@@ -301,7 +308,7 @@ int main(int argc, const char** argv)
     bool gpa_glfw = false;
     bool es = false;
     bool autoclose = false;
-    int from = 0;
+    double from = 0;
     float wait = 0;
     float speed = 1.0f;
     int64_t buf_min = -1;
@@ -354,6 +361,8 @@ int main(int argc, const char** argv)
             player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
         } else if (strcmp(argv[i], "-ar") == 0) {
             player.setAspectRatio(std::atof(argv[++i]));
+        } else if (strcmp(argv[i], "-timeout") == 0) {
+            player.setTimeout(std::atoi(argv[++i]));
         } else if (strcmp(argv[i], "-size") == 0) {
             char *s = (char *)argv[++i];
             w = strtoll(s, &s, 10);
@@ -505,7 +514,7 @@ int main(int argc, const char** argv)
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
-            from = std::atoi(argv[++i]);
+            from = std::atof(argv[++i]);
         } else if (std::strcmp(argv[i], "-pause") == 0) {
             pause = true;
         } else if (std::strcmp(argv[i], "-ao") == 0) {
@@ -597,14 +606,23 @@ int main(int argc, const char** argv)
             // alternatively, you can create a custom event
         }
     });
-    player.onMediaStatusChanged([](MediaStatus s){
+    player.onMediaStatus([](MediaStatus oldValue, MediaStatus newValue){
         //MediaStatus s = player.mediaStatus();
-        printf("************Media status: %#x, invalid: %#x, loading: %d, unloaded: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Invalid, s&MediaStatus::Loading, s&MediaStatus::Unloaded, s&MediaStatus::Buffering, s&MediaStatus::Seeking, s&MediaStatus::Prepared, s&MediaStatus::End);
+        printf("************Media status: %#x, invalid: %#x, loading: %d, unloaded: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", newValue, newValue&MediaStatus::Invalid, newValue&MediaStatus::Loading, newValue&MediaStatus::Unloaded, newValue&MediaStatus::Buffering, newValue&MediaStatus::Seeking, newValue&MediaStatus::Prepared, newValue&MediaStatus::End);
         fflush(stdout);
         return true;
     });
-    player.onEvent([](const MediaEvent& e){
-        printf("MediaEvent: %s %s %" PRId64 "......\n", e.category.data(), e.detail.data(), e.error);
+    player.onEvent([&](const MediaEvent& e){
+        printf("MediaEvent: %s %s %" PRId64 "......\n", e.category.data(), e.detail.data(), e.error);fflush(0);
+        if (e.detail == "size") {
+            printf("MediaEvent size: %dx%d, info: %dx%d\n", e.video.width, e.video.height, player.mediaInfo().video[e.error].codec.width, player.mediaInfo().video[e.error].codec.height);
+        }
+        if (e.category == "metadata") {
+            auto& m = player.mediaInfo();
+            for (auto& [k, v] : m.metadata) {
+                printf("metadata: %s: %s\n", k.data(), v.data());
+            }
+        }
         return false;
     });
     player.onLoop([](int count){
@@ -751,7 +769,7 @@ int main(int argc, const char** argv)
     glfwGetFramebufferSize(win, &fw, &fh);
     printf("************fb size %dx%d, requested size: %dx%d, scale= %fx%f***********\n", fw, fh, w, h, xscale, yscale);
     if (!ra)
-        player.setVideoSurfaceSize(fw, fh);
+        player.setVideoSurfaceSize(fw, fh, vid);
     //player.setPlaybackRate(2.0f);
     if (!urls.empty()) {
 #ifdef _WIN32
@@ -789,7 +807,7 @@ int main(int argc, const char** argv)
     }
 
     if (player.url()) {
-        player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
+        player.prepare(int64_t(from*TimeScaleForInt), [&player](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
             return true;
@@ -824,6 +842,17 @@ int main(int argc, const char** argv)
     //float vr[] = {0, 0, 0.5f, 0.5f};
     //player.setPointMap(vr);
     while (!glfwWindowShouldClose(win)) {
+#ifdef TEST_DRAW_FRAME
+    uint8_t rgba[64*64*4];
+    const uint8_t* data[] = {
+        rgba
+    };
+        static uint8_t c = 200;
+        memset(rgba, c++, sizeof(rgba));
+        VideoFrame frame(64, 64, PixelFormat::RGBA);
+        frame.setBuffers(data);
+        player.enqueue(frame, vid);
+#endif
         if (!ra) {
             glfwMakeContextCurrent(win);
             player.renderVideo();
@@ -838,7 +867,7 @@ int main(int argc, const char** argv)
 
     }
     if (!ra) // will release internally if use native surface
-        player.setVideoSurfaceSize(-1, -1); // it's better to cleanup gl renderer resources in current foreign context
+        player.setVideoSurfaceSize(-1, -1, vid); // it's better to cleanup gl renderer resources in current foreign context
 }
     glfwTerminate();
     exit(EXIT_SUCCESS);
