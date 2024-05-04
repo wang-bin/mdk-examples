@@ -3,6 +3,8 @@ import QtQuick 2.8 // GraphicsInfo
 //! [1]
 import MDKTextureItem 1.0
 //! [1]
+import QtQuick.Dialogs
+import QtQuick.Controls 2.0
 
 Item {
     property string url
@@ -18,7 +20,28 @@ Item {
         source: url
         autoHDR: true
     }
-    //}
+    /*}
+    Rectangle{
+        width: parent.width
+        height: 60
+        anchors.bottom: parent.bottom
+        color: "green"
+        opacity: 0.8
+        Text {
+            text: qsTr("重新加载")
+            anchors.centerIn: parent
+            font.bold: true
+            color: "white"
+        }
+        MouseArea{
+            anchors.fill: parent
+            onClicked: {
+                rep.model=0
+                rep.model=1
+            }
+        }
+    }*/
+
     Rectangle {
         id: labelFrame
         anchors.margins: -10
@@ -39,6 +62,27 @@ Item {
         text: "mdk renders video in a " + gfxApi() + " texture. The texture is then imported in a QtQuick item."
         color: "red" // FIXME: video color is the same as text color in opengl rhi
     }
+
+    Button {
+        text: "Open"
+        anchors.top: parent.top
+        anchors.right: parent.right
+        width: 100
+        height: 80
+
+        onClicked: {
+            fileDalog.visible = true;
+        }
+    }
+
+    FileDialog {
+        id: fileDalog
+        title: "Choose a file"
+        onAccepted: {
+            renderer.source = selectedFiles[0]
+        }
+    }
+
 
     function gfxApi() {
         switch (GraphicsInfo.api) {

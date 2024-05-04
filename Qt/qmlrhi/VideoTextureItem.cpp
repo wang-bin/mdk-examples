@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2024 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureItem.h"
@@ -137,5 +137,6 @@ void VideoTextureItem::setAutoHDR(bool value)
 
 void VideoTextureItem::play()
 {
-    m_player->set(PlaybackState::Playing);
+    m_player->set(State::Stopped);
+    m_player->set(State::Playing);
 }

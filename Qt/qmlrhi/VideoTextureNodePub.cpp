@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2024 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureNode.h"
@@ -17,8 +17,10 @@ using namespace Microsoft::WRL; //ComPtr
 #include <QOpenGLFramebufferObject>
 #endif
 #if __has_include(<vulkan/vulkan_core.h>)
+# if QT_CONFIG(vulkan)
 #include <QVulkanInstance>
 #include <QVulkanFunctions>
+# endif
 #endif
 #include "mdk/Player.h"
 #include "mdk/RenderAPI.h"

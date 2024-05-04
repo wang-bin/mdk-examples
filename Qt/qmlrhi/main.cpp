@@ -6,6 +6,7 @@
 #endif
 int main(int argc, char **argv)
 {
+    // TODO: QSurfaceFormat::setDefaultFormat() opengles for rpi, default wayland egl create desktop gl, not compatible with hevc
     QGuiApplication app(argc, argv);
     // env: QSG_RHI=1(qt5), QSG_RHI_BACKEND=opengl, QSG_INFO=1
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
