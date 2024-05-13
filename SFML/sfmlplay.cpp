@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2020 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2024 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + SFML example
  */
 #include <SFML/Window.hpp>
@@ -21,13 +21,13 @@ int main(int argc, char** argv)
     for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "-c:v") == 0) {
             i++;
-            player.setVideoDecoders({argv[i]});
+            player.setDecoders(MediaType::Video, {argv[i]});
         }
     }
     player.setMedia(argv[argc-1]);
     player.setVideoSurfaceSize(window.getSize().x, window.getSize().y);
     //player.setRenderCallback();
-    player.setState(State::Playing);
+    player.set(State::Playing);
 
     // Start the game loop
     while (window.isOpen()) {
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
             // Escape key: exit
             if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Space)
-                    player.setState(player.state() == State::Playing ? State::Paused : State::Playing);
+                    player.set(player.state() == State::Playing ? State::Paused : State::Playing);
                 else if (event.key.code == sf::Keyboard::Right)
                     player.seek(player.position()+10000);
                 else if (event.key.code == sf::Keyboard::Left)
