@@ -6,6 +6,7 @@ qtHaveModule(quick): {
     SUBDIRS += qmdkqmlplay
     greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 9): SUBDIRS += qmlrhi qmlrhi0
 }
+greaterThan(QT_MAJOR_VERSION, 5):greaterThan(QT_MAJOR_VERSION, 6)|greaterThan(QT_MINOR_VERSION, 6): SUBDIRS += rhiwidget
 
 libqtmdk.file = libqtmdk.pro
 
