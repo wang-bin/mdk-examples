@@ -16,6 +16,8 @@ public:
     RhiVideoWidget(QWidget *parent = nullptr);
     ~RhiVideoWidget();
 
+    void setVsync(bool value) { m_vsync = value; }
+
     void setDecoders(const QStringList& dec);
     void setMedia(const QString& url);
     bool isPaused() const;
@@ -32,5 +34,6 @@ protected:
 private:
     std::unique_ptr<MDK_NS::Player> m_player;
     QRhiCommandBuffer *m_cb = nullptr;
+    bool m_vsync = false;
 };
 #endif // MDK_RHIVIDEOWIDGET_H

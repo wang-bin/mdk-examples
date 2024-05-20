@@ -39,9 +39,3 @@ INSTALLS += target
 ######## MDK SDK ##########
 MDK_SDK = $$PWD/../../mdk-sdk
 include($$MDK_SDK/mdk.pri)
-
-static|contains(CONFIG, staticlib) {
-  DEFINES += Q_MDK_API
-} else {
-  DEFINES += Q_MDK_API=Q_DECL_EXPORT
-}

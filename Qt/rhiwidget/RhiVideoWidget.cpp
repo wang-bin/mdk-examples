@@ -14,7 +14,16 @@ using namespace std;
 RhiVideoWidget::RhiVideoWidget(QWidget *parent)
     : QRhiWidget(parent)
     , m_player(make_unique<Player>())
-{}
+{
+    // if no vsync
+    m_player->setRenderCallback([](void* vid) {
+        if (!vid)
+            return;
+        auto wgt = (RhiVideoWidget*)vid;
+        if (!wgt->m_vsync)
+            wgt->update();
+    });
+}
 
 RhiVideoWidget::~RhiVideoWidget()
 {
@@ -84,7 +93,7 @@ void RhiVideoWidget::initialize(QRhiCommandBuffer *cb)
         GLRenderAPI ra{};
         ra.fbo = glrt->framebuffer;
         qDebug("rt: %p, fbo: %u", renderTarget(), ra.fbo);
-        m_player->setRenderAPI(&ra, this);
+        //m_player->setRenderAPI(&ra, this); // FIXME: fbo bind error in mdk after resize if no beginPass+beginExternal
     }
         break;
 #endif
@@ -153,7 +162,19 @@ void RhiVideoWidget::initialize(QRhiCommandBuffer *cb)
 
 void RhiVideoWidget::render(QRhiCommandBuffer *cb)
 {
+    if (api() == Api::OpenGL) {
+        cb->beginPass(renderTarget(), {}, {1.0f, 0}, nullptr, QRhiCommandBuffer::BeginPassFlag::ExternalContent);
+        cb->beginExternal();
+    }
+
     m_cb = cb;
     m_player->renderVideo(this);
-    update();
+
+    if (api() == Api::OpenGL) {
+        cb->endExternal();
+        cb->endPass();
+    }
+
+    if (m_vsync)
+        update();
 }
