@@ -117,6 +117,12 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             printf(">>>>>>>>>>seek 0 ret: %lld<<<<<<<<<<<<<<\n", pos);
         }); // Default if GLFW_REPEAT
             break;
+        case GLFW_KEY_5: {
+            static bool on = true;
+            on = !on;
+            p->setProperty("video.decoder",  "cc=" + to_string(on));
+        }
+            break;
         case GLFW_KEY_LEFT:
             p->seek(p->position()-gSeekStep, gSeekFlag|SeekFlag::KeyFrame, [](int64_t pos) {
             printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
@@ -145,7 +151,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             break;
         case GLFW_KEY_O: {
             static int angle = 0;
-            p->rotate(angle+=90);
+            p->rotate(angle+=90, vid);
         }
             break;
         case GLFW_KEY_Q:
@@ -680,7 +686,7 @@ int main(int argc, const char** argv)
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         static float s = 1.0f;
         s += (float)dy/5.0f;
-        p->scale(s, s);
+        p->scale(s, s, vid);
     });
     glfwSetDropCallback(win, [](GLFWwindow* win, int count, const char** files){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
