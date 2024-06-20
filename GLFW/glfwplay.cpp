@@ -752,6 +752,14 @@ int main(int argc, const char** argv)
     });
     glfwSetCursorPosCallback(win, [](GLFWwindow* win, double x,double y){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
+        const auto rs = p->bufferedTimeRanges();
+        if (!rs.empty()) {
+            string s;
+            for (const auto& r : rs) {
+                s += "[" + std::to_string(r.start) + ", " + std::to_string(r.end) + "] ";
+            }
+            printf("buffered: %s\n", s.data());
+        }
         if (glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
             return;
         int w = 0, h = 0;
