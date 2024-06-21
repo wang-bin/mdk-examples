@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2024 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #include "QMDKWidget.h"
@@ -172,10 +172,12 @@ void QMDKWidget::prepreForPreview()
 void QMDKWidget::initializeGL()
 {
     GLRenderAPI ra;
+#if 0 // disable for linux. if requested api is not supported, getProcAddress() may return an invalid address I don't know how to check(use mask 0xffffffff00000000?) and result in crash
     ra.getProcAddress = +[](const char* name, void* opaque) {
         Q_UNUSED(opaque); // ((QOpenGLContext*)opaque)->getProcAddress(name));
         return (void*)QOpenGLContext::currentContext()->getProcAddress(name);
     };
+#endif
     ra.opaque = context();
     player_->setRenderAPI(&ra/*, this*/);
     // context() may change(destroy old and create new) via setParent()
