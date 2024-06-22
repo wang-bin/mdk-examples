@@ -50,6 +50,13 @@ _Pragma("weak glfwGetWindowContentScale")
 _Pragma("weak glfwGetX11Display")
 _Pragma("weak glfwGetX11Window")
 # endif
+# if (GLFW_VERSION_MAJOR > 3 ||  (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4))
+_Pragma("weak glfwInitHint")
+# endif
+# if (GLFW_VERSION_MAJOR > 3 ||  (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4))
+_Pragma("weak glfwPlatformSupported")
+_Pragma("weak glfwGetPlatform")
+# endif
 #endif
 
 using namespace MDK_NS;
@@ -61,6 +68,7 @@ int vtrack = 0;
 int strack = 0;
 int program = -1;
 void* vid = nullptr;
+int platform = 0;
 
 static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
@@ -213,6 +221,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
 void showHelp(const char* argv0)
 {
     printf("usage: %s [-d3d11][-d3d12] [-es] [-refresh_rate int_fps] [-c:v decoder] url1 [url2 ...]\n"
+            "-platform: glfw 3.4+ platform, can be x11, wayland, cocoa, win32, null\n"
             "-size: width[xheight]\n"
             "-ar: aspect ratio. float value\n"
             "-bg: background color, 0xrrggbbaa, unorm (r, g, b, a)\n"
@@ -562,6 +571,19 @@ int main(int argc, const char** argv)
             record_url = argv[++i];
         } else if (std::strcmp(argv[i], "-record_format") == 0) {
             record_fmt = argv[++i];
+        } else if (std::strcmp(argv[i], "-platform") == 0) {
+            const auto ps = argv[++i];
+            if (std::strcmp("x11", ps) == 0) {
+                platform = GLFW_PLATFORM_X11;
+            } else if (std::strcmp("wayland", ps) == 0) {
+                platform = GLFW_PLATFORM_WAYLAND;
+            } else if (std::strcmp("cocoa", ps) == 0) {
+                platform = GLFW_PLATFORM_COCOA;
+            } else if (std::strcmp("win32", ps) == 0) {
+                platform = GLFW_PLATFORM_WIN32;
+            } else if (std::strcmp("null", ps) == 0) {
+                platform = GLFW_PLATFORM_NULL;
+            }
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
             help = true;
             break;
@@ -645,8 +667,23 @@ int main(int argc, const char** argv)
     glfwSetErrorCallback([](int error, const char* description) {
         fprintf(stderr, "Error: %s\n", description);
     });
+    if (platform
+#if defined(__linux__)
+        && glfwPlatformSupported
+#endif
+        && glfwPlatformSupported(platform)
+    ) {
+        glfwInitHint(GLFW_PLATFORM, platform);
+    }
     if (!glfwInit())
         exit(EXIT_FAILURE);
+
+    platform = 0;
+#if defined(__linux__)
+    if (glfwGetPlatform)
+#endif
+        platform = glfwGetPlatform();
+    printf("glfwPlatform: %#X\n", platform);
     //glfwWindowHint(GLFW_SCALE_TO_MONITOR, 1);
     if (es && !ra) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -724,7 +761,8 @@ int main(int argc, const char** argv)
     });
     glfwShowWindow(win);
 #if defined(GLFW_EXPOSE_NATIVE_X11)
-    if (glfwGetX11Display) {
+    if (glfwGetX11Display && (!platform || platform == GLFW_PLATFORM_X11)) {
+// glfwGetX11Display() returns null in wayland
 // required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
         SetGlobalOption("X11Display", glfwGetX11Display());
     }
@@ -838,9 +876,11 @@ int main(int argc, const char** argv)
         auto hwnd = glfwGetCocoaWindow(win);
 #elif defined(GLFW_EXPOSE_NATIVE_X11)
         Window hwnd = 0;
-        if (glfwGetX11Window)
-            hwnd = glfwGetX11Window(win);
-        surface_type = MDK_NS::Player::SurfaceType::X11;
+        if (!platform || platform == GLFW_PLATFORM_X11) {
+            if (glfwGetX11Window)
+                hwnd = glfwGetX11Window(win);
+            surface_type = MDK_NS::Player::SurfaceType::X11;
+        }
 #endif
         vid = (void*)hwnd;
         player.setRenderAPI(ra, vid);
