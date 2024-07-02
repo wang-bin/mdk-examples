@@ -101,7 +101,7 @@ jobs:
     - name: Build CMake Projects
       run: |
         ls ~/.pub-cache/hosted/pub.dev/fvp*/linux
-        cp ~/.pub-cache/hosted/pub.dev/fvp*/linux/mdk-sdk-linux.tar.xz .
+        cp ~/.pub-cache/hosted/pub.dev/fvp*/linux/mdk-sdk-linux*.tar.xz mdk-sdk-linux.tar.xz
         tar xvf mdk-sdk-linux.tar.xz
         cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -S ${{ github.workspace }} -DCMAKE_INSTALL_PREFIX=install
         cmake --build build --config RelWithDebInfo
