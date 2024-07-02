@@ -558,7 +558,7 @@ int main(int argc, const char** argv)
         } else if (std::strcmp(argv[i], "-speed") == 0) {
             speed = (float)atof(argv[++i]);
         } else if (std::strcmp(argv[i], "-seek_any") == 0) {
-            gSeekFlag = SeekFlag::FromStart;
+            gSeekFlag |= SeekFlag::AnyFrame;
         } else if (std::strcmp(argv[i], "-seek_step") == 0) {
             gSeekStep = atoi(argv[++i]);
         } else if (std::strcmp(argv[i], "-plugins") == 0) {
