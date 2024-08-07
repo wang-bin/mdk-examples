@@ -80,7 +80,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             Player::SnapshotRequest req{};
             //req.width = -1;
             p->snapshot(&req,
-        [](Player::SnapshotRequest* ret, double frameTime){
+        [](const Player::SnapshotRequest* ret, double frameTime){
             return std::to_string(frameTime).append(".jpg");
             }, vid);
         }
@@ -636,7 +636,8 @@ int main(int argc, const char** argv)
     });
     player.onMediaStatus([](MediaStatus oldValue, MediaStatus newValue){
         //MediaStatus s = player.mediaStatus();
-        printf("************Media status: %#x, invalid: %#x, loading: %d, unloaded: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", newValue, newValue&MediaStatus::Invalid, newValue&MediaStatus::Loading, newValue&MediaStatus::Unloaded, newValue&MediaStatus::Buffering, newValue&MediaStatus::Seeking, newValue&MediaStatus::Prepared, newValue&MediaStatus::End);
+        printf("************Media status old: %#x, invalid: %#x, loading: %d, unloaded: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", oldValue, oldValue&MediaStatus::Invalid, oldValue&MediaStatus::Loading, oldValue&MediaStatus::Unloaded, oldValue&MediaStatus::Buffering, oldValue&MediaStatus::Seeking, oldValue&MediaStatus::Prepared, oldValue&MediaStatus::End);
+        printf("************Media status new: %#x, invalid: %#x, loading: %d, unloaded: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", newValue, newValue&MediaStatus::Invalid, newValue&MediaStatus::Loading, newValue&MediaStatus::Unloaded, newValue&MediaStatus::Buffering, newValue&MediaStatus::Seeking, newValue&MediaStatus::Prepared, newValue&MediaStatus::End);
         fflush(stdout);
         return true;
     });
