@@ -11,20 +11,18 @@ int main(int argc, char *argv[])
 {
     promise<void> p;
     Player player;
-    MediaStatus st = MediaStatus::NoMedia;
     // set callbacks before play
     player.onStateChanged([&p](State s){
         if (s == State::Stopped)
             p.set_value();
     })
 #if !MEDIAINFO_IN_PREPARE
-    .onMediaStatusChanged([&](MediaStatus s){
-        if (flags_added(st, s, MediaStatus::Loaded)) {
+    .onMediaStatus([&](MediaStatus oldVal, MediaStatus newVal){
+        if (flags_added(oldVal, newVal, MediaStatus::Loaded)) {
             auto& c = player.mediaInfo().video[0].codec;
             player.setVideoSurfaceSize(c.width, c.height);
             printf("notify your opengl fbo is ready to resize %dx%d\n", c.width, c.height);
         }
-        st = s;
         return true;
     })
 #endif

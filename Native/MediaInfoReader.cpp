@@ -11,15 +11,13 @@ using namespace std;
 void test_status_future(const char* url)
 {
     promise<optional<MediaInfo>> p;
-    MediaStatus st = MediaStatus::NoMedia;
     Player player;
-    player.onMediaStatusChanged([&](MediaStatus s){
-        if (flags_added(st, s, MediaStatus::Loaded)) {
+    player.onMediaStatus([&](MediaStatus oldVal, MediaStatus newVal){
+        if (flags_added(oldVal, newVal, MediaStatus::Loaded)) {
             p.set_value(player.mediaInfo());
-        } else if (flags_added(st, s, MediaStatus::Invalid)) {
+        } else if (flags_added(oldVal, newVal, MediaStatus::Invalid)) {
             p.set_value(nullopt);
         }
-        st = s;
         return false; // unload immediately
     });
     player.setMedia(url);
