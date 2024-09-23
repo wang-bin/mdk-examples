@@ -112,17 +112,17 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             break;
         case GLFW_KEY_RIGHT:
             p->seek(p->position()+gSeekStep, gSeekFlag|SeekFlag::KeyFrame, [](int64_t pos) {
-            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         }); // Default if GLFW_REPEAT
             break;
         case GLFW_KEY_E:
             p->seek(INT64_MAX, gSeekFlag, [](int64_t pos) {
-            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         }); // Default if GLFW_REPEAT
             break;
         case GLFW_KEY_0:
             p->seek(0, gSeekFlag, [](int64_t pos) {
-            printf(">>>>>>>>>>seek 0 ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek 0 ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         }); // Default if GLFW_REPEAT
             break;
         case GLFW_KEY_5: {
@@ -133,7 +133,7 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             break;
         case GLFW_KEY_LEFT:
             p->seek(p->position()-gSeekStep, gSeekFlag|SeekFlag::KeyFrame, [](int64_t pos) {
-            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         });
             break;
         case GLFW_KEY_UP:
@@ -189,12 +189,12 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             break;
         case GLFW_KEY_PERIOD:
             p->seek(1, SeekFlag::FromNow|SeekFlag::Frame, [](int64_t pos) {
-            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         });
             break;
         case GLFW_KEY_COMMA:
             p->seek(-1, SeekFlag::FromNow|SeekFlag::Frame, [](int64_t pos) {
-            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         });
             break;
         case GLFW_KEY_P: {
@@ -708,7 +708,6 @@ int main(int argc, const char** argv)
             printf("************window scale changed: %fx%f***********\n", xscale, yscale);
         });
 #endif
-    if (!ra)
     glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         float xscale = 1.0f, yscale = 1.0f;
@@ -717,8 +716,12 @@ int main(int argc, const char** argv)
         glfwGetWindowContentScale(win, &xscale, &yscale);
 #endif
         printf("************framebuffer size changed: %dx%d, scale: %f***********\n", w, h, xscale);
-        p->setVideoSurfaceSize(w, h);
+        if (vid)
+            p->updateNativeSurface(vid, w, h); // for x11. win32/cocoa can detect size change
+        else
+            p->setVideoSurfaceSize(w, h);
     });
+
     glfwSetScrollCallback(win, [](GLFWwindow* win, double dx, double dy){
         //std::printf("scroll: %.03f, %.04f\n", dx, dy);fflush(stdout);
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
@@ -786,7 +789,7 @@ int main(int argc, const char** argv)
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         auto duration = p->mediaInfo().duration;
         p->seek(duration*int(x)/w, gSeekFlag, [](int64_t pos) {
-            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         }); // duration*x/w crashes clang-cl-11/12 -Oz
     });
     glfwSetCursorPosCallback(win, [](GLFWwindow* win, double x,double y){
@@ -807,7 +810,7 @@ int main(int argc, const char** argv)
             return;
         auto duration = p->mediaInfo().duration;
         p->seek(duration*int(x)/w, gSeekFlag, [](int64_t pos) {
-            printf(">>>>>>>>>>seek ret: %lld<<<<<<<<<<<<<<\n", pos);
+            printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
         }); // duration*x/w crashes clang-cl-11/12 -Oz
     });
     player.setPreloadImmediately(true); // MUST set before setMedia() because setNextMedia() is called when media is changed
@@ -885,7 +888,7 @@ int main(int argc, const char** argv)
 #endif
         vid = (void*)hwnd;
         player.setRenderAPI(ra, vid);
-        player.updateNativeSurface(vid, -1, -1, surface_type);
+        player.updateNativeSurface(vid, fw /*-1*/, fh /*-1*/, surface_type);
         //player.showSurface(); // let glfw process events. event handling in mdk is only implemented in win32 and x11 for now
         //exit(EXIT_SUCCESS);
     } else {
