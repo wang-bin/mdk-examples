@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2024 WangBin <wbsecg1 at gmail.com>
  * MDK SDK example of multiple players
  */
 
@@ -55,6 +55,7 @@ void parse_options(const char* opts, function<void(const char* opts, const char*
     }
 }
 
+bool gPause = false;
 int main(int argc, const char*  argv[])
 {
     printf("MDK + GLFW players\n");
@@ -91,7 +92,7 @@ int main(int argc, const char*  argv[])
     const char* dec = nullptr;
     const char* const* urls = nullptr;
     int urls_idx = 0;
-    float sync = 1.0f;
+    bool sync = false;
     const char* ao = nullptr;
 
 #ifdef _WIN32
@@ -119,7 +120,7 @@ int main(int argc, const char*  argv[])
         } else if (strcmp(argv[i], "-share") == 0) {
             share = true;
         } else if (strcmp(argv[i], "-sync") == 0) {
-            sync = std::stof(argv[++i]);
+            sync = !!std::stoi(argv[++i]);
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (strcmp(argv[i], "-urls") == 0) {
@@ -218,10 +219,13 @@ int main(int argc, const char*  argv[])
         if (dec)
             player->setDecoders(MediaType::Video, {dec});
         //player->setActiveTracks(MediaType::Audio, {});
-        if (sync != 1.0f)
+        if (sync && i > 0) { // sync to the 1st player
             player->onSync([&]{
-                return duration_cast<milliseconds>(steady_clock::now() - now).count() * sync / 1000.0;
+                return players[0]->position() / 1000.0;
             });
+            player->setMute();
+        }
+
         if (!ra && wait <= 0)
             player->setRenderCallback([](void*){
                 glfwPostEmptyEvent();
@@ -247,18 +251,26 @@ int main(int argc, const char*  argv[])
             glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
         }
-        player->setVideoSurfaceSize(w, h);
+
         win[i] = glfwCreateWindow(w, h, ("MDK + GLFW multi-window" + to_string(i)).data(), nullptr, share ? win[0] : nullptr);
         if (!win[i]) {
             glfwTerminate();
             exit(EXIT_FAILURE);
         }
+
+        int fw = 0, fh = 0;
+        glfwGetFramebufferSize(win[i], &fw, &fh);
+        if (!ra)
+            player->setVideoSurfaceSize(fw, fh);
         glfwSetKeyCallback(win[i], [](GLFWwindow* window, int key, int scancode, int action, int mods){
             if (action != GLFW_PRESS)
                 return;
             switch (key) {
             case GLFW_KEY_ESCAPE:
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
+                break;
+            case GLFW_KEY_SPACE:
+                gPause = !gPause;
                 break;
             }
         });
@@ -288,7 +300,11 @@ int main(int argc, const char*  argv[])
 
     for (auto& player : players)
         player->set(State::Playing);
+    int n = 0;
+    bool paused = false;
     while (true) {
+        bool news = gPause != paused;
+        paused = gPause;
         for (int i = 0; i < nb_win; ++i) {
             auto& w = win[i];
             if (!w)
@@ -296,6 +312,12 @@ int main(int argc, const char*  argv[])
             auto& player = players[i];
             if (!player)
                 continue;
+            if (news) {
+                if (gPause)
+                    player->set(State::Paused);
+                else
+                    player->set(State::Playing);
+            }
             if (!ra) {
                 glfwMakeContextCurrent(w);
                 player->renderVideo();
