@@ -55,6 +55,7 @@ void VideoTextureNode::sync()
     setRect(0, 0, m_item->width(), m_item->height());
     // if qsg render loop is threaded, a new render thread will be created when item's window changes, so mdk vo_opaque parameter must be bound to item window
     player->setVideoSurfaceSize(m_size.width(), m_size.height(), this);
+    player->renderVideo(); // avoid displaying uninitialized render target content
 }
 
 // This is hooked up to beforeRendering() so we can start our own render
