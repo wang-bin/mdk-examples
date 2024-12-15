@@ -13,3 +13,6 @@
 [submodule "Avalonia/MDK.SDK.NET"]
 	path = Avalonia/MDK.SDK.NET
 	url = https://github.com/axojhf/MDK.SDK.NET
+[submodule "WinUI3"]
+	path = WinUI3
+	url = https://github.com/Damix48/WinUI3MDK.git
