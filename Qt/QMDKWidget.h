@@ -4,17 +4,30 @@
  */
 #pragma once
 #include <QOpenGLWidget>
+#include <QOpenGLFramebufferObject>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLFunctions>
+#include <atomic>
 #include <memory>
 
 namespace mdk {
 class Player;
 }
-class QMDKWidget : public QOpenGLWidget
+class QMDKWidget : public QOpenGLWidget, public QOpenGLFunctions
 {
     Q_OBJECT
 public:
+    enum Effect {
+        None,
+        BoxBlur,
+        GaussianBlur,
+        Mosaic,
+    };
+
     QMDKWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~QMDKWidget();
+    void setEffect(Effect value);
+    void setEffectIntensity(float value);
     void setDecoders(const QStringList& dec);
     void setMedia(const QString& url);
     void play();
@@ -38,5 +51,13 @@ protected:
     void mouseMoveEvent(QMouseEvent* ev) override;
     void mouseDoubleClickEvent(QMouseEvent*) override;
 private:
+    bool ensureEffect();
+
     std::shared_ptr<mdk::Player> player_;
+    QSize fb_size_;
+    QOpenGLFramebufferObject* fbo_ = nullptr;
+    QOpenGLShaderProgram* program_ = nullptr;
+    std::atomic<bool> new_effect_ = false;
+    Effect effect_ = Effect::None;
+    float intensity_ = 3.0;
 };
