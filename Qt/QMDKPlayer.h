@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2025 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #ifndef QMDKPlayer_H
@@ -10,6 +10,7 @@
 
 namespace mdk {
 class Player;
+struct RenderAPI;
 }
 #ifndef Q_MDK_API
 #define Q_MDK_API Q_DECL_IMPORT
@@ -29,10 +30,16 @@ public:
     qint64 position() const;
 
     void addRenderer(QObject* vo = nullptr, int w = -1, int h = -1);
+    void updateRenderer(QObject* vo = nullptr, int w = -1, int h = -1);
+    void setRenderAPI(mdk::RenderAPI* ra, QObject* vo = nullptr);
     void renderVideo(QObject* vo = nullptr);
 
     void destroyGLContext(QObject* vo);
     void setROI(QObject* vo, const float* videoRoi, const float* viewportRoi = nullptr);
+
+Q_SIGNALS:
+    void videoSizeChanged(const QSize& size);
+
 public slots:
     void play();
     void pause(bool value = true);

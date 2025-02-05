@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2025 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWidget example
  */
 #include "QMDKWidget.h"
@@ -133,7 +133,7 @@ qint64 QMDKWidget::position() const
 
 void QMDKWidget::snapshot() {
     Player::SnapshotRequest sr{};
-    player_->snapshot(&sr, [](Player::SnapshotRequest * _sr, double frameTime) {
+    player_->snapshot(&sr, [](const Player::SnapshotRequest * _sr, double frameTime) {
         const QString path = QDir::toNativeSeparators(
             QString("%1/%2.jpg")
                 .arg(QCoreApplication::applicationDirPath())

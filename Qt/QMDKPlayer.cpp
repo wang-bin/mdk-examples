@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2025 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKPlayer.h"
@@ -17,6 +17,8 @@ QMDKPlayer::QMDKPlayer(QObject *parent)
 {
     player_->setRenderCallback([](void* vo_opaque){
         auto vo = reinterpret_cast<QObject*>(vo_opaque);
+        if (vo->property("vsync").toBool())
+            return;
         if (!vo->isWidgetType()) { // isWidgetType() is fastest, and no need to include <QWidget>
             if (vo->isWindowType())
                 QCoreApplication::instance()->postEvent(vo, new QEvent(QEvent::UpdateRequest));
@@ -36,6 +38,17 @@ QMDKPlayer::QMDKPlayer(QObject *parent)
         };
         QCoreApplication::instance()->postEvent(vo, new QUpdateLaterEvent(QRegion(0, 0, vo->property("width").toInt(), vo->property("height").toInt())));
 #endif
+    });
+
+    player_->onMediaStatus([this](MediaStatus oldVal, MediaStatus newVal) {
+        if (flags_added(oldVal, newVal, MediaStatus::Loaded)) {
+            const auto& info = player_->mediaInfo();
+            if (!info.video.empty()) {
+                const auto& v = info.video[0].codec;
+                emit videoSizeChanged({v.width, v.height});
+            }
+        }
+        return true;
     });
 }
 
@@ -90,14 +103,24 @@ qint64 QMDKPlayer::position() const
 
 void QMDKPlayer::addRenderer(QObject* vo, int w, int h)
 {
+    updateRenderer(vo, w, h);
+    connect(vo, &QObject::destroyed, this, [this](QObject* obj){
+        player_->setVideoSurfaceSize(-1, -1, obj); // remove vo
+    }, Qt::DirectConnection);
+}
+
+void QMDKPlayer::updateRenderer(QObject* vo, int w, int h)
+{
     if (w <= 0)
         w = vo->property("width").toInt() * qMax(vo->property("devicePixelRatio").toInt(), 1);
     if (h <= 0)
         h = vo->property("height").toInt() * qMax(vo->property("devicePixelRatio").toInt(), 1);
     player_->setVideoSurfaceSize(w, h, vo); // call update cb
-    connect(vo, &QObject::destroyed, this, [this](QObject* obj){
-        player_->setVideoSurfaceSize(-1, -1, obj); // remove vo
-    }, Qt::DirectConnection);
+}
+
+void QMDKPlayer::setRenderAPI(RenderAPI* ra, QObject* vo)
+{
+    player_->setRenderAPI(ra, vo);
 }
 
 void QMDKPlayer::renderVideo(QObject* vo)

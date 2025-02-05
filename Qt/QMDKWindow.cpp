@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2025 WangBin <wbsecg1 at gmail.com>
  * MDK SDK with QOpenGLWindow example
  */
 #include "QMDKWindow.h"
@@ -130,7 +130,7 @@ qint64 QMDKWindow::position() const
 
 void QMDKWindow::snapshot() {
     Player::SnapshotRequest sr{};
-    player_->snapshot(&sr, [](Player::SnapshotRequest */*_sr*/, double frameTime) {
+    player_->snapshot(&sr, [](const Player::SnapshotRequest */*_sr*/, double frameTime) {
         const QString path = QDir::toNativeSeparators(
             QString("%1/%2.png")
                 .arg(QCoreApplication::applicationDirPath())
