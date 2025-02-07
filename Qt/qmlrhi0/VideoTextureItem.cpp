@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2025 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureItem.h"
@@ -249,7 +249,7 @@ QSGTexture* VideoTextureNode::ensureTexture(Player* player, const QSize& size)
 #if QT_CONFIG(opengl)
         m_tx = TextureCoordinatesTransformFlag::MirrorVertically;
         fbo_gl.reset(new QOpenGLFramebufferObject(size));
-        GLRenderAPI ra;
+        GLRenderAPI ra{};
         ra.fbo = fbo_gl->handle();
         player->setRenderAPI(&ra);
 
@@ -276,7 +276,7 @@ QSGTexture* VideoTextureNode::ensureTexture(Player* player, const QSize& size)
         if (FAILED(dev->CreateTexture2D(&desc, nullptr, &m_texture_d3d11))) {
 
         }
-        D3D11RenderAPI ra;
+        D3D11RenderAPI ra{};
         ra.rtv = m_texture_d3d11.Get();
         player->setRenderAPI(&ra);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))

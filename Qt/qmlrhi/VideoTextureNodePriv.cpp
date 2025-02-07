@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2020-2025 WangBin <wbsecg1 at gmail.com>
  * MDK SDK in QtQuick RHI
  */
 #include "VideoTextureNode.h"
@@ -42,7 +42,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 {
     SetGlobalOption("sdr.white", 100.0f);
     auto sgrc = QQuickItemPrivate::get(m_item)->sceneGraphRenderContext();
-    auto rhi = sgrc->rhi();
+    auto rhi = sgrc->rhi(); // FIXME: null in qt6.6.1 macos
     auto format = QRhiTexture::RGBA8;
     QSGRendererInterface *rif = m_window->rendererInterface();
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 4, 0))
@@ -121,7 +121,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
 #if QT_CONFIG(opengl)
         m_tx = TextureCoordinatesTransformFlag::MirrorVertically;
         auto glrt = static_cast<QGles2TextureRenderTarget*>(m_rt.get());
-        GLRenderAPI ra;
+        GLRenderAPI ra{};
         ra.fbo = glrt->framebuffer;
         player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -163,7 +163,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         break;
 #if (_WIN32+0)
     case QSGRendererInterface::Direct3D11Rhi: {
-        D3D11RenderAPI ra;
+        D3D11RenderAPI ra{};
         ra.rtv = reinterpret_cast<ID3D11DeviceChild*>(quintptr(m_texture->nativeTexture().object));
         player->setRenderAPI(&ra, this);
 # if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -176,7 +176,7 @@ QSGTexture* VideoTextureNodePriv::ensureTexture(Player* player, const QSize& siz
         break;
 # if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
     case QSGRendererInterface::Direct3D12: {
-        D3D12RenderAPI ra;
+        D3D12RenderAPI ra{};
         ra.cmdQueue = reinterpret_cast<ID3D12CommandQueue*>(rif->getResource(m_window, QSGRendererInterface::CommandQueueResource));
         ra.rt = reinterpret_cast<ID3D12Resource*>(quintptr(m_texture->nativeTexture().object));
         player->setRenderAPI(&ra, this);
