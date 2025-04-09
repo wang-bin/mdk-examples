@@ -118,7 +118,7 @@ int64_t ItemsFromUrls(std::vector<PlaylistItem>* items, const char** urls, int c
     for (int i = 0; i < count; ++i) {
         PlaylistItem item;
         item.url = urls[i];
-        items->push_back(move(item));
+        items->push_back(std::move(item));
         auto reader = &infoReader[i];
         reader->setMedia(urls[i]);
         reader->prepare(); // callback [](int64_t, bool*){ return false;} will result in empty mediaInfo
@@ -210,7 +210,7 @@ int main(int argc, const char** argv)
             // alternatively, you can create a custom event
         }
     });
-    player.onMediaStatusChanged([](MediaStatus s){
+    player.onMediaStatus([](MediaStatus oldVal, MediaStatus s){
         //MediaStatus s = player.mediaStatus();
         printf("************Media status: %#x, invalid: %#x, loading: %d, buffering: %d, seeking: %#x, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Invalid, s&MediaStatus::Loading, s&MediaStatus::Buffering, s&MediaStatus::Seeking, s&MediaStatus::Prepared, s&MediaStatus::End);
         fflush(stdout);
@@ -323,7 +323,7 @@ int main(int argc, const char** argv)
     }
 
     if (player.url()) {
-        player.prepare(from*int64_t(TimeScaleForInt), [&player](int64_t t, bool*) {
+        player.prepare(from*int64_t(TimeScaleForInt), [&](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
             return true;

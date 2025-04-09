@@ -34,6 +34,7 @@ void main(List<String> args) async {
   final globalOpts = <String, Object>{};
   int i = 0;
   bool useFvp = true;
+  opts['subtitleFontFile'] = 'https://github.com/mpv-android/mpv-android/raw/master/app/src/main/assets/subfont.ttf';
   for (; i < args.length; i++) {
     if (args[i] == '-c:v') {
       opts['video.decoders'] = [args[++i]];

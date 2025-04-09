@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2016-2024 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2025 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -16,6 +16,7 @@
 #include "mdk/MediaInfo.h"
 #include "mdk/RenderAPI.h"
 #include "mdk/Player.h"
+#include "mdk/AudioFrame.h"
 #ifdef TEST_DRAW_FRAME
 #include "mdk/VideoFrame.h"
 #endif
@@ -345,7 +346,8 @@ int main(int argc, const char** argv)
     // some plugins must be loaded before creating player
     for (int i = 1; i < argc; ++i) { // "plugins_dir" and "plugins" MUST be set before player constructed
         if (std::strncmp(argv[i], "-plugins", strlen("-plugins")) == 0) {
-            SetGlobalOption(argv[i] + 1, (const char*)argv[++i]);
+            SetGlobalOption(argv[i] + 1, (const char*)argv[i+1]);
+            i++;
             break;
         }
     }
@@ -657,7 +659,13 @@ int main(int argc, const char** argv)
     player.onLoop([](int count){
         printf("++++++++++++++onLoop: %d......\n", count);
         return false;
-    });
+    });/*
+    player.onFrame<AudioFrame>([](AudioFrame& f, int track) {
+        if (f)
+            printf("onAudio @%f. bytesPerPlane: %d, ptr0: %p +%zu. format:% d\n", f.timestamp(), f.bytesPerPlane(), f.bufferData(0), f.bytesPerPlane(), f.format());
+        f = f.to(SampleFormat::U8, 1, 9600);
+        return 0;
+    });*/
     if (nosync)
         player.onSync([]{return DBL_MAX;});
     if (!ra && wait <= 0)
@@ -863,7 +871,7 @@ int main(int argc, const char** argv)
     }
 
     if (player.url()) {
-        player.prepare(int64_t(from*TimeScaleForInt), [&player](int64_t t, bool*) {
+        player.prepare(int64_t(from*TimeScaleForInt), [&](int64_t t, bool*) {
             std::clog << ">>>>>>>>>>>>>>>>>prepared @" << t << std::endl; // FIXME: t is wrong http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8
             //std::clog << ">>>>>>>>>>>>>>>>>>>MediaInfo.duration: " << player.mediaInfo().duration << "<<<<<<<<<<<<<<<<<<<<" << std::endl;
             return true;
