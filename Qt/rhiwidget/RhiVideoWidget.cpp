@@ -15,6 +15,7 @@ RhiVideoWidget::RhiVideoWidget(QWidget *parent)
     : QRhiWidget(parent)
     , m_player(make_unique<Player>())
 {
+    setAutoRenderTarget(true);
     // if no vsync
     m_player->setRenderCallback([](void* vid) {
         if (!vid)
@@ -104,6 +105,15 @@ void RhiVideoWidget::initialize(QRhiCommandBuffer *cb)
         ra.texture = reinterpret_cast<const void*>(quintptr(tex->nativeTexture().object)); // 5.15+
         ra.device = mtlnat->dev;
         ra.cmdQueue = mtlnat->cmdQueue;
+        ra.currentCommand = [](const void** enc, const void** cmdBuf, const void* opaque) {
+            auto widget = static_cast<const RhiVideoWidget*>(opaque);
+            if (!widget->m_cb)
+                return;
+            auto mtlCbNat = static_cast<const QRhiMetalCommandBufferNativeHandles*>(widget->m_cb->nativeHandles());
+            *enc = mtlCbNat->encoder;
+            *cmdBuf = mtlCbNat->commandBuffer;
+        };
+        ra.opaque = this;
         m_player->setRenderAPI(&ra, this);
     }
         break;
@@ -149,6 +159,15 @@ void RhiVideoWidget::initialize(QRhiCommandBuffer *cb)
         D3D12RenderAPI ra{};
         ra.cmdQueue = reinterpret_cast<ID3D12CommandQueue*>(d3dnat->commandQueue);
         ra.rt = reinterpret_cast<ID3D12Resource*>(quintptr(tex->nativeTexture().object));
+        ra.currentCommandList = [](const void* opaque) {
+            auto widget = static_cast<const RhiVideoWidget*>(opaque);
+            if (!widget->m_cb)
+                return (ID3D12GraphicsCommandList*)nullptr;
+            auto d3d12CbNat = static_cast<const QRhiD3D12CommandBufferNativeHandles*>(widget->m_cb->nativeHandles());
+            return (ID3D12GraphicsCommandList*)d3d12CbNat->commandList;
+
+        };
+        ra.opaque = this;
         m_player->setRenderAPI(&ra, this);
     }
         break;
@@ -162,18 +181,21 @@ void RhiVideoWidget::initialize(QRhiCommandBuffer *cb)
 
 void RhiVideoWidget::render(QRhiCommandBuffer *cb)
 {
-    if (api() == Api::OpenGL) {
+
+    // legacy gfx api: emulated command encoder
+    // modern api: RenderAPI must get encoder if use begin/endPass
+    //if (api() == Api::OpenGL) {
         cb->beginPass(renderTarget(), {}, {1.0f, 0}, nullptr, QRhiCommandBuffer::BeginPassFlag::ExternalContent);
         cb->beginExternal();
-    }
+    //}
 
     m_cb = cb;
     m_player->renderVideo(this);
 
-    if (api() == Api::OpenGL) {
+    //if (api() == Api::OpenGL) {
         cb->endExternal();
         cb->endPass();
-    }
+    //}
 
     if (m_vsync)
         update();
