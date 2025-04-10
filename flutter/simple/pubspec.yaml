@@ -39,7 +39,8 @@ dependencies:
   video_player: any
   logging: any
   intl: any
-  file_picker: any # TODO: file_selector
+  file_selector: any
+  image: any
 
 dev_dependencies:
   flutter_test:

@@ -16,7 +16,8 @@ import 'package:video_player/video_player.dart';
 import 'package:fvp/fvp.dart';
 import 'package:logging/logging.dart';
 import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
+import 'package:image/image.dart' as img;
 
 String? source;
 
@@ -34,7 +35,8 @@ void main(List<String> args) async {
   final globalOpts = <String, Object>{};
   int i = 0;
   bool useFvp = true;
-  opts['subtitleFontFile'] = 'https://github.com/mpv-android/mpv-android/raw/master/app/src/main/assets/subfont.ttf';
+  opts['subtitleFontFile'] =
+      'https://github.com/mpv-android/mpv-android/raw/master/app/src/main/assets/subfont.ttf';
   for (; i < args.length; i++) {
     if (args[i] == '-c:v') {
       opts['video.decoders'] = [args[++i]];
@@ -64,12 +66,9 @@ void main(List<String> args) async {
   }
 
   runApp(const MaterialApp(
-      localizationsDelegates: [
-        DefaultMaterialLocalizations.delegate
-      ],
+      localizationsDelegates: [DefaultMaterialLocalizations.delegate],
       title: 'Video Demo',
-      home: VideoApp())
-      );
+      home: VideoApp()));
 }
 
 Future<String?> getStartFile() async {
@@ -154,11 +153,13 @@ class _VideoAppState extends State<VideoApp> {
         playUri(source!);
       }
     } else {
-      playUri('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4');
+      playUri(
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4');
     }
   }
 
   void playFile(String path) {
+    _controller.dispose();
     _controller = VideoPlayerController.file(File(path));
     _controller.addListener(() {
       setState(() {});
@@ -185,17 +186,21 @@ class _VideoAppState extends State<VideoApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton:
-        Row(children: [
+      floatingActionButton: Row(
+        children: [
           FloatingActionButton(
             heroTag: 'file',
             tooltip: 'Open [File]',
             onPressed: () async {
-              final result = await FilePicker.platform.pickFiles(
-                type: FileType.any,
+              const XTypeGroup typeGroup = XTypeGroup(
+                label: 'videos',
+                //extensions: <String>['*'],
               );
-              if (result?.files.isNotEmpty ?? false) {
-                playFile(result!.files.first.path!);
+              final XFile? file =
+                  await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+
+              if (file != null) {
+                playFile(file.path);
               }
             },
             child: const Icon(Icons.file_open),
@@ -213,23 +218,68 @@ class _VideoAppState extends State<VideoApp> {
             },
             child: const Icon(Icons.link),
           ),
+          const SizedBox(width: 16.0),
+          FloatingActionButton(
+            heroTag: 'snapshot',
+            tooltip: 'Snapshot',
+            onPressed: () {
+              if (_controller.value.isInitialized) {
+                final info = _controller.getMediaInfo()?.video?[0].codec;
+                if (info == null) {
+                  debugPrint('No video codec info');
+                  return;
+                }
+                final width = info.width;
+                final height = info.height;
+                _controller.snapshot().then((value) {
+                  if (value != null) {
+                    // value is rgba data, must encode to png image and save as a file
+                    final i = img.Image.fromBytes(
+                        width: width,
+                        height: height,
+                        bytes: value.buffer,
+                        numChannels: 4,
+                        rowStride: width * 4);
+                    final savePath =
+                        '${Directory.systemTemp.path}/snapshot.jpg';
+                    img.encodeJpgFile(savePath, i, quality: 70).then((value) {
+                      final msg = value
+                          ? 'Snapshot saved to $savePath'
+                          : 'Failed to save snapshot';
+                      debugPrint(msg);
+                      // show a toast
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(msg),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    });
+                  }
+                });
+              }
+            },
+            child: const Icon(Icons.screenshot),
+          ),
         ],
-        ),
-        body: Center(
-          child: _controller.value.isInitialized
-              ? AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: <Widget>[
-                      VideoPlayer(_controller),
-                      _ControlsOverlay(controller: _controller),
-                      VideoProgressIndicator(_controller, allowScrubbing: true),
-                    ],
-                  ),
-                )
-              : Container(),
-        ),
+      ),
+      body: Center(
+        child: _controller.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: <Widget>[
+                    VideoPlayer(_controller),
+                    _ControlsOverlay(controller: _controller),
+                    VideoProgressIndicator(_controller, allowScrubbing: true),
+                  ],
+                ),
+              )
+            : Container(),
+      ),
     );
   }
 
@@ -239,7 +289,6 @@ class _VideoAppState extends State<VideoApp> {
     _controller.dispose();
   }
 }
-
 
 class _ControlsOverlay extends StatelessWidget {
   const _ControlsOverlay({required this.controller});
