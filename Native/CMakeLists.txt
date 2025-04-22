@@ -2,7 +2,7 @@ foreach(tgt mdkplay offscreen DecodeFps
   MediaInfoReader
   Thumbnail
 )
-  add_executable(${tgt} ${APPTYPE} ${tgt}.cpp)
+  add_executable(${tgt} ${tgt}.cpp)
   target_link_libraries(${tgt} PRIVATE mdk)
 endforeach()
 install(TARGETS
