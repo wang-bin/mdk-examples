@@ -70,6 +70,7 @@ int strack = 0;
 int program = -1;
 void* vid = nullptr;
 int platform = 0;
+bool recreate = false;
 
 static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods)
 {
@@ -214,6 +215,11 @@ static void key_callback(GLFWwindow* win, int key, int scancode, int action, int
             p->setProperty("subtitle", to_string(++s % 2));
         }
             break;
+        case GLFW_KEY_9: {
+            recreate = true;
+            glfwPostEmptyEvent();
+        }
+            break;
         default:
             break;
     }
@@ -319,7 +325,7 @@ int main(int argc, const char** argv)
         print_log_msg(level_name[level], msg, log_file);
     });
     //setLogLevel(LogLevel::Error);
-{
+
     bool help = argc < 2;
     bool gpa_glfw = false;
     bool es = false;
@@ -343,17 +349,7 @@ int main(int argc, const char** argv)
     std::string ca, cv;
     int w = 640;
     int h = 480;
-    // some plugins must be loaded before creating player
-    for (int i = 1; i < argc; ++i) { // "plugins_dir" and "plugins" MUST be set before player constructed
-        if (std::strncmp(argv[i], "-plugins", strlen("-plugins")) == 0) {
-            SetGlobalOption(argv[i] + 1, (const char*)argv[i+1]);
-            i++;
-            break;
-        }
-    }
 
-    Player player;
-    player.set(ColorSpaceUnknown);
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
     D3D12RenderAPI d3d12ra{};
@@ -368,66 +364,23 @@ int main(int argc, const char** argv)
     VulkanRenderAPI vkra{};
 #endif
     RenderAPI *ra = nullptr;
+
     for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "-bg") == 0) {
-            auto c = std::stoll(argv[++i], nullptr, 16);
-            const auto r = c >> 24;
-            const auto g = (c >> 16) & 0xff;
-            const auto b = (c >> 8) & 0xff;
-            const auto a = c & 0xff;
-            player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
-        } else if (strcmp(argv[i], "-ar") == 0) {
-            player.setAspectRatio(std::atof(argv[++i]));
-        } else if (strcmp(argv[i], "-timeout") == 0) {
-            player.setTimeout(std::atoi(argv[++i]));
-        } else if (strcmp(argv[i], "-size") == 0) {
-            char *s = (char *)argv[++i];
-            w = strtoll(s, &s, 10);
-            if (s[0])
-                h = strtoll(&s[1], nullptr, 10);
-        } else if (strcmp(argv[i], "-colorspace") == 0) {
-            auto cs = argv[++i];
-            if (strcmp(cs, "auto") == 0) {
-                player.set(ColorSpaceUnknown);
-            } else if (strcmp(cs, "bt709") == 0) {
-                player.set(ColorSpaceBT709);
-            } else if (strcmp(cs, "bt2100") == 0) {
-                player.set(ColorSpaceBT2100_PQ);
-            } else if (strcmp(cs, "scrgb") == 0) {
-                player.set(ColorSpaceSCRGB);
-            } else if (strcmp(cs, "srgbl") == 0) {
-                player.set(ColorSpaceExtendedLinearSRGB);
-            } else if (strcmp(cs, "srgbf") == 0) {
-                player.set(ColorSpaceExtendedSRGB);
-            } else if (strcmp(cs, "p3") == 0) {
-                player.set(ColorSpaceExtendedLinearDisplayP3);
+        if (std::strcmp(argv[i], "-platform") == 0) {
+            const auto ps = argv[++i];
+            if (std::strcmp("x11", ps) == 0) {
+                platform = GLFW_PLATFORM_X11;
+            } else if (std::strcmp("wayland", ps) == 0) {
+                platform = GLFW_PLATFORM_WAYLAND;
+            } else if (std::strcmp("cocoa", ps) == 0) {
+                platform = GLFW_PLATFORM_COCOA;
+            } else if (std::strcmp("win32", ps) == 0) {
+                platform = GLFW_PLATFORM_WIN32;
+            } else if (std::strcmp("null", ps) == 0) {
+                platform = GLFW_PLATFORM_NULL;
             }
-        } else if (strcmp(argv[i], "-c:v") == 0) {
-            cv = argv[++i];
-        } else if (strcmp(argv[i], "-c:a") == 0) {
-            ca = argv[++i];
-        } else if (strcmp(argv[i], "-t:a") == 0) {
-            atrack = std::atoi(argv[++i]);
-            if (atrack >= 0)
-                player.setActiveTracks(MediaType::Audio, {atrack});
-            else
-                player.setActiveTracks(MediaType::Audio, {});
-        } else if (strcmp(argv[i], "-t:v") == 0) {
-            vtrack = std::atoi(argv[++i]);
-            if (vtrack >= 0)
-                player.setActiveTracks(MediaType::Video, {vtrack});
-            else
-                player.setActiveTracks(MediaType::Video, {});
-        } else if (strcmp(argv[i], "-t:s") == 0) {
-            strack = std::atoi(argv[++i]);
-            if (strack >= 0)
-                player.setActiveTracks(MediaType::Subtitle, {strack});
-            else
-                player.setActiveTracks(MediaType::Subtitle, {});
-        } else if (strcmp(argv[i], "-program") == 0) {
-            program = std::atoi(argv[++i]);
-            if (program)
-                player.setActiveTracks(MediaType::Unknown, {program});
+        } else if (strcmp(argv[i], "-es") == 0) {
+            es = true;
         } else if (strstr(argv[i], "-d3d11") == argv[i] && (argv[i][6] == 0 || argv[i][6] == ':')) {
 #ifdef _WIN32
             ra = &d3d11ra;
@@ -526,10 +479,138 @@ int main(int argc, const char** argv)
                 printf("vkra.graphics_family: %d, vkra.max_version: %u\n", vkra.graphics_family, vkra.max_version);
             });
 #endif
+        }
+    }
+
+
+    glfwSetErrorCallback([](int error, const char* description) {
+        fprintf(stderr, "Error: %s\n", description);
+    });
+    if (platform
+#if defined(__linux__)
+        && glfwPlatformSupported
+#endif
+        && glfwPlatformSupported(platform)
+    ) {
+        glfwInitHint(GLFW_PLATFORM, platform);
+    }
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+
+    platform = 0;
+#if defined(__linux__)
+    if (glfwGetPlatform)
+#endif
+        platform = glfwGetPlatform();
+    printf("glfwPlatform: %#X\n", platform);
+    //glfwWindowHint(GLFW_SCALE_TO_MONITOR, 1);
+    if (es && !ra) {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+    }
+    if (ra) { // we create gl context ourself, glfw should provide a clean window.
+        // default is GLFW_OPENGL_API + GLFW_NATIVE_CONTEXT_API which may affect our context(macOS)
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    }
+    GLFWwindow *win = glfwCreateWindow(w, h, "MDK + GLFW. Drop videos here", nullptr, nullptr);
+    if (!win) {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+    }
+    glfwSetKeyCallback(win, key_callback);
+#if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
+    if (glfwSetWindowContentScaleCallback)
+        glfwSetWindowContentScaleCallback(win, [](GLFWwindow* win, float xscale, float yscale){
+            printf("************window scale changed: %fx%f***********\n", xscale, yscale);
+        });
+#endif
+
+    glfwShowWindow(win);
+#if defined(GLFW_EXPOSE_NATIVE_X11)
+    if (glfwGetX11Display && (!platform || platform == GLFW_PLATFORM_X11)) {
+// glfwGetX11Display() returns null in wayland
+// required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
+        SetGlobalOption("X11Display", glfwGetX11Display());
+    }
+#endif
+
+
+    while(!glfwWindowShouldClose(win))
+{
+    // some plugins must be loaded before creating player
+    for (int i = 1; i < argc; ++i) { // "plugins_dir" and "plugins" MUST be set before player constructed
+        if (std::strncmp(argv[i], "-plugins", strlen("-plugins")) == 0) {
+            SetGlobalOption(argv[i] + 1, (const char*)argv[i+1]);
+            i++;
+            break;
+        }
+    }
+
+    Player player;
+    player.set(ColorSpaceUnknown);
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "-bg") == 0) {
+            auto c = std::stoll(argv[++i], nullptr, 16);
+            const auto r = c >> 24;
+            const auto g = (c >> 16) & 0xff;
+            const auto b = (c >> 8) & 0xff;
+            const auto a = c & 0xff;
+            player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
+        } else if (strcmp(argv[i], "-ar") == 0) {
+            player.setAspectRatio(std::atof(argv[++i]));
+        } else if (strcmp(argv[i], "-timeout") == 0) {
+            player.setTimeout(std::atoi(argv[++i]));
+        } else if (strcmp(argv[i], "-size") == 0) {
+            char *s = (char *)argv[++i];
+            w = strtoll(s, &s, 10);
+            if (s[0])
+                h = strtoll(&s[1], nullptr, 10);
+        } else if (strcmp(argv[i], "-colorspace") == 0) {
+            auto cs = argv[++i];
+            if (strcmp(cs, "auto") == 0) {
+                player.set(ColorSpaceUnknown);
+            } else if (strcmp(cs, "bt709") == 0) {
+                player.set(ColorSpaceBT709);
+            } else if (strcmp(cs, "bt2100") == 0) {
+                player.set(ColorSpaceBT2100_PQ);
+            } else if (strcmp(cs, "scrgb") == 0) {
+                player.set(ColorSpaceSCRGB);
+            } else if (strcmp(cs, "srgbl") == 0) {
+                player.set(ColorSpaceExtendedLinearSRGB);
+            } else if (strcmp(cs, "srgbf") == 0) {
+                player.set(ColorSpaceExtendedSRGB);
+            } else if (strcmp(cs, "p3") == 0) {
+                player.set(ColorSpaceExtendedLinearDisplayP3);
+            }
+        } else if (strcmp(argv[i], "-c:v") == 0) {
+            cv = argv[++i];
+        } else if (strcmp(argv[i], "-c:a") == 0) {
+            ca = argv[++i];
+        } else if (strcmp(argv[i], "-t:a") == 0) {
+            atrack = std::atoi(argv[++i]);
+            if (atrack >= 0)
+                player.setActiveTracks(MediaType::Audio, {atrack});
+            else
+                player.setActiveTracks(MediaType::Audio, {});
+        } else if (strcmp(argv[i], "-t:v") == 0) {
+            vtrack = std::atoi(argv[++i]);
+            if (vtrack >= 0)
+                player.setActiveTracks(MediaType::Video, {vtrack});
+            else
+                player.setActiveTracks(MediaType::Video, {});
+        } else if (strcmp(argv[i], "-t:s") == 0) {
+            strack = std::atoi(argv[++i]);
+            if (strack >= 0)
+                player.setActiveTracks(MediaType::Subtitle, {strack});
+            else
+                player.setActiveTracks(MediaType::Subtitle, {});
+        } else if (strcmp(argv[i], "-program") == 0) {
+            program = std::atoi(argv[++i]);
+            if (program)
+                player.setActiveTracks(MediaType::Unknown, {program});
         } else if (strcmp(argv[i], "-gpa_glfw") == 0) {
             gpa_glfw = true;
-        } else if (strcmp(argv[i], "-es") == 0) {
-            es = true;
         } else if (std::strcmp(argv[i], "-from") == 0) {
             from = std::atof(argv[++i]);
         } else if (std::strcmp(argv[i], "-pause") == 0) {
@@ -573,19 +654,6 @@ int main(int argc, const char** argv)
             record_url = argv[++i];
         } else if (std::strcmp(argv[i], "-record_format") == 0) {
             record_fmt = argv[++i];
-        } else if (std::strcmp(argv[i], "-platform") == 0) {
-            const auto ps = argv[++i];
-            if (std::strcmp("x11", ps) == 0) {
-                platform = GLFW_PLATFORM_X11;
-            } else if (std::strcmp("wayland", ps) == 0) {
-                platform = GLFW_PLATFORM_WAYLAND;
-            } else if (std::strcmp("cocoa", ps) == 0) {
-                platform = GLFW_PLATFORM_COCOA;
-            } else if (std::strcmp("win32", ps) == 0) {
-                platform = GLFW_PLATFORM_WIN32;
-            } else if (std::strcmp("null", ps) == 0) {
-                platform = GLFW_PLATFORM_NULL;
-            }
         } else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "-help") == 0) {
             help = true;
             break;
@@ -673,49 +741,7 @@ int main(int argc, const char** argv)
             glfwPostEmptyEvent(); // FIXME: some events are lost on macOS. glfw bug?
         });
 
-    glfwSetErrorCallback([](int error, const char* description) {
-        fprintf(stderr, "Error: %s\n", description);
-    });
-    if (platform
-#if defined(__linux__)
-        && glfwPlatformSupported
-#endif
-        && glfwPlatformSupported(platform)
-    ) {
-        glfwInitHint(GLFW_PLATFORM, platform);
-    }
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-
-    platform = 0;
-#if defined(__linux__)
-    if (glfwGetPlatform)
-#endif
-        platform = glfwGetPlatform();
-    printf("glfwPlatform: %#X\n", platform);
-    //glfwWindowHint(GLFW_SCALE_TO_MONITOR, 1);
-    if (es && !ra) {
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-    }
-    if (ra) { // we create gl context ourself, glfw should provide a clean window.
-        // default is GLFW_OPENGL_API + GLFW_NATIVE_CONTEXT_API which may affect our context(macOS)
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    }
-    GLFWwindow *win = glfwCreateWindow(w, h, "MDK + GLFW. Drop videos here", nullptr, nullptr);
-    if (!win) {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
     glfwSetWindowUserPointer(win, &player);
-    glfwSetKeyCallback(win, key_callback);
-#if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
-    if (glfwSetWindowContentScaleCallback)
-        glfwSetWindowContentScaleCallback(win, [](GLFWwindow* win, float xscale, float yscale){
-            printf("************window scale changed: %fx%f***********\n", xscale, yscale);
-        });
-#endif
     glfwSetFramebufferSizeCallback(win, [](GLFWwindow* win, int w,int h){
         auto p = static_cast<Player*>(glfwGetWindowUserPointer(win));
         float xscale = 1.0f, yscale = 1.0f;
@@ -771,14 +797,6 @@ int main(int argc, const char** argv)
 
         p->set(State::Playing);
     });
-    glfwShowWindow(win);
-#if defined(GLFW_EXPOSE_NATIVE_X11)
-    if (glfwGetX11Display && (!platform || platform == GLFW_PLATFORM_X11)) {
-// glfwGetX11Display() returns null in wayland
-// required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
-        SetGlobalOption("X11Display", glfwGetX11Display());
-    }
-#endif
     player.onStateChanged([=](State s){
         if (s == State::Stopped && autoclose) {
             glfwSetWindowShouldClose(win, 1);
@@ -908,6 +926,8 @@ int main(int argc, const char** argv)
     //float vr[] = {0, 0, 0.5f, 0.5f};
     //player.setPointMap(vr);
     while (!glfwWindowShouldClose(win)) {
+        if (std::exchange(recreate, false))
+            break;
 #ifdef TEST_DRAW_FRAME
     uint8_t rgba[64*64*4];
     const uint8_t* data[] = {
@@ -930,7 +950,6 @@ int main(int argc, const char** argv)
             glfwWaitEventsTimeout(wait);
         else
             glfwWaitEvents();
-
     }
     if (!ra) // will release internally if use native surface
         player.setVideoSurfaceSize(-1, -1, vid); // it's better to cleanup gl renderer resources in current foreign context
