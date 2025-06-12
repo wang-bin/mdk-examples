@@ -50,6 +50,8 @@ _Pragma("weak glfwGetWindowContentScale")
 // libglfw3-wayland has no x11 symbols
 _Pragma("weak glfwGetX11Display")
 _Pragma("weak glfwGetX11Window")
+_Pragma("weak glfwGetWaylandDisplay")
+_Pragma("weak glfwGetWaylandWindow")
 # endif
 # if (GLFW_VERSION_MAJOR > 3 ||  (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4))
 _Pragma("weak glfwInitHint")
@@ -532,6 +534,12 @@ int main(int argc, const char** argv)
 // glfwGetX11Display() returns null in wayland
 // required by vdpau/vaapi interop with x11 egl if gl context is provided by user because x11 can not query the fucking Display* via the Window shit. not sure about other linux ws e.g. wayland
         SetGlobalOption("X11Display", glfwGetX11Display());
+        SetGlobalOption("Display*", glfwGetX11Display()); // > 0.33.0
+    }
+#endif
+#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
+    if (glfwGetWaylandDisplay && (!platform || platform == GLFW_PLATFORM_WAYLAND)) {
+        SetGlobalOption("wl_display*", glfwGetWaylandDisplay());
     }
 #endif
 
