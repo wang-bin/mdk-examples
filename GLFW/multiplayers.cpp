@@ -79,12 +79,7 @@ int main(int argc, const char*  argv[])
     glfwSetErrorCallback([](int error, const char* description) {
         fprintf(stderr, "GLFW Error: %s\n", description);
     });
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-//{
-    auto monitor = glfwGetPrimaryMonitor();
-    auto mode = glfwGetVideoMode(monitor);
-    printf("primary screen size: %dx%d\n", mode->width, mode->height);
+
     int nb_win = 4;
     float wait = 0;
     bool share = false;
@@ -94,6 +89,7 @@ int main(int argc, const char*  argv[])
     int urls_idx = 0;
     bool sync = false;
     const char* ao = nullptr;
+    int platform = 0;
 
 #ifdef _WIN32
     D3D11RenderAPI d3d11ra{};
@@ -109,7 +105,20 @@ int main(int argc, const char*  argv[])
 #endif
     RenderAPI *ra = nullptr;
     for (int i = 0; i < argc; ++i) {
-        if (strcmp(argv[i], "-win") == 0) {
+        if (std::strcmp(argv[i], "-platform") == 0) {
+            const auto ps = argv[++i];
+            if (std::strcmp("x11", ps) == 0) {
+                platform = GLFW_PLATFORM_X11;
+            } else if (std::strcmp("wayland", ps) == 0) {
+                platform = GLFW_PLATFORM_WAYLAND;
+            } else if (std::strcmp("cocoa", ps) == 0) {
+                platform = GLFW_PLATFORM_COCOA;
+            } else if (std::strcmp("win32", ps) == 0) {
+                platform = GLFW_PLATFORM_WIN32;
+            } else if (std::strcmp("null", ps) == 0) {
+                platform = GLFW_PLATFORM_NULL;
+            }
+        } else if (strcmp(argv[i], "-win") == 0) {
             nb_win = atoi(argv[++i]);
         } else if (strcmp(argv[i], "-c:v") == 0) {
             dec = argv[++i];
@@ -201,6 +210,29 @@ int main(int argc, const char*  argv[])
 #endif
         }
     }
+
+    if (platform
+#if defined(__linux__)
+        && glfwPlatformSupported
+#endif
+        && glfwPlatformSupported(platform)
+    ) {
+        glfwInitHint(GLFW_PLATFORM, platform);
+    }
+    if (!glfwInit())
+        exit(EXIT_FAILURE);
+//{
+    auto monitor = glfwGetPrimaryMonitor();
+    auto mode = glfwGetVideoMode(monitor);
+    printf("primary screen size: %dx%d\n", mode->width, mode->height);
+
+    platform = 0;
+#if defined(__linux__)
+    if (glfwGetPlatform)
+#endif
+        platform = glfwGetPlatform();
+    printf("glfwPlatform: %#X\n", platform);
+
     if (urls_idx == 0)
         urls_idx = argc-1;
     urls = &argv[urls_idx];
@@ -288,8 +320,12 @@ int main(int argc, const char*  argv[])
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
             auto hwnd = glfwGetCocoaWindow(win[0]);
 #elif defined(GLFW_EXPOSE_NATIVE_X11)
-            auto hwnd = glfwGetX11Window(win[0]);
-            surface_type = MDK_NS::Player::SurfaceType::X11;
+            Window hwnd = 0;
+            if (!platform || platform == GLFW_PLATFORM_X11) {
+                if (glfwGetX11Window)
+                    hwnd = glfwGetX11Window(win[0]);
+                surface_type = MDK_NS::Player::SurfaceType::X11;
+            }
 #endif
             player->setRenderAPI(ra, (void*)hwnd);
             player->updateNativeSurface((void*)hwnd, -1, -1, surface_type);
