@@ -72,7 +72,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ['any']
+        version: ['any', '3.29.x']
         channel: ['stable']
     steps:
     - uses: actions/checkout@v4
@@ -97,6 +97,16 @@ jobs:
         mv build/linux/x64/release/bundle .
         cmake -E tar Jcvf flutter_example_linux-${{ matrix.channel }}-${{ matrix.version }}.tar.xz bundle
       working-directory: flutter/simple
+
+    - run: flutter pub get
+      working-directory: flutter/fvp-test-fade
+    - run: flutter build linux --verbose
+      working-directory: flutter/fvp-test-fade
+    - run: |
+        mv build/linux/x64/release/bundle .
+        cmake -E tar Jcvf flutter_test_linux-${{ matrix.channel }}-${{ matrix.version }}.tar.xz bundle
+      working-directory: flutter/fvp-test-fade
+
     - uses: seanmiddleditch/gha-setup-ninja@master
     - name: Build CMake Projects
       run: |
@@ -112,6 +122,7 @@ jobs:
         name: example-linux-${{ matrix.channel }}-${{ matrix.version }}
         path: |
             flutter/simple/flutter_example_linux*.tar.xz
+            flutter/fvp-test-fade/flutter_test_linux*.tar.xz
             install
 
   Snap-arm64:

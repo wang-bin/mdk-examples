@@ -16,3 +16,6 @@
 [submodule "WinUI3"]
 	path = WinUI3
 	url = https://github.com/Damix48/WinUI3MDK.git
+[submodule "flutter/fvp-test-fade"]
+	path = flutter/fvp-test-fade
+	url = https://github.com/wang-bin/fvp-test-fade.git
