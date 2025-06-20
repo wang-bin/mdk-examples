@@ -89,14 +89,6 @@ jobs:
 #    - run: flutter config --enable-linux-desktop
     - run: flutter doctor --verbose
     - run: flutter pub cache clean -f
-    - run: flutter pub get
-      working-directory: flutter/simple
-    - run: flutter build linux --verbose
-      working-directory: flutter/simple
-    - run: |
-        mv build/linux/x64/release/bundle .
-        cmake -E tar Jcvf flutter_example_linux-${{ matrix.channel }}-${{ matrix.version }}.tar.xz bundle
-      working-directory: flutter/simple
 
     - run: flutter pub get
       working-directory: flutter/fvp-test-fade
@@ -106,6 +98,15 @@ jobs:
         mv build/linux/x64/release/bundle .
         cmake -E tar Jcvf flutter_test_linux-${{ matrix.channel }}-${{ matrix.version }}.tar.xz bundle
       working-directory: flutter/fvp-test-fade
+
+    - run: flutter pub get
+      working-directory: flutter/simple
+    - run: flutter build linux --verbose
+      working-directory: flutter/simple
+    - run: |
+        mv build/linux/x64/release/bundle .
+        cmake -E tar Jcvf flutter_example_linux-${{ matrix.channel }}-${{ matrix.version }}.tar.xz bundle
+      working-directory: flutter/simple
 
     - uses: seanmiddleditch/gha-setup-ninja@master
     - name: Build CMake Projects
