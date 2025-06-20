@@ -90,7 +90,9 @@ jobs:
     - run: flutter doctor --verbose
     - run: flutter pub cache clean -f
 
-    - run: flutter pub get
+    - run: |
+        flutter pub get
+        flutter pub upgrade fvp
       working-directory: flutter/fvp-test-fade
     - run: flutter build linux --verbose
       working-directory: flutter/fvp-test-fade
