@@ -381,6 +381,11 @@ int main(int argc, const char** argv)
             } else if (std::strcmp("null", ps) == 0) {
                 platform = GLFW_PLATFORM_NULL;
             }
+        } else if (strcmp(argv[i], "-size") == 0) {
+            char *s = (char *)argv[++i];
+            w = strtoll(s, &s, 10);
+            if (s[0])
+                h = strtoll(&s[1], nullptr, 10);
         } else if (strcmp(argv[i], "-es") == 0) {
             es = true;
         } else if (strstr(argv[i], "-d3d11") == argv[i] && (argv[i][6] == 0 || argv[i][6] == ':')) {
@@ -569,11 +574,6 @@ int main(int argc, const char** argv)
             player.setAspectRatio(std::atof(argv[++i]));
         } else if (strcmp(argv[i], "-timeout") == 0) {
             player.setTimeout(std::atoi(argv[++i]));
-        } else if (strcmp(argv[i], "-size") == 0) {
-            char *s = (char *)argv[++i];
-            w = strtoll(s, &s, 10);
-            if (s[0])
-                h = strtoll(&s[1], nullptr, 10);
         } else if (strcmp(argv[i], "-colorspace") == 0) {
             auto cs = argv[++i];
             if (strcmp(cs, "auto") == 0) {
