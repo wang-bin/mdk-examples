@@ -855,6 +855,17 @@ int main(int argc, const char** argv)
 #endif
 // setDecoders before setMedia(), setNextMedia() in currentMediaChanged() callback may load immediately
 
+    if (!cv.empty()) {
+        std::regex re(",");
+        std::sregex_token_iterator first{cv.begin(), cv.end(), re, -1}, last;
+        player.setDecoders(MediaType::Video, {first, last});
+    }
+    if (!ca.empty()) {
+        std::regex re(",");
+        std::sregex_token_iterator first{ca.begin(), ca.end(), re, -1}, last;
+        player.setDecoders(MediaType::Audio, {first, last});
+    }
+
     int fw = 0, fh = 0;
     glfwGetFramebufferSize(win, &fw, &fh);
     printf("************fb size %dx%d, requested size: %dx%d, scale= %fx%f***********\n", fw, fh, w, h, xscale, yscale);
@@ -874,16 +885,6 @@ int main(int argc, const char** argv)
     }
     if (urlsub) {
         player.setMedia(urlsub, MediaType::Subtitle);
-    }
-    if (!cv.empty()) {
-        std::regex re(",");
-        std::sregex_token_iterator first{cv.begin(), cv.end(), re, -1}, last;
-        player.setDecoders(MediaType::Video, {first, last});
-    }
-    if (!ca.empty()) {
-        std::regex re(",");
-        std::sregex_token_iterator first{ca.begin(), ca.end(), re, -1}, last;
-        player.setDecoders(MediaType::Audio, {first, last});
     }
 
     if (loop >= -1 && urls.size() == 1)
