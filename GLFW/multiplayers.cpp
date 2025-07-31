@@ -30,6 +30,26 @@
 #define GLFW_EXPOSE_NATIVE_WAYLAND
 #endif
 #include <GLFW/glfw3native.h>
+
+#ifdef _Pragma
+# if (GLFW_VERSION_MAJOR > 3 ||  GLFW_VERSION_MINOR > 2)
+_Pragma("weak glfwSetWindowContentScaleCallback")
+_Pragma("weak glfwGetWindowContentScale")
+// libglfw3-wayland has no x11 symbols
+_Pragma("weak glfwGetX11Display")
+_Pragma("weak glfwGetX11Window")
+_Pragma("weak glfwGetWaylandDisplay")
+_Pragma("weak glfwGetWaylandWindow")
+# endif
+# if (GLFW_VERSION_MAJOR > 3 ||  (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4))
+_Pragma("weak glfwInitHint")
+# endif
+# if (GLFW_VERSION_MAJOR > 3 ||  (GLFW_VERSION_MAJOR == 3 && GLFW_VERSION_MINOR >= 4))
+_Pragma("weak glfwPlatformSupported")
+_Pragma("weak glfwGetPlatform")
+# endif
+#endif
+
 using namespace std;
 using namespace std::chrono;
 using namespace MDK_NS;
