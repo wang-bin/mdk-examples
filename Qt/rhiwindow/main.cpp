@@ -3,7 +3,11 @@
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
 # include <private/qrhi_p.h>
-# include <private/qrhivulkan_p.h>
+# if __has_include(<vulkan/vulkan_core.h>)
+#   if QT_CONFIG(vulkan)
+#   include <private/qrhivulkan_p.h>
+#   endif
+#  endif
 #endif
 
 QString graphicsApiName(QRhi::Implementation api)
@@ -41,7 +45,7 @@ int main(int argc, char *argv[])
     graphicsApi = QRhi::D3D11;
 #elif (__APPLE__ + 0)// QT_CONFIG(metal)
     graphicsApi = QRhi::Metal;
-#elif QT_CONFIG(vulkan)
+#elif (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     graphicsApi = QRhi::Vulkan;
 #else
     graphicsApi = QRhi::OpenGLES2;
@@ -89,7 +93,7 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(fmt);
 
 // For Vulkan.
-#if QT_CONFIG(vulkan)
+#if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     QVulkanInstance inst;
     if (graphicsApi == QRhi::Vulkan) {
         // Request validation, if available. This is completely optional
@@ -116,7 +120,7 @@ int main(int argc, char *argv[])
     if (i > 0)
         window.setDecoders(app.arguments().at(i+1).split(","));
 
-#if QT_CONFIG(vulkan)
+#if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     if (graphicsApi == QRhi::Vulkan)
         window.setVulkanInstance(&inst);
 #endif

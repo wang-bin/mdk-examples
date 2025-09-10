@@ -10,8 +10,10 @@
 # if (__APPLE__ +0)
 #  include <private/qrhimetal_p.h>
 # endif
-# if QT_CONFIG(vulkan)
-#  include <private/qrhivulkan_p.h>
+# if __has_include(<vulkan/vulkan_core.h>)
+#   if QT_CONFIG(vulkan)
+#    include <private/qrhivulkan_p.h>
+#   endif
 # endif
 #endif
 #include <vector>
@@ -132,7 +134,7 @@ void RhiWindow::init()
     }
 #endif
 
-#if QT_CONFIG(vulkan)
+#if (VK_VERSION_1_0+0) && QT_CONFIG(vulkan)
     if (m_graphicsApi == QRhi::Vulkan) {
         QRhiVulkanInitParams params;
         params.inst = vulkanInstance();
