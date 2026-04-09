@@ -31,6 +31,13 @@ minimal glfw example
 ## iOS
 Legacy Obj-C OpenGLES2 example
 
+## OHOS (OpenHarmony)
+ArkUI / ArkTS example for OpenHarmony and HarmonyOS devices
+- XComponent native surface with `player.updateNativeSurface()`
+- Local file playback via Document Picker using the `fd://` protocol
+- Network URL playback (HTTP, RTSP, RTMP, HLS, DASH, etc.)
+- Progress slider, play/pause/stop buttons, speed selector, volume slider
+
 ## Apple
 - HelloTriangle: Using mdk sdk to play video in Apple's official example https://developer.apple.com/documentation/metal/using_a_render_pipeline_to_render_primitives?language=objc
 - OCPlayer: macOS only. via cocoapods

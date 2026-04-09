@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "MDK Player"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "MDK media player example for OHOS"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "MDK Player"
+    }
+  ]
+}

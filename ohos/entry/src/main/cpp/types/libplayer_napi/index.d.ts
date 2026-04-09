@@ -1,0 +1,10 @@
+export const setMedia: (url: string) => void;
+export const play: () => void;
+export const pause: () => void;
+export const stop: () => void;
+export const seek: (ms: number) => void;
+export const setPlaybackRate: (rate: number) => void;
+export const setVolume: (volume: number) => void;
+export const getPosition: () => number;
+export const getDuration: () => number;
+export const isPlaying: () => boolean;
