@@ -218,7 +218,7 @@ static napi_value Init(napi_env env, napi_value exports) {
 
         if (valType != napi_undefined && valType != napi_null) {
             OH_NativeXComponent* nativeXComponent = nullptr;
-            OH_NativeXComponent_GetNativeXComponent(xcompInstance, &nativeXComponent);
+            napi_unwrap(env, xcompInstance, (void**)&nativeXComponent);
 
             if (nativeXComponent) {
                 char id[OH_XCOMPONENT_ID_LEN_MAX + 1] = {};
