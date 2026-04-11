@@ -210,14 +210,14 @@ static napi_value IsPlaying(napi_env env, napi_callback_info info) {
 // Module init: called when loaded via XComponent libraryname or regular import
 static napi_value Init(napi_env env, napi_value exports) {
     // Redirect MDK log output to the OHOS HiLog system with tag "mdk"
-    setLogHandler([](LogLevel level, const char* msg) {
-        static const LogType ohLevel[] = {
-            LOG_INFO,    // LogLevel::Off   (0) — unused, but map to INFO
-            LOG_ERROR,   // LogLevel::Error (1)
-            LOG_WARN,    // LogLevel::Warning (2)
-            LOG_INFO,    // LogLevel::Info  (3)
-            LOG_DEBUG,   // LogLevel::Debug (4)
-            LOG_DEBUG,   // LogLevel::All   (5)
+    setLogHandler([](MDK_NS::LogLevel level, const char* msg) {
+        static const LogLevel ohLevel[] = {
+            LOG_INFO,    // MDK LogLevel::Off   (0)
+            LOG_ERROR,   // MDK LogLevel::Error (1)
+            LOG_WARN,    // MDK LogLevel::Warning (2)
+            LOG_INFO,    // MDK LogLevel::Info  (3)
+            LOG_DEBUG,   // MDK LogLevel::Debug (4)
+            LOG_DEBUG,   // MDK LogLevel::All   (5)
         };
         const int idx = (int)level < 6 ? (int)level : 0;
         OH_LOG_Print(LOG_APP, ohLevel[idx], 0xFF00, "mdk", "%{public}s", msg);
