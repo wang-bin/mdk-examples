@@ -20,5 +20,6 @@ add_library(player_napi SHARED
 target_link_libraries(player_napi
     mdk
     libace_napi.z.so
+    libace_ndk.z.so
     libhilog_ndk.z.so
 )
