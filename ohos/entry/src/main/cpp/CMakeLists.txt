@@ -11,21 +11,14 @@ if(NOT MDK_SDK_DIR)
     set(MDK_SDK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdk-sdk)
 endif()
 
+include(${MDK_SDK_DIR}/lib/cmake/FindMDK.cmake)
+
 add_library(player_napi SHARED
     player_napi.cpp
 )
 
-target_include_directories(player_napi PRIVATE
-    ${MDK_SDK_DIR}/include
-)
-
-# OHOS_ARCH is set by the build system (e.g. arm64-v8a, x86_64)
-if(NOT DEFINED OHOS_ARCH)
-    set(OHOS_ARCH "arm64-v8a")
-endif()
-
 target_link_libraries(player_napi
+    mdk
     libace_napi.z.so
     libhilog_ndk.z.so
-    ${MDK_SDK_DIR}/lib/ohos/${OHOS_ARCH}/libmdk.so
 )
