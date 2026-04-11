@@ -211,7 +211,7 @@ static napi_value IsPlaying(napi_env env, napi_callback_info info) {
 static napi_value Init(napi_env env, napi_value exports) {
     // Redirect MDK log output to the OHOS HiLog system with tag "mdk"
     setLogHandler([](MDK_NS::LogLevel level, const char* msg) {
-        static const LogLevel ohLevel[] = {
+        static const ::LogLevel ohLevel[] = {
             LOG_INFO,    // MDK LogLevel::Off   (0)
             LOG_ERROR,   // MDK LogLevel::Error (1)
             LOG_WARN,    // MDK LogLevel::Warning (2)
