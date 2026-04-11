@@ -2,8 +2,5 @@
   "name": "mdk-player-ohos",
   "version": "1.0.0",
   "description": "MDK SDK media player example for OpenHarmony",
-  "license": "MIT",
-  "devDependencies": {
-    "@ohos/hvigor-ohos-plugin": "5.0.0"
-  }
+  "license": "MIT"
 }

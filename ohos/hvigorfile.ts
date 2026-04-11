@@ -1,1 +1,3 @@
-export { default } from '@ohos/hvigor-ohos-plugin';
+import { appTasks } from '@ohos/hvigor-ohos-plugin';
+
+export default appTasks;
