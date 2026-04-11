@@ -92,12 +92,11 @@ static napi_value SetMedia(napi_env env, napi_callback_info info) {
     std::string url = GetStringArg(env, args[0]);
     auto* player = GetDefaultPlayer();
     if (player) {
-        // "fd://N" — pass the file descriptor number via the -fd option instead
-        // of embedding it in the URL (FFmpeg's fd protocol requires this)
+        // "fd://N" — use setMedia("fd:") + setProperty("avio", "<N>")
         if (url.rfind("fd://", 0) == 0) {
             std::string fdStr = url.substr(5);
-            const char* opts[] = {"-fd", fdStr.c_str(), nullptr};
-            player->setMedia("", opts);
+            player->setProperty("avio", fdStr.c_str());
+            player->setMedia("fd:");
         } else {
             player->setMedia(url.c_str());
         }
