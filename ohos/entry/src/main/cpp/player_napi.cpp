@@ -21,6 +21,7 @@ using namespace MDK_NS;
 // Global player storage keyed by XComponent ID
 static std::mutex gMutex;
 static std::map<std::string, std::unique_ptr<Player>> gPlayers;
+static std::map<std::string, void*> gWindows; // native window per player
 static std::string gCurrentId;
 
 static Player* GetPlayer(const std::string& id) {
@@ -36,6 +37,13 @@ static Player* GetDefaultPlayer() {
     return (it != gPlayers.end()) ? it->second.get() : nullptr;
 }
 
+static void* GetDefaultWindow() {
+    std::lock_guard<std::mutex> lock(gMutex);
+    if (gCurrentId.empty()) return nullptr;
+    auto it = gWindows.find(gCurrentId);
+    return (it != gWindows.end()) ? it->second : nullptr;
+}
+
 // XComponent surface callbacks
 static void OnSurfaceCreated(OH_NativeXComponent* component, void* window) {
     char id[OH_XCOMPONENT_ID_LEN_MAX + 1] = {};
@@ -45,7 +53,13 @@ static void OnSurfaceCreated(OH_NativeXComponent* component, void* window) {
     uint64_t w = 0, h = 0;
     OH_NativeXComponent_GetXComponentSize(component, window, &w, &h);
 
-    auto* player = GetPlayer(std::string(id));
+    std::string strId(id);
+    {
+        std::lock_guard<std::mutex> lock(gMutex);
+        gWindows[strId] = window;
+    }
+
+    auto* player = GetPlayer(strId);
     if (player)
         player->updateNativeSurface(window, (int)w, (int)h);
 }
@@ -68,7 +82,13 @@ static void OnSurfaceDestroyed(OH_NativeXComponent* component, void* window) {
     uint64_t idLen = OH_XCOMPONENT_ID_LEN_MAX + 1;
     OH_NativeXComponent_GetXComponentId(component, id, &idLen);
 
-    auto* player = GetPlayer(std::string(id));
+    std::string strId(id);
+    {
+        std::lock_guard<std::mutex> lock(gMutex);
+        gWindows.erase(strId);
+    }
+
+    auto* player = GetPlayer(strId);
     if (player)
         player->updateNativeSurface(nullptr, 0, 0);
 }
@@ -241,8 +261,9 @@ static napi_value SetColorSpace(napi_env env, napi_callback_info info) {
     napi_get_value_int32(env, args[0], &colorSpace);
 
     auto* player = GetDefaultPlayer();
+    void* window = GetDefaultWindow();
     if (player)
-        player->set((ColorSpace)colorSpace);
+        player->set((ColorSpace)colorSpace, window);
 
     napi_value result;
     napi_get_undefined(env, &result);
