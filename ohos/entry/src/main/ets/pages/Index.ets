@@ -11,6 +11,7 @@ import window from '@ohos.window';
 const XCOMPONENT_ID = 'mdkPlayer';
 const SPEED_OPTIONS: number[] = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
 const DEFAULT_SPEED_INDEX = 3; // 1.0x
+const AUDIO_RENDERER_OPTIONS: string[] = ['OHAudio', 'OpenSL'];
 
 @Entry
 @Component
@@ -21,6 +22,7 @@ struct Index {
   @State duration: number = 0;       // ms
   @State volume: number = 100;       // 0–100
   @State speedIndex: number = DEFAULT_SPEED_INDEX;
+  @State audioRendererIndex: number = 0; // 0=OHAudio, 1=OpenSL
   @State urlInput: string = '';
   @State isFullscreen: boolean = false;
 
@@ -242,6 +244,19 @@ struct Index {
             .onSelect((index: number) => {
               this.speedIndex = index;
               playerNapi.setPlaybackRate(SPEED_OPTIONS[index]);
+            })
+
+          // Audio renderer selector
+          Select(AUDIO_RENDERER_OPTIONS.map((r: string): SelectOption => ({ value: r })))
+            .selected(this.audioRendererIndex)
+            .value(AUDIO_RENDERER_OPTIONS[this.audioRendererIndex])
+            .fontColor(Color.White)
+            .selectedOptionFontColor('#1698CE')
+            .optionBgColor('#333')
+            .backgroundColor('#444')
+            .onSelect((index: number) => {
+              this.audioRendererIndex = index;
+              playerNapi.setProperty('audio.renderer', AUDIO_RENDERER_OPTIONS[index]);
             })
 
           Blank().layoutWeight(1)

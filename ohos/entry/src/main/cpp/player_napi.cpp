@@ -215,6 +215,23 @@ static napi_value IsPlaying(napi_env env, napi_callback_info info) {
     return result;
 }
 
+static napi_value SetProperty(napi_env env, napi_callback_info info) {
+    size_t argc = 2;
+    napi_value args[2];
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
+
+    std::string key = GetStringArg(env, args[0]);
+    std::string val = GetStringArg(env, args[1]);
+
+    auto* player = GetDefaultPlayer();
+    if (player)
+        player->setProperty(key.c_str(), val.c_str());
+
+    napi_value result;
+    napi_get_undefined(env, &result);
+    return result;
+}
+
 // Module init: called when loaded via XComponent libraryname or regular import
 static napi_value Init(napi_env env, napi_value exports) {
     // Redirect MDK log output to the OHOS HiLog system with tag "mdk"
@@ -278,6 +295,7 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"getPosition",      nullptr, GetPosition,      nullptr, nullptr, nullptr, napi_default, nullptr},
         {"getDuration",      nullptr, GetDuration,      nullptr, nullptr, nullptr, napi_default, nullptr},
         {"isPlaying",        nullptr, IsPlaying,        nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"setProperty",      nullptr, SetProperty,      nullptr, nullptr, nullptr, napi_default, nullptr},
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 

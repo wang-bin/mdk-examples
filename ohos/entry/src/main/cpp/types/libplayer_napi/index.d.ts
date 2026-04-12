@@ -8,3 +8,4 @@ export const setVolume: (volume: number) => void;
 export const getPosition: () => number;
 export const getDuration: () => number;
 export const isPlaying: () => boolean;
+export const setProperty: (key: string, value: string) => void;
