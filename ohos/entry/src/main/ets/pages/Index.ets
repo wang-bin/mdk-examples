@@ -6,6 +6,7 @@ import playerNapi from 'libplayer_napi.so';
 import picker from '@ohos.file.picker';
 import fs from '@ohos.file.fs';
 import promptAction from '@ohos.promptAction';
+import window from '@ohos.window';
 
 const XCOMPONENT_ID = 'mdkPlayer';
 const SPEED_OPTIONS: number[] = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
@@ -21,6 +22,7 @@ struct Index {
   @State volume: number = 100;       // 0–100
   @State speedIndex: number = DEFAULT_SPEED_INDEX;
   @State urlInput: string = '';
+  @State isFullscreen: boolean = false;
 
   private timerID: number = -1;
   private isSeeking: boolean = false;
@@ -111,22 +113,47 @@ struct Index {
     this.duration = 0;
   }
 
+  private async toggleFullscreen() {
+    try {
+      const win = await window.getLastWindow(getContext(this));
+      this.isFullscreen = !this.isFullscreen;
+      await win.setWindowLayoutFullScreen(this.isFullscreen);
+      await win.setWindowSystemBarEnable(this.isFullscreen ? [] : ['status', 'navigation']);
+    } catch (e) {
+      promptAction.showToast({ message: `Fullscreen error: ${(e as Error).message}` });
+    }
+  }
+
   build() {
     Column() {
       // ── Video surface ──────────────────────────────────────────────
-      XComponent({
-        id: XCOMPONENT_ID,
-        type: XComponentType.SURFACE,
-        libraryname: 'player_napi'
-      })
-        .width('100%')
-        .aspectRatio(16 / 9)
-        .backgroundColor(Color.Black)
+      if (this.isFullscreen) {
+        XComponent({
+          id: XCOMPONENT_ID,
+          type: XComponentType.SURFACE,
+          libraryname: 'player_napi'
+        })
+          .width('100%')
+          .layoutWeight(1)
+          .backgroundColor(Color.Black)
+          .gesture(TapGesture({ count: 2 }).onAction(() => { this.toggleFullscreen(); }))
+      } else {
+        XComponent({
+          id: XCOMPONENT_ID,
+          type: XComponentType.SURFACE,
+          libraryname: 'player_napi'
+        })
+          .width('100%')
+          .aspectRatio(16 / 9)
+          .backgroundColor(Color.Black)
+          .gesture(TapGesture({ count: 2 }).onAction(() => { this.toggleFullscreen(); }))
+      }
 
-      // ── Controls ───────────────────────────────────────────────────
-      Column({ space: 4 }) {
-        // Progress bar row
-        Row({ space: 4 }) {
+      // ── Controls (hidden in fullscreen) ────────────────────────────
+      if (!this.isFullscreen) {
+        Column({ space: 4 }) {
+          // Progress bar row
+          Row({ space: 4 }) {
           Text(this.formatTime(this.currentTime))
             .fontSize(12)
             .fontColor(Color.White)
@@ -270,9 +297,10 @@ struct Index {
         }
         .width('100%')
         .padding({ left: 8, right: 8, bottom: 8 })
-      }
-      .width('100%')
-      .backgroundColor('#222')
+        } // end Column controls
+        .width('100%')
+        .backgroundColor('#222')
+      } // end if (!this.isFullscreen)
     }
     .width('100%')
     .height('100%')
