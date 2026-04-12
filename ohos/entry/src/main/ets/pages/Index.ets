@@ -119,6 +119,9 @@ struct Index {
       this.isFullscreen = !this.isFullscreen;
       await win.setWindowLayoutFullScreen(this.isFullscreen);
       await win.setWindowSystemBarEnable(this.isFullscreen ? [] : ['status', 'navigation']);
+      await win.setPreferredOrientation(
+        this.isFullscreen ? window.Orientation.AUTO_ROTATION_LANDSCAPE : window.Orientation.UNSPECIFIED
+      );
     } catch (e) {
       promptAction.showToast({ message: `Fullscreen error: ${(e as Error).message}` });
     }
