@@ -23,6 +23,7 @@ struct Index {
   @State volume: number = 100;       // 0–100
   @State speedIndex: number = DEFAULT_SPEED_INDEX;
   @State audioRendererIndex: number = 0; // 0=OHAudio, 1=OpenSL
+  @State hdrEnabled: boolean = true;     // true=Unknown(HDR), false=BT709(SDR)
   @State urlInput: string = '';
   @State isFullscreen: boolean = false;
 
@@ -258,6 +259,21 @@ struct Index {
               this.audioRendererIndex = index;
               playerNapi.setProperty('audio.renderer', AUDIO_RENDERER_OPTIONS[index]);
             })
+
+          // HDR toggle (on=ColorSpaceUnknown/auto-HDR, off=BT709/SDR)
+          Toggle({ type: ToggleType.Button, isOn: this.hdrEnabled }) {
+            Text('HDR')
+              .fontSize(14)
+              .fontColor(Color.White)
+          }
+          .width(56)
+          .height(36)
+          .selectedColor('#1698CE')
+          .onChange((isOn: boolean) => {
+            this.hdrEnabled = isOn;
+            // ColorSpace.Unknown=0 lets the player pick HDR; ColorSpace.BT709=1 forces SDR
+            playerNapi.setColorSpace(isOn ? 0 : 1);
+          })
 
           Blank().layoutWeight(1)
 

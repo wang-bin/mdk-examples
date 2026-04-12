@@ -232,6 +232,23 @@ static napi_value SetProperty(napi_env env, napi_callback_info info) {
     return result;
 }
 
+static napi_value SetColorSpace(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1];
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
+
+    int32_t colorSpace = 0;
+    napi_get_value_int32(env, args[0], &colorSpace);
+
+    auto* player = GetDefaultPlayer();
+    if (player)
+        player->set((ColorSpace)colorSpace);
+
+    napi_value result;
+    napi_get_undefined(env, &result);
+    return result;
+}
+
 // Module init: called when loaded via XComponent libraryname or regular import
 static napi_value Init(napi_env env, napi_value exports) {
     // Redirect MDK log output to the OHOS HiLog system with tag "mdk"
@@ -296,6 +313,7 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"getDuration",      nullptr, GetDuration,      nullptr, nullptr, nullptr, napi_default, nullptr},
         {"isPlaying",        nullptr, IsPlaying,        nullptr, nullptr, nullptr, napi_default, nullptr},
         {"setProperty",      nullptr, SetProperty,      nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"setColorSpace",    nullptr, SetColorSpace,    nullptr, nullptr, nullptr, napi_default, nullptr},
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 
