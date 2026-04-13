@@ -1,0 +1,20 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "MDK Player"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "MDK media player example for OHOS"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "MDK Player"
+    },
+    {
+      "name": "permission_read_media_reason",
+      "value": "Required to open local media files for playback"
+    }
+  ]
+}

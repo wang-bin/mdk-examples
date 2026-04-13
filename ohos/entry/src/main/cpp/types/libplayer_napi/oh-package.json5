@@ -1,0 +1,5 @@
+{
+  "name": "libplayer_napi",
+  "version": "1.0.0",
+  "description": "MDK player native module type declarations"
+}
