@@ -297,10 +297,10 @@ namespace MDK
                 layout = 5;   // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
                 return 1;
             };
-            _vkGetCmdBufDelegate = (_) => GetVulkanCommandBuffer();
+            _vkGetCmdBufDelegate = (opaque) => GetVulkanCommandBuffer();
 
             _player.SetVulkanRenderTarget(device, phyDevice, vkImage,
-                _vkGetRTInfoDelegate, _vkGetCmdBufDelegate);
+                _vkGetRTInfoDelegate, _vkGetCmdBufDelegate, IntPtr.Zero);
         }
 
         private void RenderFrame()
