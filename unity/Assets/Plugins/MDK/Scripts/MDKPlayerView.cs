@@ -158,11 +158,14 @@ namespace MDK
             _player.State = PlayerState.Playing;
         }
 
-        public void Pause() => _player?.State == PlayerState.Paused
-            ? _player.State = PlayerState.Playing   // toggle
-            : _player != null
-                ? _player.State = PlayerState.Paused
-                : (Action)(()=>{})();
+        public void Pause()
+        {
+            if (_player == null) return;
+            if (_player.State == PlayerState.Paused)
+                _player.State = PlayerState.Playing;
+            else
+                _player.State = PlayerState.Paused;
+        }
 
         public void Stop() => _player?.State = PlayerState.Stopped;
 

@@ -139,7 +139,12 @@ MDK_UNITY_API void MDKPlayer_setDecoders(MDKPlayerHandle player, const char* dec
         list.emplace_back(p, comma - p);
         p = comma + 1;
     }
-    std::vector<std::string_view> views(list.begin(), list.end());
+    // Build string_views after the vector is fully populated to avoid
+    // dangling references into a container that may have been reallocated.
+    std::vector<std::string_view> views;
+    views.reserve(list.size());
+    for (const auto& s : list)
+        views.emplace_back(s);
     ctx(player)->player.setDecoders(MediaType::Video, views);
 }
 
