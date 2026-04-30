@@ -3,7 +3,7 @@
  * MDK SDK Unity Plugin — C# P/Invoke bindings
  *
  * Mirrors the C API exposed by the native mdk-unity plugin (MDKPlayer.h).
- * Works on Windows (D3D11/OpenGL), macOS (Metal/OpenGL), Linux (OpenGL),
+ * Works on Windows (D3D11/D3D12/OpenGL), macOS (Metal/OpenGL), Linux (OpenGL/Vulkan),
  * iOS (Metal), and Android (OpenGL ES).
  */
 using System;
@@ -50,6 +50,32 @@ namespace MDK
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void MediaStatusChangedCallback(MediaStatus status, IntPtr userdata);
+
+    /// <summary>
+    /// Callback invoked by MDKPlayer_setD3D12RenderTarget to obtain the current
+    /// ID3D12GraphicsCommandList* that MDK should record into.
+    /// Return the command list pointer (as IntPtr), or IntPtr.Zero if unavailable.
+    /// </summary>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr D3D12GetCommandListCallback(IntPtr opaque);
+
+    /// <summary>
+    /// Callback invoked by MDKPlayer_setVulkanRenderTarget to obtain render-target info.
+    /// Fill w, h, vkFormat (VkFormat as int), vkImageLayout (VkImageLayout as int).
+    /// Return 1 on success, 0 if unavailable.
+    /// </summary>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int VkRenderTargetInfoCallback(IntPtr opaque,
+                                                   out int w, out int h,
+                                                   out int vkFormat, out int vkImageLayout);
+
+    /// <summary>
+    /// Callback invoked by MDKPlayer_setVulkanRenderTarget to obtain the current
+    /// VkCommandBuffer (as IntPtr) that MDK should record into.
+    /// Return IntPtr.Zero if unavailable.
+    /// </summary>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr VkGetCommandBufferCallback(IntPtr opaque);
 
     // -----------------------------------------------------------------------
     // Raw P/Invoke declarations
@@ -115,7 +141,23 @@ namespace MDK
         public static extern void MDKPlayer_setD3D11RenderTarget(IntPtr player, IntPtr texture, IntPtr context);
 
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void MDKPlayer_setD3D12RenderTarget(IntPtr player,
+                                                                  IntPtr rt,
+                                                                  IntPtr cmdQueue,
+                                                                  D3D12GetCommandListCallback getCmdList,
+                                                                  IntPtr opaque);
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MDKPlayer_setMetalRenderTarget(IntPtr player, IntPtr texture, IntPtr device, IntPtr cmdQueue);
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void MDKPlayer_setVulkanRenderTarget(IntPtr player,
+                                                                   IntPtr device,
+                                                                   IntPtr phy_device,
+                                                                   IntPtr rt,
+                                                                   VkRenderTargetInfoCallback getRTInfo,
+                                                                   VkGetCommandBufferCallback getCmdBuf,
+                                                                   IntPtr opaque);
 
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MDKPlayer_setStateChangedCallback(IntPtr player, StateChangedCallback cb, IntPtr userdata);
@@ -312,11 +354,49 @@ namespace MDK
             NativeMethods.MDKPlayer_setD3D11RenderTarget(_handle, texture, context);
 
         /// <summary>
+        /// Set a D3D12 resource as the render target (Windows only).
+        /// <para><paramref name="rt"/>: ID3D12Resource* of the render-target texture.</para>
+        /// <para><paramref name="cmdQueue"/>: ID3D12CommandQueue* used for GPU work.</para>
+        /// <para><paramref name="getCmdList"/>: callback returning the currently open
+        ///   ID3D12GraphicsCommandList* (as IntPtr) for MDK to record into.
+        ///   Keep a strong reference to the delegate to prevent GC collection.</para>
+        /// <para><paramref name="opaque"/>: forwarded verbatim to <paramref name="getCmdList"/>.</para>
+        /// </summary>
+        public void SetD3D12RenderTarget(IntPtr rt,
+                                         IntPtr cmdQueue,
+                                         D3D12GetCommandListCallback getCmdList,
+                                         IntPtr opaque = default) =>
+            NativeMethods.MDKPlayer_setD3D12RenderTarget(_handle, rt, cmdQueue, getCmdList, opaque);
+
+        /// <summary>
         /// Set a Metal texture as the render target (Apple platforms only).
         /// Pass cmdQueue = IntPtr.Zero to use the default command queue.
         /// </summary>
         public void SetMetalRenderTarget(IntPtr texture, IntPtr device, IntPtr cmdQueue = default) =>
             NativeMethods.MDKPlayer_setMetalRenderTarget(_handle, texture, device, cmdQueue);
+
+        /// <summary>
+        /// Set a Vulkan image as the render target (any platform with Vulkan support).
+        /// <para><paramref name="device"/>: VkDevice handle.</para>
+        /// <para><paramref name="phyDevice"/>: VkPhysicalDevice handle.</para>
+        /// <para><paramref name="rt"/>: VkImage handle of the render-target image.
+        ///   In Unity, obtain via <c>RenderTexture.GetNativeTexturePtr()</c> when
+        ///   <c>SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan</c>.</para>
+        /// <para><paramref name="getRTInfo"/>: callback that fills in image dimensions
+        ///   and VkFormat/VkImageLayout for the render target.
+        ///   Keep a strong reference to the delegate to prevent GC collection.</para>
+        /// <para><paramref name="getCmdBuf"/>: callback that returns the currently recording
+        ///   VkCommandBuffer (as IntPtr). Keep a strong delegate reference.</para>
+        /// <para><paramref name="opaque"/>: forwarded verbatim to both callbacks.</para>
+        /// </summary>
+        public void SetVulkanRenderTarget(IntPtr device,
+                                          IntPtr phyDevice,
+                                          IntPtr rt,
+                                          VkRenderTargetInfoCallback getRTInfo,
+                                          VkGetCommandBufferCallback getCmdBuf,
+                                          IntPtr opaque = default) =>
+            NativeMethods.MDKPlayer_setVulkanRenderTarget(
+                _handle, device, phyDevice, rt, getRTInfo, getCmdBuf, opaque);
 
         // ----------------------------------------------------------------
         // Global settings

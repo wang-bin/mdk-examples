@@ -4,13 +4,13 @@ A cross-platform Unity plugin that wraps the [MDK SDK](https://github.com/wang-b
 
 ## Supported Platforms
 
-| Platform     | Graphics API          | Hardware Decoder                  |
-|-------------|----------------------|-----------------------------------|
-| Windows x64  | D3D11 / OpenGL        | D3D11, DXVA, NVDEC, CUDA, FFmpeg  |
-| macOS        | Metal / OpenGL        | VideoToolbox, FFmpeg               |
-| Linux x64    | OpenGL                | VAAPI, VDPAU, NVDEC, FFmpeg        |
-| iOS          | Metal                 | VideoToolbox, FFmpeg               |
-| Android      | OpenGL ES 3           | AMediaCodec (MediaCodec), FFmpeg   |
+| Platform     | Graphics API                       | Hardware Decoder                  |
+|-------------|-----------------------------------|-----------------------------------|
+| Windows x64  | D3D11 / D3D12 / OpenGL             | D3D11, DXVA, NVDEC, CUDA, FFmpeg  |
+| macOS        | Metal / OpenGL / Vulkan            | VideoToolbox, FFmpeg               |
+| Linux x64    | OpenGL / Vulkan                    | VAAPI, VDPAU, NVDEC, FFmpeg        |
+| iOS          | Metal / Vulkan                     | VideoToolbox, FFmpeg               |
+| Android      | OpenGL ES 3 / Vulkan               | AMediaCodec (MediaCodec), FFmpeg   |
 
 ## Directory Layout
 
@@ -122,6 +122,20 @@ public class MyVideoPlayer : MonoBehaviour
 
 ## API Overview
 
+### Graphics API Selection
+
+`MDKPlayerView` picks the render API automatically at runtime based on `SystemInfo.graphicsDeviceType`:
+
+| Unity Graphics Device Type | Render API used by MDK       |
+|----------------------------|------------------------------|
+| `Direct3D11`               | D3D11 (`ID3D11Texture2D*`)   |
+| `Direct3D12`               | D3D12 (`ID3D12Resource*`)    |
+| `Metal`                    | Metal (`MTLTexture*`)        |
+| `Vulkan`                   | Vulkan (`VkImage`)           |
+| `OpenGLCore` / `OpenGLES3` | OpenGL (GL texture + FBO)    |
+
+**D3D12 and Vulkan** require additional native handles (command queue / command buffer) that Unity exposes only through C++ native plugin interfaces (`IUnityGraphicsD3D12v5` / `IUnityGraphicsVulkanV2`).  See the stub helper functions in `MDKPlayerView.cs` and the **Notes** section below.
+
 ### `MDKPlayerView` (MonoBehaviour)
 
 | Member                  | Description                                    |
@@ -163,3 +177,5 @@ player.Seek(30_000); // jump to 30 s
 - On **iOS**, Unity requires static libraries. The build system automatically produces a `.a` file.
 - On **Android**, ensure the MDK SDK `.so` (e.g. `libmdk.so`) is also in `Plugins/Android/libs/<abi>/`.
 - For **Metal** (macOS/iOS), `MDKPlayer_setMetalRenderTarget` requires a valid `MTLDevice` pointer; the helper `MDKUnity_GetMetalDevice()` stub in `MDKPlayerView.cs` should be implemented in an Objective-C `.mm` file in your project if you need it (Unity Metal integration typically exposes the device via `SystemInfo` or the `UnityMetal` API).
+- For **D3D12** (Windows), Unity's `IUnityGraphicsD3D12v5` interface is required to retrieve the `ID3D12CommandQueue*` and the per-frame `ID3D12GraphicsCommandList*`.  These are accessible only from a native C++ plugin that receives `IUnityInterfaces*` via `UnityPluginLoad`.  Implement a small helper native plugin and surface the two pointers via P/Invoke; fill in the `GetD3D12CommandQueue` and `GetD3D12CommandList` stubs in `MDKPlayerView.cs`.
+- For **Vulkan** (Windows/Linux/Android/macOS/iOS), `VkDevice`, `VkPhysicalDevice`, and the current `VkCommandBuffer` must similarly come from `IUnityGraphicsVulkanV2` (accessible only from native code).  Fill in the `GetVulkanDevice`, `GetVulkanPhysicalDevice`, and `GetVulkanCommandBuffer` stubs in `MDKPlayerView.cs`.

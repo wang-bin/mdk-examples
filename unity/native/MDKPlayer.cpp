@@ -2,8 +2,8 @@
  * Copyright (c) 2024 WangBin <wbsecg1 at gmail.com>
  * MDK SDK Unity Plugin — Native Implementation
  * Wraps mdk::Player with a plain C API for use via P/Invoke from Unity/C#.
- * Supports: Windows (D3D11/OpenGL), macOS (Metal/OpenGL), Linux (OpenGL),
- *           iOS (Metal), Android (OpenGL ES).
+ * Supports: Windows (D3D11/D3D12/OpenGL), macOS (Metal/OpenGL), Linux (OpenGL/Vulkan),
+ *           iOS (Metal), Android (OpenGL ES), and any platform with Vulkan support.
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
 # define _CRT_SECURE_NO_WARNINGS
@@ -13,6 +13,13 @@
 #include "mdk/Player.h"
 #include "mdk/RenderAPI.h"
 #include "mdk/global.h"
+#ifdef _WIN32
+# include <d3d11.h>
+# include <d3d12.h>
+#endif
+#if __has_include(<vulkan/vulkan_core.h>)
+# include <vulkan/vulkan_core.h>
+#endif
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -28,8 +35,14 @@ struct MDKPlayerContext {
     // Render API storage (only one active at a time)
     GLRenderAPI    gl{};
     D3D11RenderAPI d3d11{};
+#ifdef _WIN32
+    D3D12RenderAPI d3d12{};
+#endif
 #if defined(__APPLE__)
     MetalRenderAPI metal{};
+#endif
+#if __has_include(<vulkan/vulkan_core.h>)
+    VulkanRenderAPI vk{};
 #endif
 
     // User callbacks + userdata
@@ -39,6 +52,15 @@ struct MDKPlayerContext {
     void*                          onRenderUD           = nullptr;
     MDK_MediaStatusChangedCallback onMediaStatus        = nullptr;
     void*                          onMediaStatusUD      = nullptr;
+
+    // D3D12 render callbacks (stored here; RenderAPI.opaque = this context)
+    MDK_D3D12GetCommandListCallback d3d12GetCmdList = nullptr;
+    void*                           d3d12Opaque     = nullptr;
+
+    // Vulkan render callbacks (stored here; RenderAPI.opaque = this context)
+    MDK_VkRenderTargetInfoCallback vkGetRTInfo  = nullptr;
+    MDK_VkGetCommandBufferCallback vkGetCmdBuf  = nullptr;
+    void*                          vkOpaque     = nullptr;
 };
 
 /* -----------------------------------------------------------------------
@@ -220,6 +242,42 @@ MDK_UNITY_API void MDKPlayer_setD3D11RenderTarget(MDKPlayerHandle player,
 }
 
 /* -----------------------------------------------------------------------
+ * D3D12 render target (Windows)
+ *
+ * getCmdList is a user-supplied callback invoked by MDK each time it needs
+ * a command list to record rendering commands.  In Unity, implement it as a
+ * native plugin callback that returns the current frame command list from
+ * IUnityGraphicsD3D12v5::GetFrameCommandList().
+ * -------------------------------------------------------------------- */
+MDK_UNITY_API void MDKPlayer_setD3D12RenderTarget(MDKPlayerHandle player,
+                                                   void* rt,
+                                                   void* cmdQueue,
+                                                   MDK_D3D12GetCommandListCallback getCmdList,
+                                                   void* opaque)
+{
+#ifdef _WIN32
+    auto* c = ctx(player);
+    c->d3d12 = {};
+    c->d3d12GetCmdList = getCmdList;
+    c->d3d12Opaque     = opaque;
+    c->d3d12.rt       = static_cast<ID3D12Resource*>(rt);
+    c->d3d12.cmdQueue = static_cast<ID3D12CommandQueue*>(cmdQueue);
+    if (getCmdList) {
+        // Pass the context as opaque so the lambda can reach our stored callbacks.
+        c->d3d12.opaque = c;
+        c->d3d12.currentCommandList = [](const void* op) -> ID3D12GraphicsCommandList* {
+            const auto* c = static_cast<const MDKPlayerContext*>(op);
+            return static_cast<ID3D12GraphicsCommandList*>(
+                c->d3d12GetCmdList(c->d3d12Opaque));
+        };
+    }
+    c->player.setRenderAPI(&c->d3d12);
+#else
+    (void)player; (void)rt; (void)cmdQueue; (void)getCmdList; (void)opaque;
+#endif
+}
+
+/* -----------------------------------------------------------------------
  * Metal render target (Apple platforms)
  * -------------------------------------------------------------------- */
 MDK_UNITY_API void MDKPlayer_setMetalRenderTarget(MDKPlayerHandle player,
@@ -236,6 +294,59 @@ MDK_UNITY_API void MDKPlayer_setMetalRenderTarget(MDKPlayerHandle player,
     c->player.setRenderAPI(&c->metal);
 #else
     (void)player; (void)texture; (void)device; (void)cmdQueue;
+#endif
+}
+
+/* -----------------------------------------------------------------------
+ * Vulkan render target (any platform with Vulkan support)
+ *
+ * getRTInfo: callback that provides the image dimensions, VkFormat (as int),
+ *            and the expected VkImageLayout after rendering.
+ * getCmdBuf: callback that returns the currently recording VkCommandBuffer
+ *            (as void*) so MDK can record into it.
+ * opaque:    forwarded to both callbacks.
+ * -------------------------------------------------------------------- */
+MDK_UNITY_API void MDKPlayer_setVulkanRenderTarget(MDKPlayerHandle player,
+                                                    void* device,
+                                                    void* phy_device,
+                                                    void* rt,
+                                                    MDK_VkRenderTargetInfoCallback getRTInfo,
+                                                    MDK_VkGetCommandBufferCallback getCmdBuf,
+                                                    void* opaque)
+{
+#if __has_include(<vulkan/vulkan_core.h>)
+    auto* c = ctx(player);
+    c->vk           = {};
+    c->vkGetRTInfo  = getRTInfo;
+    c->vkGetCmdBuf  = getCmdBuf;
+    c->vkOpaque     = opaque;
+    c->vk.device     = static_cast<VkDevice>(device);
+    c->vk.phy_device = static_cast<VkPhysicalDevice>(phy_device);
+    c->vk.rt         = static_cast<VkImage>(rt);
+    // Use the context as the single opaque so both lambdas can reach our stored callbacks.
+    c->vk.opaque = c;
+    if (getRTInfo) {
+        c->vk.renderTargetInfo = [](void* op, int* w, int* h,
+                                    VkFormat* fmt, VkImageLayout* layout) -> int {
+            auto* c = static_cast<MDKPlayerContext*>(op);
+            int vkFmt    = VK_FORMAT_R8G8B8A8_UNORM;
+            int vkLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            int r = c->vkGetRTInfo(c->vkOpaque, w, h, &vkFmt, &vkLayout);
+            *fmt    = static_cast<VkFormat>(vkFmt);
+            *layout = static_cast<VkImageLayout>(vkLayout);
+            return r;
+        };
+    }
+    if (getCmdBuf) {
+        c->vk.currentCommandBuffer = [](void* op) -> VkCommandBuffer {
+            auto* c = static_cast<MDKPlayerContext*>(op);
+            return static_cast<VkCommandBuffer>(c->vkGetCmdBuf(c->vkOpaque));
+        };
+    }
+    c->player.setRenderAPI(&c->vk);
+#else
+    (void)player; (void)device; (void)phy_device; (void)rt;
+    (void)getRTInfo; (void)getCmdBuf; (void)opaque;
 #endif
 }
 

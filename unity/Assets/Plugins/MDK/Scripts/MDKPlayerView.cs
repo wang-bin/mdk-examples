@@ -13,8 +13,10 @@
  *
  * Rendering strategy (automatically selected at runtime):
  *   - Windows D3D11 editor/player  → D3D11 texture render target
- *   - Windows OpenGL / Linux       → GL texture + FBO render target
+ *   - Windows D3D12                → D3D12 resource render target (with command-list callback)
+ *   - Windows OpenGL / Linux GL    → GL texture + FBO render target
  *   - macOS / iOS Metal            → Metal texture render target
+ *   - Vulkan (any platform)        → Vulkan image render target (with image-info / cmd-buf callbacks)
  *   - Android OpenGL ES            → GL texture + FBO render target
  */
 using System;
@@ -87,6 +89,12 @@ namespace MDK
         private int          _videoWidth;
         private int          _videoHeight;
         private bool         _sizeInitialized;
+
+        // Strong references to native callback delegates to prevent GC collection
+        // while the native plugin holds the function pointers.
+        private D3D12GetCommandListCallback _d3d12GetCmdListDelegate;
+        private VkRenderTargetInfoCallback  _vkGetRTInfoDelegate;
+        private VkGetCommandBufferCallback  _vkGetCmdBufDelegate;
 
         // ----------------------------------------------------------------
         // Unity lifecycle
@@ -228,26 +236,71 @@ namespace MDK
                 // D3D11: the native pointer IS the ID3D11Texture2D*
                 _player.SetD3D11RenderTarget(nativePtr, IntPtr.Zero);
             }
+            else if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Direct3D12)
+            {
+                // D3D12: nativePtr is ID3D12Resource*.
+                // The command queue is obtained via IUnityGraphicsD3D12v5 on the native side.
+                // The command-list callback is invoked each frame on the render thread.
+                // We pass the native texture pointer as the opaque value so the callback
+                // can identify which resource is being rendered.
+                _d3d12GetCmdListDelegate = GetD3D12CommandList;
+                var cmdQueue = GetD3D12CommandQueue(); // helper — see below
+                _player.SetD3D12RenderTarget(nativePtr, cmdQueue, _d3d12GetCmdListDelegate, nativePtr);
+            }
             else
             {
                 // OpenGL on Windows: nativePtr is the GL texture name (GLuint)
                 _player.SetOpenGLRenderTarget(nativePtr, IntPtr.Zero, rt.width, rt.height);
             }
 #elif UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX || UNITY_IOS
-            // Metal: nativePtr is the MTLTexture
-            // We need the device pointer — get it via SystemInfo on Metal
-            _player.SetMetalRenderTarget(nativePtr, GetMetalDevice(), IntPtr.Zero);
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan)
+            {
+                SetupVulkanRenderAPI(rt, nativePtr);
+            }
+            else
+            {
+                // Metal: nativePtr is the MTLTexture
+                _player.SetMetalRenderTarget(nativePtr, GetMetalDevice(), IntPtr.Zero);
+            }
 #elif UNITY_ANDROID
-            // OpenGL ES: nativePtr is the GL texture name (GLuint)
-            _player.SetOpenGLRenderTarget(nativePtr, IntPtr.Zero, rt.width, rt.height);
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan)
+                SetupVulkanRenderAPI(rt, nativePtr);
+            else
+                // OpenGL ES: nativePtr is the GL texture name (GLuint)
+                _player.SetOpenGLRenderTarget(nativePtr, IntPtr.Zero, rt.width, rt.height);
 #elif UNITY_STANDALONE_LINUX
-            // OpenGL on Linux
-            _player.SetOpenGLRenderTarget(nativePtr, IntPtr.Zero, rt.width, rt.height);
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan)
+                SetupVulkanRenderAPI(rt, nativePtr);
+            else
+                _player.SetOpenGLRenderTarget(nativePtr, IntPtr.Zero, rt.width, rt.height);
 #else
             // Fallback: try OpenGL
             _player.SetOpenGLRenderTarget(nativePtr, IntPtr.Zero, rt.width, rt.height);
 #endif
             _player.SetVideoSurfaceSize(rt.width, rt.height);
+        }
+
+        // Configures a Vulkan render target using the VkImage returned by GetNativeTexturePtr().
+        private void SetupVulkanRenderAPI(RenderTexture rt, IntPtr vkImage)
+        {
+            var device    = GetVulkanDevice();
+            var phyDevice = GetVulkanPhysicalDevice();
+
+            // Capture dimensions for the renderTargetInfo callback.
+            int w = rt.width, h = rt.height;
+
+            _vkGetRTInfoDelegate = (IntPtr _, out int ow, out int oh, out int fmt, out int layout) =>
+            {
+                ow  = w;
+                oh  = h;
+                fmt    = 37;  // VK_FORMAT_R8G8B8A8_UNORM
+                layout = 5;   // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                return 1;
+            };
+            _vkGetCmdBufDelegate = (_) => GetVulkanCommandBuffer();
+
+            _player.SetVulkanRenderTarget(device, phyDevice, vkImage,
+                _vkGetRTInfoDelegate, _vkGetCmdBufDelegate);
         }
 
         private void RenderFrame()
@@ -303,5 +356,74 @@ namespace MDK
 #else
         private static IntPtr GetMetalDevice() => IntPtr.Zero;
 #endif
+
+        // ----------------------------------------------------------------
+        // D3D12 platform helpers (Windows)
+        // The actual command-queue and command-list pointers must come from
+        // the IUnityGraphicsD3D12v5 interface which is available only in a
+        // native C++ Unity plugin (IUnityInterfaces).  The stubs below show
+        // the expected signatures; replace them with P/Invoke calls into a
+        // helper native plugin that calls IUnityGraphicsD3D12v5 on your behalf.
+        // ----------------------------------------------------------------
+
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+        /// <summary>
+        /// Returns the ID3D12CommandQueue* used by Unity's D3D12 renderer.
+        /// Replace this stub with an actual P/Invoke into a helper native plugin
+        /// that calls IUnityGraphicsD3D12v5::GetCommandQueue().
+        /// </summary>
+        private static IntPtr GetD3D12CommandQueue()
+        {
+            // TODO: return the ID3D12CommandQueue* from IUnityGraphicsD3D12v5.
+            return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Returns the current ID3D12GraphicsCommandList* for the ongoing frame.
+        /// Called by MDK on the render thread each time it needs to record commands.
+        /// Replace with a call into a helper native plugin that returns
+        /// IUnityGraphicsD3D12v5::GetFrameCommandList(frameIndex).
+        /// <param name="opaque">The ID3D12Resource* passed as opaque to SetD3D12RenderTarget.</param>
+        /// </summary>
+        private static IntPtr GetD3D12CommandList(IntPtr opaque)
+        {
+            // TODO: return the ID3D12GraphicsCommandList* for the current frame.
+            return IntPtr.Zero;
+        }
+#else
+        private static IntPtr GetD3D12CommandQueue()  => IntPtr.Zero;
+        private static IntPtr GetD3D12CommandList(IntPtr _) => IntPtr.Zero;
+#endif
+
+        // ----------------------------------------------------------------
+        // Vulkan platform helpers
+        // VkDevice and VkPhysicalDevice are accessible via IUnityGraphicsVulkanV2
+        // (native plugin interface).  Provide them through a small helper native
+        // plugin that calls IUnityGraphicsVulkanV2::Instance() on your behalf.
+        // ----------------------------------------------------------------
+
+        private static IntPtr GetVulkanDevice()
+        {
+            // TODO: return VkDevice from IUnityGraphicsVulkanV2::Instance().device
+            return IntPtr.Zero;
+        }
+
+        private static IntPtr GetVulkanPhysicalDevice()
+        {
+            // TODO: return VkPhysicalDevice from IUnityGraphicsVulkanV2::Instance().physicalDevice
+            return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Returns the VkCommandBuffer currently being recorded by Unity's Vulkan renderer.
+        /// Called by MDK on the render thread.
+        /// Replace with a call into a helper native plugin that reads
+        /// IUnityGraphicsVulkanV2::CommandRecordingState().commandBuffer.
+        /// </summary>
+        private static IntPtr GetVulkanCommandBuffer()
+        {
+            // TODO: return VkCommandBuffer from IUnityGraphicsVulkanV2::CommandRecordingState().
+            return IntPtr.Zero;
+        }
     }
 }

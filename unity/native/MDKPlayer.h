@@ -3,6 +3,7 @@
  * MDK SDK Unity Plugin
  * C API for use via P/Invoke from Unity/C#
  * Supports: Windows, macOS, Linux, iOS, Android
+ * Graphics APIs: OpenGL/ES, D3D11, D3D12, Metal, Vulkan
  */
 #pragma once
 
@@ -101,7 +102,7 @@ MDK_UNITY_API void MDKPlayer_setLoop(MDKPlayerHandle player, int count); /* -1 =
 /*
  * Set the render target size (in pixels).
  * Call this when the render surface / texture size changes.
- * Pass -1x-1 to release GL renderer resources (call before destroying the GL context).
+ * Pass -1x-1 to release renderer resources (call before destroying the graphics context).
  */
 MDK_UNITY_API void MDKPlayer_setVideoSurfaceSize(MDKPlayerHandle player, int width, int height);
 
@@ -129,12 +130,80 @@ MDK_UNITY_API void MDKPlayer_setOpenGLRenderTarget(MDKPlayerHandle player, intpt
 MDK_UNITY_API void MDKPlayer_setD3D11RenderTarget(MDKPlayerHandle player, void* texture, void* context);
 
 /*
+ * Callback type used by MDKPlayer_setD3D12RenderTarget.
+ * The native plugin calls this from the render thread to obtain the
+ * ID3D12GraphicsCommandList* that MDK should record rendering commands into.
+ * opaque: the user-data pointer passed to MDKPlayer_setD3D12RenderTarget.
+ * Returns the current ID3D12GraphicsCommandList*, or NULL if unavailable.
+ */
+typedef void* (*MDK_D3D12GetCommandListCallback)(void* opaque);
+
+/*
+ * Set a native D3D12 render target (Windows only).
+ * rt:         pointer to an ID3D12Resource (the target texture, DXGI_FORMAT_R8G8B8A8_UNORM
+ *             or compatible); must be in D3D12_RESOURCE_STATE_RENDER_TARGET state when
+ *             MDKPlayer_renderVideo() is called.
+ * cmdQueue:   pointer to the ID3D12CommandQueue the player should use for GPU work.
+ * getCmdList: callback invoked each time MDK needs a command list; must return
+ *             the currently open ID3D12GraphicsCommandList*.
+ *             In Unity, implement this by returning Unity's current frame command list
+ *             obtained via IUnityGraphicsD3D12v5::GetFrameCommandList().
+ * opaque:     arbitrary pointer forwarded to getCmdList and rtInfo callbacks.
+ */
+MDK_UNITY_API void MDKPlayer_setD3D12RenderTarget(MDKPlayerHandle player,
+                                                   void* rt,
+                                                   void* cmdQueue,
+                                                   MDK_D3D12GetCommandListCallback getCmdList,
+                                                   void* opaque);
+
+/*
  * Set a native Metal texture as the render target (Apple platforms only).
  * texture: pointer to a MTLTexture (id<MTLTexture> bridged to void*).
  * device:  pointer to a MTLDevice  (id<MTLDevice>  bridged to void*).
  * cmdQueue: pointer to a MTLCommandQueue (id<MTLCommandQueue> bridged to void*), or NULL.
  */
 MDK_UNITY_API void MDKPlayer_setMetalRenderTarget(MDKPlayerHandle player, void* texture, void* device, void* cmdQueue);
+
+/*
+ * Callback types used by MDKPlayer_setVulkanRenderTarget.
+ *
+ * MDK_VkRenderTargetInfoCallback:
+ *   Invoked by the player to query the current render target dimensions and format.
+ *   opaque:  the user-data pointer passed to MDKPlayer_setVulkanRenderTarget.
+ *   w, h:    output width / height in pixels.
+ *   vkFormat: output VkFormat value (e.g. 37 = VK_FORMAT_R8G8B8A8_UNORM).
+ *   vkLayout: output VkImageLayout value for the image AFTER rendering
+ *             (e.g. 5 = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL).
+ *   Returns 1 on success, 0 if the information is not yet available.
+ *
+ * MDK_VkGetCommandBufferCallback:
+ *   Invoked by the player to obtain the VkCommandBuffer it should record into.
+ *   opaque:  the user-data pointer passed to MDKPlayer_setVulkanRenderTarget.
+ *   Returns the currently recording VkCommandBuffer (as void*), or NULL.
+ *   In Unity, implement this by returning the command buffer obtained from
+ *   IUnityGraphicsVulkanV2::CommandRecordingState().
+ */
+typedef int  (*MDK_VkRenderTargetInfoCallback)(void* opaque, int* w, int* h, int* vkFormat, int* vkImageLayout);
+typedef void* (*MDK_VkGetCommandBufferCallback)(void* opaque);
+
+/*
+ * Set a native Vulkan image as the render target (all platforms that support Vulkan).
+ * device:      VkDevice handle (cast to void*).
+ * phy_device:  VkPhysicalDevice handle (cast to void*).
+ * rt:          VkImage handle (cast to void*) — the render-target image.
+ *              In Unity, obtain via RenderTexture.GetNativeTexturePtr() when
+ *              SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan.
+ * getRTInfo:   callback to supply image dimensions and format; called once per frame.
+ * getCmdBuf:   callback to supply the currently open VkCommandBuffer.
+ * opaque:      arbitrary pointer forwarded to both callbacks.
+ */
+MDK_UNITY_API void MDKPlayer_setVulkanRenderTarget(MDKPlayerHandle player,
+                                                    void* device,
+                                                    void* phy_device,
+                                                    void* rt,
+                                                    MDK_VkRenderTargetInfoCallback getRTInfo,
+                                                    MDK_VkGetCommandBufferCallback getCmdBuf,
+                                                    void* opaque);
 
 /*
  * Register a callback invoked when the player state changes.
