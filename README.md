@@ -77,3 +77,13 @@ UWP example, supports D3D11, and ANGLE GLES2
 ## Avalonia
 
 use gl to render, (Only test on Windows x64).
+
+## Unity
+
+Cross-platform Unity plugin wrapping the MDK SDK.
+- Native C++ plugin (C API) callable via P/Invoke from C#
+- `MDKPlayerView` MonoBehaviour renders video into a Unity `RenderTexture`
+- Supports Windows (D3D11/OpenGL), macOS (Metal), Linux (OpenGL), iOS (Metal), Android (OpenGL ES)
+- Hardware decoders: VideoToolbox, D3D11/DXVA, AMediaCodec, VAAPI, NVDEC, FFmpeg fallback
+- Playback controls: play/pause/stop/seek/speed/volume/loop
+- See [unity/README.md](unity/README.md) for build and setup instructions.
