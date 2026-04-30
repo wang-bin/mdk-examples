@@ -247,6 +247,10 @@ namespace MDK
                 var cmdQueue = GetD3D12CommandQueue(); // helper — see below
                 _player.SetD3D12RenderTarget(nativePtr, cmdQueue, _d3d12GetCmdListDelegate, nativePtr);
             }
+            else if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Vulkan)
+            {
+                SetupVulkanRenderAPI(rt, nativePtr);
+            }
             else
             {
                 // OpenGL on Windows: nativePtr is the GL texture name (GLuint)

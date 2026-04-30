@@ -6,7 +6,7 @@ A cross-platform Unity plugin that wraps the [MDK SDK](https://github.com/wang-b
 
 | Platform     | Graphics API                       | Hardware Decoder                  |
 |-------------|-----------------------------------|-----------------------------------|
-| Windows x64  | D3D11 / D3D12 / OpenGL             | D3D11, DXVA, NVDEC, CUDA, FFmpeg  |
+| Windows x64  | D3D11 / D3D12 / OpenGL / Vulkan    | D3D11, DXVA, NVDEC, CUDA, FFmpeg  |
 | macOS        | Metal / OpenGL / Vulkan (MoltenVK) | VideoToolbox, FFmpeg               |
 | Linux x64    | OpenGL / Vulkan                    | VAAPI, VDPAU, NVDEC, FFmpeg        |
 | iOS          | Metal / Vulkan (MoltenVK)          | VideoToolbox, FFmpeg               |
