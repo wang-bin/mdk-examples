@@ -57,7 +57,8 @@ examples without platform specific code
 - RHI example: vulkan, d3d11, metal, opengl
 
 ## SDL
-Use gl context provided by SDL
+- SDL2: `SDL/sdlplay.cpp`, uses GL context provided by SDL
+- SDL3: `SDL3/sdl3play.cpp`, supports SDL3 GL context and optional `-d3d11`, `-d3d12`, `-metal`, `-vk` render backends
 
 ## SFML
 - Use gl context provided by SFML
