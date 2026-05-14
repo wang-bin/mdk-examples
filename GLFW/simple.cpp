@@ -100,7 +100,7 @@ int main(int argc, char** argv)
             // alternatively, you can create a custom event
         }
     });
-    player.onMediaStatusChanged([](MediaStatus s){
+    player.onMediaStatus([](MediaStatus s){
         //MediaStatus s = player.mediaStatus();
         printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n", s, s&MediaStatus::Loading, s& MediaStatus::Buffering, s& MediaStatus::Prepared, s& MediaStatus::End);
         return true;

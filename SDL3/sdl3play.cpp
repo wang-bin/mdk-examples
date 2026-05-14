@@ -239,7 +239,7 @@ int main(int argc, const char *argv[])
             player.setNextMedia(argv[url_now]);
         }
     });
-    player.onMediaStatusChanged([](MediaStatus s) {
+    player.onMediaStatus([](MediaStatus s) {
         std::printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n",
                     s, s & MediaStatus::Loading, s & MediaStatus::Buffering, s & MediaStatus::Prepared, s & MediaStatus::End);
         return true;
@@ -297,18 +297,18 @@ int main(int argc, const char *argv[])
         case SDL_EVENT_KEY_DOWN:
             if (event.key.key == SDLK_SPACE) {
                 player.set(player.state() == State::Playing ? State::Paused : State::Playing);
-            } else if (event.key.key == SDLK_a) {
+            } else if (event.key.key == SDLK_A) {
                 static const float ap[] = {IgnoreAspectRatio, KeepAspectRatio, KeepAspectRatioCrop};
                 static size_t ai = 0;
                 player.setAspectRatio(ap[(ai++) % 3]);
-            } else if (event.key.key == SDLK_o) {
+            } else if (event.key.key == SDLK_O) {
                 static int angle = 0;
                 player.rotate(angle += 90);
-            } else if (event.key.key == SDLK_s) {
+            } else if (event.key.key == SDLK_S) {
                 player.set(State::Stopped);
-            } else if (event.key.key == SDLK_p) {
+            } else if (event.key.key == SDLK_P) {
                 player.set(State::Playing);
-            } else if (event.key.key == SDLK_q) {
+            } else if (event.key.key == SDLK_Q) {
                 running = false;
             } else if (event.key.key == SDLK_RIGHT) {
                 std::printf("seekForward from: %" PRId64 "ms\n", player.position());
@@ -326,7 +326,7 @@ int main(int argc, const char *argv[])
             } else if (event.key.key == SDLK_DOWN) {
                 const auto v = player.playbackRate();
                 player.setPlaybackRate(v - 0.2f);
-            } else if (event.key.key == SDLK_n) {
+            } else if (event.key.key == SDLK_N) {
                 static int index = 1;
                 const int nb_urls = argc - url_index;
                 if (nb_urls > 1) {
