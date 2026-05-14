@@ -55,7 +55,7 @@ void OpenGLESPage::OnPageLoaded(Platform::Object^ sender, Windows::UI::Xaml::Rou
 	mPlayer->setDecoders(MediaType::Video, { "MFT:d3d=11", "D3D11", "FFmpeg" });
     //mPlayer->setMedia("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
 
-    mPlayer->onMediaStatus([=](auto s) {
+    mPlayer->onMediaStatus([=](auto, auto s) {
       if (s & MediaStatus::Loaded) {
         //progress->Maximum = mPlayer->mediaInfo().duration / 1000; // ui thread
         return true;

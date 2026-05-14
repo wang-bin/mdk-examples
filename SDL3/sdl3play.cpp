@@ -239,7 +239,7 @@ int main(int argc, const char *argv[])
             player.setNextMedia(argv[url_now]);
         }
     });
-    player.onMediaStatus([](MediaStatus s) {
+    player.onMediaStatus([](MediaStatus, MediaStatus s) {
         std::printf("************Media status: %#x, loading: %d, buffering: %d, prepared: %d, EOF: %d**********\n",
                     s, s & MediaStatus::Loading, s & MediaStatus::Buffering, s & MediaStatus::Prepared, s & MediaStatus::End);
         return true;
