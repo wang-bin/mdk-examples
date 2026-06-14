@@ -4,6 +4,7 @@
  */
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <vector>
 #include "mdk/Player.h"

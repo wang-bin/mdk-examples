@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2024 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2018-2026 WangBin <wbsecg1 at gmail.com>
  * MDK SDK example of multiple players
  */
 
@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include <vector>
