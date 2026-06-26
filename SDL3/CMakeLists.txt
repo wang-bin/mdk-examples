@@ -1,4 +1,12 @@
-find_package(SDL3 QUIET CONFIG)
+if(CMAKE_CROSSCOMPILING)
+  find_package(SDL3 QUIET NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
+else()
+  find_package(SDL3 QUIET)
+endif()
+if(NOT SDL3_FOUND)
+  message(WARNING "SDL3 not found, skipping SDL3 examples")
+  return()
+endif()
 
 if(TARGET SDL3::SDL3)
   set(SDL3_TARGET SDL3::SDL3)
@@ -8,20 +16,30 @@ elseif(TARGET SDL3::SDL3-static)
   set(SDL3_TARGET SDL3::SDL3-static)
 endif()
 
-if(SDL3_TARGET)
-  foreach(tgt sdl3play)
-    add_executable(${tgt} ${APPTYPE} ${tgt}.cpp)
-    target_link_libraries(${tgt} PRIVATE mdk ${SDL3_TARGET})
-    if(NOT WIN32)
-      target_link_libraries(${tgt} PRIVATE dl)
-    endif()
-    if(WIN32)
-      target_link_libraries(${tgt} PRIVATE winmm imm32 ole32 version) # for static sdl
-    elseif(APPLE)
-      target_link_libraries(${tgt} PRIVATE iconv "-framework CoreFoundation" "-framework CoreGraphics" "-framework Foundation" "-framework AppKit" "-framework IOKit" "-framework AudioToolbox" "-framework CoreAudio" "-framework ForceFeedback" "-framework Metal" "-framework CoreVideo" "-framework CoreServices" "-framework Carbon"
-      "-weak_framework CoreHaptics" "-weak_framework GameController"
-      ) # for static sdl
-    endif()
-    install(TARGETS ${tgt} RUNTIME DESTINATION bin)
-  endforeach()
+if(NOT SDL3_TARGET)
+  return()
 endif()
+include(CMakePushCheckState)
+cmake_push_check_state()
+check_library_exists(${SDL3_TARGET} SDL_Init "" HAVE_SDL3_LIB)
+cmake_pop_check_state()
+
+message("HAVE_SDL3_LIB: ${HAVE_SDL3_LIB}")
+if(NOT HAVE_SDL3_LIB)
+  return()
+endif()
+foreach(tgt sdl3play)
+  add_executable(${tgt} ${APPTYPE} ${tgt}.cpp)
+  target_link_libraries(${tgt} PRIVATE mdk ${SDL3_TARGET})
+  if(NOT WIN32)
+    target_link_libraries(${tgt} PRIVATE dl)
+  endif()
+  if(WIN32)
+    target_link_libraries(${tgt} PRIVATE winmm imm32 ole32 version) # for static sdl
+  elseif(APPLE)
+    target_link_libraries(${tgt} PRIVATE iconv "-framework CoreFoundation" "-framework CoreGraphics" "-framework Foundation" "-framework AppKit" "-framework IOKit" "-framework AudioToolbox" "-framework CoreAudio" "-framework ForceFeedback" "-framework Metal" "-framework CoreVideo" "-framework CoreServices" "-framework Carbon"
+    "-weak_framework CoreHaptics" "-weak_framework GameController"
+    ) # for static sdl
+  endif()
+  install(TARGETS ${tgt} RUNTIME DESTINATION bin)
+endforeach()
