@@ -55,6 +55,9 @@ using namespace std;
 using namespace std::chrono;
 using namespace MDK_NS;
 
+int64_t gSeekStep = 5000LL;
+SeekFlag gSeekFlag = SeekFlag::FromStart|SeekFlag::InCache;
+
 void parse_options(const char* opts, function<void(const char* opts, const char*)> cb)
 {
     if (!opts || !opts[0])
@@ -310,6 +313,7 @@ int main(int argc, const char*  argv[])
             glfwTerminate();
             exit(EXIT_FAILURE);
         }
+        glfwSetWindowUserPointer(win[i], &players);
 
         int fw = 0, fh = 0;
         glfwGetFramebufferSize(win[i], &fw, &fh);
@@ -324,6 +328,30 @@ int main(int argc, const char*  argv[])
                 break;
             case GLFW_KEY_SPACE:
                 gPause = !gPause;
+                break;
+            case GLFW_KEY_RIGHT: {
+                auto& ps = *static_cast<vector<unique_ptr<Player>>*>(glfwGetWindowUserPointer(window));
+                int64_t pos = -1;
+                for (auto& p : ps) {
+                    if (pos < 0)
+                        pos = p->position();
+                    p->seek(pos + gSeekStep, gSeekFlag, [](int64_t pos) {
+                        printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
+                    });
+                }
+            }
+                break;
+            case GLFW_KEY_LEFT: {
+                auto& ps = *static_cast<vector<unique_ptr<Player>>*>(glfwGetWindowUserPointer(window));
+                int64_t pos = -1;
+                for (auto& p : ps) {
+                    if (pos < 0)
+                        pos = p->position();
+                    p->seek(pos - gSeekStep, gSeekFlag, [](int64_t pos) {
+                        printf(">>>>>>>>>>seek ret: %" PRId64 "<<<<<<<<<<<<<<\n", pos);
+                    });
+                }
+            }
                 break;
             }
         });
