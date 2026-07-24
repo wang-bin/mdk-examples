@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2016-2025 WangBin <wbsecg1 at gmail.com>
+ * Copyright (c) 2016-2026 WangBin <wbsecg1 at gmail.com>
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -25,6 +25,7 @@
 #include <cstring>
 #include <iostream>
 #include <regex>
+#include <set>
 #include <string>
 #include <vector>
 #ifdef _WIN32
@@ -263,8 +264,8 @@ void showHelp(const char* argv0)
             "-autoclose: close when stopped\n" // TODO: check image or video
             "-plugins: plugin names, 'name1:name2...'"
             "-nosync: render video ASAP. Better to add -t:a -1 to ignore audio\n"
-            "-t:a: audio track number. default 0\n"
-            "-t:v: video track number. default 0\n"
+            "-t:a: audio track numbers separated by ','. default 0. -1 to disable audio\n"
+            "-t:v: video track numbers separated by ','. default 0. -1 to disable video\n"
             "-t:s: subtitle track number. default 0\n"
             "-program: program number(for medias contain multiple programs)\n"
             "-record: record video to a file or a network stream\n"
@@ -596,17 +597,31 @@ int main(int argc, const char** argv)
         } else if (strcmp(argv[i], "-c:a") == 0) {
             ca = argv[++i];
         } else if (strcmp(argv[i], "-t:a") == 0) {
-            atrack = std::atoi(argv[++i]);
-            if (atrack >= 0)
-                player.setActiveTracks(MediaType::Audio, {atrack});
-            else
-                player.setActiveTracks(MediaType::Audio, {});
+            const std::string ta = argv[++i];
+            std::regex re(",");
+            std::sregex_token_iterator first{ta.begin(), ta.end(), re, -1}, last;
+            std::set<int> tracks;
+            for (auto it = first; it != last; ++it) {
+                const int t = std::atoi(std::string(*it).data());
+                if (t >= 0)
+                    tracks.insert(t);
+            }
+            if (!tracks.empty())
+                atrack = *tracks.begin();
+            player.setActiveTracks(MediaType::Audio, tracks);
         } else if (strcmp(argv[i], "-t:v") == 0) {
-            vtrack = std::atoi(argv[++i]);
-            if (vtrack >= 0)
-                player.setActiveTracks(MediaType::Video, {vtrack});
-            else
-                player.setActiveTracks(MediaType::Video, {});
+            const std::string tv = argv[++i];
+            std::regex re(",");
+            std::sregex_token_iterator first{tv.begin(), tv.end(), re, -1}, last;
+            std::set<int> tracks;
+            for (auto it = first; it != last; ++it) {
+                const int t = std::atoi(std::string(*it).data());
+                if (t >= 0)
+                    tracks.insert(t);
+            }
+            if (!tracks.empty())
+                vtrack = *tracks.begin();
+            player.setActiveTracks(MediaType::Video, tracks);
         } else if (strcmp(argv[i], "-t:s") == 0) {
             strack = std::atoi(argv[++i]);
             if (strack >= 0)
@@ -735,17 +750,20 @@ int main(int argc, const char** argv)
     player.onLoop([](int count){
         printf("++++++++++++++onLoop: %d......\n", count);
         return false;
-    });/*
+    });
+    /*
     player.onFrame<AudioFrame>([](AudioFrame& f, int track) {
         if (f)
             printf("onAudio @%f. bytesPerPlane: %d, ptr0: %p +%zu. format:% d\n", f.timestamp(), f.bytesPerPlane(), f.bufferData(0), f.bytesPerPlane(), f.format());
-        f = f.to(SampleFormat::U8, 1, 9600);
+        //f = f.to(SampleFormat::U8, 1, 9600);
+        //f = f.to({AudioFormat::SampleFormat::U8, 1, 9600});
         return 0;
     });*/
     if (nosync)
         player.onSync([]{return DBL_MAX;});
     if (!ra && wait <= 0)
-        player.setRenderCallback([](void*){
+        player.setRenderCallback([&](void*){
+            //printf("----position: %lld\n", player.position());
             glfwPostEmptyEvent(); // FIXME: some events are lost on macOS. glfw bug?
         });
 
