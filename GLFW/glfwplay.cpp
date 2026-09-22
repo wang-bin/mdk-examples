@@ -578,7 +578,7 @@ int main(int argc, const char** argv)
         } else if (strcmp(argv[i], "-vo.layer") == 0) {
             const auto layer = argv[++i];
             if (strcmp(layer, "none") == 0) {
-                player.setLayers(VideoLayers::None);
+                player.setLayers(VideoLayers::NoLayer);
             } else if (strcmp(layer, "bl") == 0) {
                 player.setLayers(VideoLayers::Base);
             } else if (strcmp(layer, "el") == 0) {
