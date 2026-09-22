@@ -1,6 +1,7 @@
 
 /*
  * Copyright (c) 2016-2026 WangBin <wbsecg1 at gmail.com>
+ * AI participated
  * MDK SDK + GLFW example
  */
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -235,6 +236,7 @@ void showHelp(const char* argv0)
             "-size: width[xheight]\n"
             "-ar: aspect ratio. float value\n"
             "-bg: background color, 0xrrggbbaa, unorm (r, g, b, a)\n"
+            "-vo.layer: video layer selection: none, bl, el, or all\n"
             "-colorspace: output color space. can be 'auto'(will enable hdr display on demond if possible), 'bt709', 'bt2100'"
             "-d3d11: d3d11 renderer. support additiona options: -d3d11:feature_level=12.0:debug=1:adapter=0:buffers=2 \n"
             "-d3d12: d3d12 renderer. support additiona options: -d3d12:feature_level=12.0:debug=1:vendor=nv:buffers=2 \n"
@@ -573,6 +575,19 @@ int main(int argc, const char** argv)
             player.setBackgroundColor(float(r)/255.0, float(g)/255.0, float(b)/255.0, float(a)/255.0);
         } else if (strcmp(argv[i], "-ar") == 0) {
             player.setAspectRatio(std::atof(argv[++i]));
+        } else if (strcmp(argv[i], "-vo.layer") == 0) {
+            const auto layer = argv[++i];
+            if (strcmp(layer, "none") == 0) {
+                player.setLayers(VideoLayers::None);
+            } else if (strcmp(layer, "bl") == 0) {
+                player.setLayers(VideoLayers::Base);
+            } else if (strcmp(layer, "el") == 0) {
+                player.setLayers(VideoLayers::Enhancement);
+            } else if (strcmp(layer, "all") == 0) {
+                player.setLayers(VideoLayers::All);
+            } else {
+                printf("Unknown video layer: %s\n", layer);
+            }
         } else if (strcmp(argv[i], "-timeout") == 0) {
             player.setTimeout(std::atoi(argv[++i]));
         } else if (strcmp(argv[i], "-colorspace") == 0) {
