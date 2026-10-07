@@ -1,0 +1,39 @@
+# MDK SDK C API Kotlin/Native interop definition (iOS / macOS)
+#
+# The MDK SDK must be obtained separately:
+#   https://sourceforge.net/projects/mdk-sdk/files/nightly/
+#
+# Set the include path in build.gradle.kts via:
+#   gradle property:   mdk.sdk.ios=/path/to/mdk-sdk
+#   environment var:   MDK_SDK_IOS=/path/to/mdk-sdk
+#   or copy the SDK to composeApp/libs/mdk-sdk/
+#
+# The xcframework must also be linked.  Add the following to the iOS app
+# target's "Frameworks, Libraries, and Embedded Content" (or link via
+# iosTarget.binaries.framework { linkerOpts(...) } in build.gradle.kts):
+#
+#   -F/path/to/mdk-sdk/lib -framework mdk
+#
+language = objective-c
+headers = mdk/c/Player.h mdk/c/RenderAPI.h
+package = mdk.cinterop
+
+---
+// Objective-C helper utilities compiled as part of the cinterop module.
+// They bridge ARC-managed ObjC objects to the raw C pointers that
+// MDK's C API (updateNativeSurface / setRenderAPI) expects.
+
+#import <UIKit/UIKit.h>
+#import <QuartzCore/CALayer.h>
+#import <QuartzCore/CAMetalLayer.h>
+
+/// Return the raw ObjC pointer of a UIView as a void*.
+/// The caller is responsible for ensuring the view outlives the usage.
+static inline void* mdkUIViewPtr(UIView* view) {
+    return (__bridge void*)view;
+}
+
+/// Return the raw ObjC pointer of a CALayer as a void*.
+static inline void* mdkCALayerPtr(CALayer* layer) {
+    return (__bridge void*)layer;
+}
