@@ -451,6 +451,8 @@ int main(int argc, const char** argv)
                     else
                         glra.profile = GLRenderAPI::Profile::No;
                 }
+                else if (strcmp(name, "bpc") == 0 || strcmp(name, "depth") == 0)
+                    glra.depth = std::atoi(value);
                 else if (strcmp(name, "version") == 0)
                     glra.version = (float)std::atof(value);
             });
