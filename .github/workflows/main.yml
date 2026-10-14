@@ -8,6 +8,8 @@ on:
 jobs:
   macOS:
     runs-on: macos-14
+    env:
+      FLUTTER_BUILD_DARWIN_ARCHS: arm64
     strategy:
       fail-fast: false
     steps:
@@ -23,7 +25,9 @@ jobs:
     - run: flutter pub cache clean -f
     - run: flutter pub get
       working-directory: flutter/simple
-    - run: flutter build macos --verbose
+    - run: |
+        flutter clean
+        flutter build macos --verbose
       working-directory: flutter/simple
     - run: |
         mv build/macos/Build/Products/Release/simple.app .
@@ -39,8 +43,6 @@ jobs:
     runs-on: windows-latest
     strategy:
       fail-fast: false
-      matrix:
-        channel: ['stable']
     steps:
     - uses: actions/checkout@v5
       with:
