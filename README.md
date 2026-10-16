@@ -2,6 +2,12 @@ media player examples based on mdk sdk. runs on all platforms. [Download the lat
 
 About libmdk sdk: https://github.com/wang-bin/mdk-sdk
 
+## Compose Multiplatform
+Kotlin Compose Multiplatform example supporting iOS, Android and Desktop (Windows/macOS/Linux).
+- iOS: Kotlin/Native **C interop** → MDK C API (`mdk/c/Player.h`), renders via `UIView` / `UIKitView`
+- Android: JNI → thin C++ wrapper, renders via `SurfaceView` / `AndroidView`
+- Desktop: JNA → pre-built `mdk_shim` C wrapper, renders via AWT `Canvas` / `SwingPanel`
+
 ## Flutter
 https://github.com/wang-bin/fvp
 

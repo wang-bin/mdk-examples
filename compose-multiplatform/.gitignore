@@ -1,0 +1,11 @@
+*.gradle
+.gradle/
+build/
+*.iml
+.idea/
+local.properties
+*.keystore
+*.jks
+/composeApp/src/androidMain/cpp/mdk-sdk/
+/composeApp/src/desktopMain/native/build/
+/composeApp/libs/
