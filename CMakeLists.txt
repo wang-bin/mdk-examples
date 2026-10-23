@@ -47,3 +47,8 @@ if(NOT CMAKE_MACOSX_BUNDLE)
     add_subdirectory(macOS)
   endif()
 endif()
+
+option(BUILD_UNITY_PLUGIN "Build the MDK Unity native plugin" OFF)
+if(BUILD_UNITY_PLUGIN)
+  add_subdirectory(Unity/PluginSource)
+endif()

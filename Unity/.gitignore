@@ -1,0 +1,29 @@
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+Assets/Plugins/**/*.dll
+Assets/Plugins/**/*.so
+Assets/Plugins/**/*.dylib
+Assets/Plugins/**/*.bundle
+Assets/Plugins/**/*.a
+Assets/Plugins/**/*.framework
+Assets/Plugins/**/*.pdb
+Assets/Plugins/**/*.lib
+
+# The parent examples repository ignores `packages/` globally; Unity's
+# package manifest is source and must remain tracked.
+!/Packages/
+!/Packages/**
+
+# Resolve with the selected editor registry instead of a machine-specific lock.
+/Packages/packages-lock.json
+*.csproj
+*.sln
+*.slnx
+
+# Local validation evidence is not part of the distributed documentation.
+/docs/testing/HDR_VALIDATION_REPORT.md

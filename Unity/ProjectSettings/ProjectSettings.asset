@@ -1,0 +1,222 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 26
+  productGUID: 7e4d2f0a9c0e4dd3b4dbe0f1e0d4a1d7
+  AndroidProfiler: 0
+  AndroidFilterTouchesWhenObscured: 0
+  AndroidEnableSustainedPerformanceMode: 0
+  defaultScreenOrientation: 4
+  targetDevice: 2
+  useOnDemandResources: 0
+  accelerometerFrequency: 60
+  companyName: MDK
+  productName: MDK Unity Example
+  defaultCursor: {fileID: 0}
+  cursorHotspot: {x: 0, y: 0}
+  m_SplashScreenBackgroundColor: {r: 0.08, g: 0.08, b: 0.08, a: 1}
+  m_ShowUnitySplashScreen: 0
+  m_ShowUnitySplashLogo: 1
+  m_SplashScreenOverlayOpacity: 1
+  m_SplashScreenAnimation: 1
+  m_SplashScreenLogoStyle: 1
+  m_SplashScreenDrawMode: 0
+  m_SplashScreenBackgroundAnimationZoom: 1
+  m_SplashScreenLogoAnimationZoom: 1
+  m_SplashScreenBackgroundLandscapeAspect: 1
+  m_SplashScreenBackgroundLandscapeUvs: {serializedVersion: 2, x: 0, y: 0, width: 1, height: 1}
+  m_SplashScreenBackgroundPortraitAspect: 1
+  m_SplashScreenBackgroundPortraitUvs: {serializedVersion: 2, x: 0, y: 0, width: 1, height: 1}
+  m_SplashScreenLogos: []
+  m_VirtualRealitySplashScreen: {fileID: 0}
+  m_HolographicTrackingLossScreen: {fileID: 0}
+  defaultScreenWidth: 1280
+  defaultScreenHeight: 720
+  defaultScreenWidthWeb: 960
+  defaultScreenHeightWeb: 600
+  m_StereoRenderingPath: 0
+  m_ActiveColorSpace: 0
+  unsupportedMSAAFallback: 0
+  m_SpriteBatchVertexThreshold: 300
+  m_MTRendering: 1
+  mipStripping: 0
+  numberOfMipsStripped: 0
+  numberOfMipsStrippedPerMipmapLimitGroup: {}
+  m_StackTraceTypes: 010000000100000001000000010000000100000001000000
+  iosShowActivityIndicatorOnLoading: -1
+  androidShowActivityIndicatorOnLoading: -1
+  iosUseCustomAppBackgroundBehavior: 0
+  switchNMETAOverride: 0
+  switchNetLibKey: ""
+  switchSocketMemoryPoolSize: 6144
+  switchSocketAllocatorPoolSize: 128
+  switchSocketConcurrency: 16
+  switchNVNShaderPoolsGranularity: 33554432
+  switchNVNDefaultPoolsGranularity: 16777216
+  switchNVNOtherPoolsGranularity: 16777216
+  switchGpuScratchPoolGranularity: 2097152
+  switchAllowGpuScratchShrinking: 0
+  switchNVNMaxPublicTextureIDCount: 0
+  switchNVNMaxPublicSamplerIDCount: 0
+  switchNVNGraphicsFirmwareMemory: 32
+  switchMaxWorkerMultiple: 8
+  stadiaPresentMode: 0
+  stadiaTargetFramerate: 0
+  vulkanNumSwapchainBuffers: 3
+  vulkanEnableSetSRGBWrite: 0
+  vulkanEnablePreTransform: 0
+  vulkanEnableLateAcquireNextImage: 0
+  vulkanEnableCommandBufferRecycling: 1
+  loadStoreDebugModeEnabled: 0
+  bundleVersion: 0.1
+  metroInputSource: 0
+  wsaTransparentSwapchain: 0
+  m_HolographicPauseOnTrackingLoss: 1
+  xboxOneDisableKinectGpuReservation: 1
+  xboxOneEnable7thCore: 1
+  vrSettings:
+    enable360StereoCapture: 0
+  isWsaHolographicRemotingEnabled: 0
+  enableFrameTimingStats: 0
+  enableOpenGLProfilerGPURecorders: 1
+  allowHDRDisplaySupport: 0
+  useHDRDisplay: 0
+  hdrBitDepth: 0
+  m_ColorGamuts: 00000000
+  targetPixelDensity: 30
+  resolutionScalingMode: 0
+  resetResolutionOnWindowResize: 0
+  androidSupportedAspectRatio: 1.86
+  androidMaxAspectRatio: 2.1
+  applicationIdentifier:
+    Standalone: com.mdk.unity.example
+  buildNumber:
+    Standalone: 0
+    VisionOS: 0
+    iPhone: 0
+    tvOS: 0
+  metroPackageVersion: 1.0.0.0
+  metroPackageIdentityName: MDKUnityExample
+  metroPackageDisplayName: MDK Unity Example
+  metroPackageDescription: MDK Unity renderer example
+  scriptingDefineSymbols: {}
+  additionalCompilerArguments: {}
+  platformArchitecture: {}
+  scriptingBackend:
+    Standalone: 1
+    Android: 1
+    iPhone: 1
+  il2cppCompilerConfiguration: {}
+  managedStrippingLevel:
+    EmbeddedLinux: 1
+    GameCoreScarlett: 1
+    GameCoreXboxOne: 1
+    Nintendo Switch: 1
+    PS4: 1
+    PS5: 1
+    QNX: 1
+    Stadia: 1
+    Standalone: 4
+    VisionOS: 1
+    WebGL: 1
+    Windows Store Apps: 1
+    XboxOne: 1
+    iPhone: 1
+    Android: 1
+  m_BuildTargetGraphicsAPIs:
+  - m_BuildTarget: WindowsStandaloneSupport
+    m_APIs: 02000000120000001500000011000000
+    m_Automatic: 0
+  - m_BuildTarget: MacStandaloneSupport
+    m_APIs: 1000000011000000
+    m_Automatic: 0
+  - m_BuildTarget: LinuxStandaloneSupport
+    m_APIs: 1500000011000000
+    m_Automatic: 0
+  - m_BuildTarget: AndroidPlayer
+    m_APIs: 150000000b000000
+    m_Automatic: 0
+  - m_BuildTarget: iOSSupport
+    m_APIs: 10000000
+    m_Automatic: 0
+  incrementalIl2cppBuild: {}
+  suppressCommonWarnings: 1
+  allowUnsafeCode: 0
+  useDeterministicCompilation: 1
+  additionalIl2CppArgs: 
+  scriptingRuntimeVersion: 1
+  gcIncremental: 1
+  assemblyVersionValidation: 1
+  apiCompatibilityLevelPerPlatform: {}
+  m_RenderingPath: 1
+  metroPackageLogo: {fileID: 0}
+  metroPackageSmallLogo: {fileID: 0}
+  metroPackageStoreLogo: {fileID: 0}
+  metroPackageSplashScreenImage: {fileID: 0}
+  xboxOneSplashScreen: {fileID: 0}
+  xboxOneGameConfig: {fileID: 0}
+  xboxOneConfigType: 0
+  xboxOneIsRetail: 0
+  xboxOneEnableTypeOptimization: 0
+  xboxOnePresentImmediateThreshold: 0
+  switchQueueCommandMemory: 1048576
+  switchQueueControlMemory: 16384
+  switchQueueComputeMemory: 262144
+  webGLMaximumMemorySize: 2048
+  webGLMemoryGrowthMode: 2
+  webGLMemoryLinearGrowthStep: 16
+  webGLMemoryGeometricGrowthStep: 0.2
+  webGLMemoryGeometricGrowthCap: 96
+  webGLPowerPreference: 2
+  scriptingDebugging: 0
+  webGLExceptionSupport: 1
+  webGLNameFilesAsHashes: 0
+  webGLDataCaching: 1
+  webGLDebugSymbols: 0
+  webGLCompressionFormat: 1
+  webGLWasmArithmeticExceptions: 0
+  webGLLinkerTarget: 1
+  webGLThreadsSupport: 0
+  webGLDecompressionFallback: 0
+  webGLInitialMemorySize: 32
+  iPhoneStrippingLevel: 0
+  iPhoneScriptCallOptimization: 0
+  iPhoneBlitType: 0
+  iPhoneRenderExtraFrameOnPause: 0
+  iPhoneMetalForceHardShadows: 0
+  iPhoneEnableDepthAndStencil: 1
+  iPhoneEnableARKit: 0
+  iPhoneRequireARKit: 0
+  appleEnableAutomaticSigning: 0
+  iOSLaunchScreeniPadFillPct: 100
+  iOSLaunchScreeniPadSize: 100
+  iOSLaunchScreeniPadCustomXibPath: 
+  iOSLaunchScreeniPadCustomStoryboardPath: 
+  iOSLaunchScreeniPadCustomBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  iOSLaunchScreeniPadCustomBackgroundImage: {fileID: 0}
+  iOSLaunchScreeniPadCustomLogo: {fileID: 0}
+  iOSLaunchScreeniPadCustomLogoScaling: 0
+  iOSLaunchScreeniPhoneXSize: 100
+  iOSLaunchScreeniPhoneXCustomXibPath: 
+  iOSLaunchScreeniPhoneXCustomStoryboardPath: 
+  iOSLaunchScreeniPhoneXCustomBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  iOSLaunchScreeniPhoneXCustomBackgroundImage: {fileID: 0}
+  iOSLaunchScreeniPhoneXCustomLogo: {fileID: 0}
+  iOSLaunchScreeniPhoneXCustomLogoScaling: 0
+  iOSLaunchScreeniPhoneCustomSize: 100
+  iOSLaunchScreeniPhoneCustomXibPath: 
+  iOSLaunchScreeniPhoneCustomStoryboardPath: 
+  iOSLaunchScreeniPhoneCustomBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  iOSLaunchScreeniPhoneCustomBackgroundImage: {fileID: 0}
+  iOSLaunchScreeniPhoneCustomLogo: {fileID: 0}
+  iOSLaunchScreeniPhoneCustomLogoScaling: 0
+  iPhoneSdkVersion: 988
+  iOSTargetOSVersionString: 12.0
+  tvOSSdkVersion: 0
+  tvOSRequireExtendedGameController: 0
+  tvOSTargetOSVersionString: 12.0
+  VisionOSSdkVersion: 0
+  VisionOSTargetOSVersionString: 1.0
+  webGLModulesDirectory: 

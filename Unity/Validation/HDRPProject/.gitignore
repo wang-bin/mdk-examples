@@ -1,0 +1,17 @@
+/Library/
+/Temp/
+/Logs/
+/UserSettings/
+/obj/
+/Assets/MDKUnity/
+/Assets/MDKUnity.meta
+/Assets/Plugins/
+/Assets/Plugins.meta
+/Assets/Generated/
+/Assets/Generated.meta
+/Assets/HDRPDefaultResources/
+/Assets/HDRPDefaultResources.meta
+/Packages/com.unity.*/
+!/Packages/
+!/Packages/manifest.json
+/Packages/packages-lock.json
